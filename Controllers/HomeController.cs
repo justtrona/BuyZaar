@@ -1,35 +1,17 @@
-using BuyZaar.Data;
-using BuyZaar.Models;
 using Microsoft.AspNetCore.Mvc;
-using System.Linq;
 
 namespace BuyZaar.Controllers
 {
-    public class TestController : Controller
+    public class HomeController : Controller
     {
-        private readonly AppDbContext _context;
-
-        public TestController(AppDbContext context)
+        public IActionResult Index()
         {
-            _context = context;
+            return View();
         }
 
-        public IActionResult Seed()
+        public IActionResult Privacy()
         {
-            if (!_context.Categories.Any())
-            {
-                _context.Categories.Add(new Category { Name = "Electronics" });
-                _context.Categories.Add(new Category { Name = "Fashion" });
-                _context.SaveChanges();
-            }
-
-            return Content("Seeded successfully.");
-        }
-
-        public IActionResult Categories()
-        {
-            var data = _context.Categories.ToList();
-            return Json(data);
+            return View();
         }
     }
 }
