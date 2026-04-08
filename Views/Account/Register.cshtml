@@ -1,49 +1,60 @@
-@model BuyZaar.ViewModels.RegisterModel
+@model BuyZaar.ViewModels.RegisterViewModel
 
 @{
     ViewData["Title"] = "Register";
 }
 
-<h2>Register</h2>
+<div class="container py-5">
+    <div class="row align-items-center justify-content-center">
 
-<form asp-action="Register" method="post">
-    <div asp-validation-summary="All" class="text-danger"></div>
+        <!-- LEFT: LOGO -->
+        <div class="col-md-6 text-center mb-4">
+            <img src="~/images/logo.png" style="max-width: 300px;" />
+            <h2 class="brand-title mt-3">BuyZaar</h2>
+            <p class="brand-accent">Shop the Future Today</p>
+        </div>
 
-    <div>
-        <label asp-for="FullName"></label>
-        <input asp-for="FullName" class="form-control" />
-        <span asp-validation-for="FullName" class="text-danger"></span>
+        <!-- RIGHT: FORM -->
+        <div class="col-md-5">
+            <div class="card shadow-lg p-4">
+                <h3 class="text-center mb-4">Create Account</h3>
+
+                <form asp-action="Register" method="post">
+                    @Html.AntiForgeryToken()
+
+                    <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+                    <div class="mb-3">
+                        <input asp-for="FullName" class="form-control form-control-lg" placeholder="Full Name" />
+                    </div>
+
+                    <div class="mb-3">
+                        <input asp-for="Email" class="form-control form-control-lg" placeholder="Email" />
+                    </div>
+
+                    <div class="mb-3">
+                        <input asp-for="UserName" class="form-control form-control-lg" placeholder="Username" />
+                    </div>
+
+                    <div class="mb-3">
+                        <input asp-for="Password" class="form-control form-control-lg" placeholder="Password" />
+                    </div>
+
+                    <div class="mb-3">
+                        <input asp-for="ConfirmPassword" class="form-control form-control-lg" placeholder="Confirm Password" />
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 btn-lg">
+                        Register
+                    </button>
+
+                    <div class="text-center mt-3">
+                        <span>Already have an account?</span>
+                        <a asp-action="Login">Login</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
     </div>
-
-    <div>
-        <label asp-for="Email"></label>
-        <input asp-for="Email" class="form-control" />
-        <span asp-validation-for="Email" class="text-danger"></span>
-    </div>
-
-    <div>
-        <label asp-for="UserName"></label>
-        <input asp-for="UserName" class="form-control" />
-        <span asp-validation-for="UserName" class="text-danger"></span>
-    </div>
-
-    <div>
-        <label asp-for="Password"></label>
-        <input asp-for="Password" class="form-control" />
-        <span asp-validation-for="Password" class="text-danger"></span>
-    </div>
-
-    <div>
-        <label asp-for="ConfirmPassword"></label>
-        <input asp-for="ConfirmPassword" class="form-control" />
-        <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
-    </div>
-
-    <button type="submit" class="btn btn-primary">Register</button>
-</form>
-
-@section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
-}
+</div>

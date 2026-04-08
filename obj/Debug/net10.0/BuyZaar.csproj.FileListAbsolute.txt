@@ -255,7 +255,6 @@ C:\Users\rowna\BuyZaar\obj\Debug\net10.0\rjsmcshtml.dswa.cache.json
 C:\Users\rowna\BuyZaar\obj\Debug\net10.0\scopedcss\Views\Shared\_Layout.cshtml.rz.scp.css
 C:\Users\rowna\BuyZaar\obj\Debug\net10.0\scopedcss\bundle\BuyZaar.styles.css
 C:\Users\rowna\BuyZaar\obj\Debug\net10.0\scopedcss\projectbundle\BuyZaar.bundle.scp.css
-C:\Users\rowna\BuyZaar\obj\Debug\net10.0\compressed\klyirf2ltj-{0}-b9sayid5wm-b9sayid5wm.gz
 C:\Users\rowna\BuyZaar\obj\Debug\net10.0\compressed\o9nq2qxrrl-{0}-61n19gt1b8-61n19gt1b8.gz
 C:\Users\rowna\BuyZaar\obj\Debug\net10.0\compressed\d4apkhtqfb-{0}-xtxxf3hu2r-xtxxf3hu2r.gz
 C:\Users\rowna\BuyZaar\obj\Debug\net10.0\compressed\h33gj4shxr-{0}-bqjiyaj88i-bqjiyaj88i.gz
@@ -395,3 +394,4 @@ C:\Users\rowna\BuyZaar\obj\Debug\net10.0\compressed\a3ygkwa5zy-{0}-2z0ns9nrw6-2z
 C:\Users\rowna\BuyZaar\obj\Debug\net10.0\compressed\nezrqnk58p-{0}-muycvpuwrr-muycvpuwrr.gz
 C:\Users\rowna\BuyZaar\obj\Debug\net10.0\compressed\v0zgfp0y55-{0}-87fc7y1x7t-87fc7y1x7t.gz
 C:\Users\rowna\BuyZaar\obj\Debug\net10.0\compressed\yfc7ypekbg-{0}-mlv21k5csn-mlv21k5csn.gz
+C:\Users\rowna\BuyZaar\obj\Debug\net10.0\compressed\klyirf2ltj-{0}-revshgzpj8-revshgzpj8.gz
