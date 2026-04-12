@@ -6193,19 +6193,19 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\rowna\\.nuget\\packages\\": {}
+    "C:\\Users\\koisda\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\rowna\\BuyZaar\\BuyZaar.csproj",
+      "projectUniqueName": "D:\\It15 - BuyZaar\\BuyZaar\\BuyZaar.csproj",
       "projectName": "BuyZaar",
-      "projectPath": "C:\\Users\\rowna\\BuyZaar\\BuyZaar.csproj",
-      "packagesPath": "C:\\Users\\rowna\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\rowna\\BuyZaar\\obj\\",
+      "projectPath": "D:\\It15 - BuyZaar\\BuyZaar\\BuyZaar.csproj",
+      "packagesPath": "C:\\Users\\koisda\\.nuget\\packages\\",
+      "outputPath": "D:\\It15 - BuyZaar\\BuyZaar\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\rowna\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        "C:\\Users\\koisda\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net10.0"
