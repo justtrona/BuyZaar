@@ -44,7 +44,8 @@ namespace BuyZaar.Controllers
             {
                 await _userManager.AddToRoleAsync(user, "Shopper");
                 await _signInManager.SignInAsync(user, isPersistent: false);
-                return RedirectToAction("Index", "Home");
+
+                return RedirectToAction("Index", "Shopper");
             }
 
             foreach (var error in result.Errors)
@@ -80,7 +81,24 @@ namespace BuyZaar.Controllers
                 lockoutOnFailure: false);
 
             if (result.Succeeded)
+            {
+                if (await _userManager.IsInRoleAsync(user, "SuperAdmin"))
+                    return RedirectToAction("Index", "SuperAdmin");
+
+                if (await _userManager.IsInRoleAsync(user, "Admin"))
+                    return RedirectToAction("Index", "Admin");
+
+                if (await _userManager.IsInRoleAsync(user, "Rider"))
+                    return RedirectToAction("Index", "Rider");
+
+                if (await _userManager.IsInRoleAsync(user, "Seller"))
+                    return RedirectToAction("Index", "Seller");
+
+                if (await _userManager.IsInRoleAsync(user, "Shopper"))
+                    return RedirectToAction("Index", "Shopper");
+
                 return RedirectToAction("Index", "Home");
+            }
 
             ModelState.AddModelError(string.Empty, "Invalid login attempt.");
             return View(model);

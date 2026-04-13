@@ -27,6 +27,46 @@ builder.Services.AddRazorPages();
 
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+
+    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+    var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
+
+    // 1. Create Roles
+    string[] roles = { "SuperAdmin", "Admin", "Seller", "Rider", "Shopper" };
+
+    foreach (var role in roles)
+    {
+        if (!await roleManager.RoleExistsAsync(role))
+        {
+            await roleManager.CreateAsync(new IdentityRole(role));
+        }
+    }
+
+    // 2. Create SuperAdmin User
+    var superAdminEmail = "superadmin@buyzaar.com";
+    var superAdminUser = await userManager.FindByEmailAsync(superAdminEmail);
+
+    if (superAdminUser == null)
+    {
+        var user = new ApplicationUser
+        {
+            FullName = "Super Admin",
+            Email = superAdminEmail,
+            UserName = "superadmin"
+        };
+
+        var result = await userManager.CreateAsync(user, "SuperAdmin123!");
+
+        if (result.Succeeded)
+        {
+            await userManager.AddToRoleAsync(user, "SuperAdmin");
+        }
+    }
+}
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
