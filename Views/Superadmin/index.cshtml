@@ -4,3 +4,16 @@
 
 <h2>SuperAdmin Dashboard</h2>
 <p>Welcome SuperAdmin.</p>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["SuccessMessage"]
+    </div>
+}
+
+<p>
+    <a asp-controller="SuperAdmin" asp-action="CreateAdmin" class="btn btn-primary">
+        Create Admin
+    </a>
+</p>

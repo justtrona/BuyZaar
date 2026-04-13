@@ -6,3 +6,16 @@
 
 <p>Welcome to your shopper dashboard.</p>
 <p>From here, you will later be able to manage your profile, orders, and seller application.</p>
+
+@if (TempData["ApplicationMessage"] != null)
+{
+    <div class="alert alert-info">
+        @TempData["ApplicationMessage"]
+    </div>
+}
+
+<p>
+    <a asp-controller="Shopper" asp-action="ApplySeller" class="btn btn-primary">
+        Apply as Seller
+    </a>
+</p>

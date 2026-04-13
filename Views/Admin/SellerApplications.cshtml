@@ -1,0 +1,76 @@
+@model IEnumerable<BuyZaar.Models.SellerApplication>
+
+@{
+    ViewData["Title"] = "Seller Applications";
+}
+
+<h2>Seller Applications</h2>
+
+@if (TempData["Message"] != null)
+{
+    <div class="alert alert-info">
+        @TempData["Message"]
+    </div>
+}
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">
+        No seller applications found.
+    </div>
+}
+else
+{
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Full Name</th>
+                <th>Shop Name</th>
+                <th>Email</th>
+                <th>Phone Number</th>
+                <th>Address</th>
+                <th>Status</th>
+                <th>Date Applied</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var app in Model)
+            {
+                <tr>
+                    <td>@app.FullName</td>
+                    <td>@app.ShopName</td>
+                    <td>@app.User?.Email</td>
+                    <td>@app.PhoneNumber</td>
+                    <td>@app.Address</td>
+                    <td>@app.Status</td>
+                    <td>@app.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                    <td>
+                        @if (app.Status == "Pending")
+                        {
+                            <form asp-action="ApproveSeller" method="post" style="display:inline;">
+                                <input type="hidden" name="id" value="@app.Id" />
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-success btn-sm">Approve</button>
+                            </form>
+
+                            <form asp-action="RejectSeller" method="post" style="display:inline; margin-left:5px;">
+                                <input type="hidden" name="id" value="@app.Id" />
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-danger btn-sm">Reject</button>
+                            </form>
+                        }
+                        else
+                        {
+                            <span>No actions available</span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<p>
+    <a asp-action="Index" class="btn btn-secondary">Back</a>
+</p>

@@ -1,0 +1,50 @@
+@model BuyZaar.ViewModels.SellerApplicationViewModel
+
+@{
+    ViewData["Title"] = "Apply as Seller";
+}
+
+<h2>Apply as Seller</h2>
+
+<form asp-action="ApplySeller" method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="mb-3">
+        <label asp-for="FullName" class="form-label"></label>
+        <input asp-for="FullName" class="form-control" />
+        <span asp-validation-for="FullName" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="ShopName" class="form-label"></label>
+        <input asp-for="ShopName" class="form-control" />
+        <span asp-validation-for="ShopName" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="PhoneNumber" class="form-label"></label>
+        <input asp-for="PhoneNumber" class="form-control" />
+        <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Address" class="form-label"></label>
+        <input asp-for="Address" class="form-control" />
+        <span asp-validation-for="Address" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="BusinessDescription" class="form-label"></label>
+        <textarea asp-for="BusinessDescription" class="form-control"></textarea>
+        <span asp-validation-for="BusinessDescription" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-success">Submit Application</button>
+    <a asp-action="Index" class="btn btn-secondary">Back</a>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
