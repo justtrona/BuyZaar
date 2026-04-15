@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "D:\\It15 - BuyZaar\\BuyZaar\\BuyZaar.csproj": {}
+    "C:\\Users\\janep\\Downloads\\final_buyzaar\\BuyZaar\\BuyZaar.csproj": {}
   },
   "projects": {
-    "D:\\It15 - BuyZaar\\BuyZaar\\BuyZaar.csproj": {
+    "C:\\Users\\janep\\Downloads\\final_buyzaar\\BuyZaar\\BuyZaar.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\It15 - BuyZaar\\BuyZaar\\BuyZaar.csproj",
+        "projectUniqueName": "C:\\Users\\janep\\Downloads\\final_buyzaar\\BuyZaar\\BuyZaar.csproj",
         "projectName": "BuyZaar",
-        "projectPath": "D:\\It15 - BuyZaar\\BuyZaar\\BuyZaar.csproj",
-        "packagesPath": "C:\\Users\\koisda\\.nuget\\packages\\",
-        "outputPath": "D:\\It15 - BuyZaar\\BuyZaar\\obj\\",
+        "projectPath": "C:\\Users\\janep\\Downloads\\final_buyzaar\\BuyZaar\\BuyZaar.csproj",
+        "packagesPath": "C:\\Users\\janep\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\janep\\Downloads\\final_buyzaar\\BuyZaar\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\koisda\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "C:\\Users\\janep\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net10.0"
