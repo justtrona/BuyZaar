@@ -6193,19 +6193,19 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\koisda\\.nuget\\packages\\": {}
+    "C:\\Users\\janep\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\It15 - BuyZaar\\BuyZaar\\BuyZaar.csproj",
+      "projectUniqueName": "C:\\Users\\janep\\Downloads\\final_buyzaar\\BuyZaar\\BuyZaar.csproj",
       "projectName": "BuyZaar",
-      "projectPath": "D:\\It15 - BuyZaar\\BuyZaar\\BuyZaar.csproj",
-      "packagesPath": "C:\\Users\\koisda\\.nuget\\packages\\",
-      "outputPath": "D:\\It15 - BuyZaar\\BuyZaar\\obj\\",
+      "projectPath": "C:\\Users\\janep\\Downloads\\final_buyzaar\\BuyZaar\\BuyZaar.csproj",
+      "packagesPath": "C:\\Users\\janep\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\janep\\Downloads\\final_buyzaar\\BuyZaar\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\koisda\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        "C:\\Users\\janep\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net10.0"
@@ -6720,6 +6720,26 @@
       "warningLevel": 1,
       "message": "Package 'Microsoft.Build' 17.10.4 has a known high severity vulnerability, https://github.com/advisories/GHSA-w3q9-fxm7-j8fq",
       "libraryId": "Microsoft.Build",
+      "targetGraphs": [
+        "net10.0"
+      ]
+    },
+    {
+      "code": "NU1901",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "Package 'NuGet.Packaging' 6.11.0 has a known low severity vulnerability, https://github.com/advisories/GHSA-g4vj-cjjj-v7hg",
+      "libraryId": "NuGet.Packaging",
+      "targetGraphs": [
+        "net10.0"
+      ]
+    },
+    {
+      "code": "NU1901",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "Package 'NuGet.Protocol' 6.11.0 has a known low severity vulnerability, https://github.com/advisories/GHSA-g4vj-cjjj-v7hg",
+      "libraryId": "NuGet.Protocol",
       "targetGraphs": [
         "net10.0"
       ]
