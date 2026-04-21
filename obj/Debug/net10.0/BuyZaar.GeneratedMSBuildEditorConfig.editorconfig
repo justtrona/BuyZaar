@@ -46,6 +46,14 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cU2VsbGVyQXBwbGljYXRpb25zLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
+[c:/Users/janep/Downloads/final_buyzaar/BuyZaar/Views/Email/EmailVerifiedSuccess.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRW1haWxcRW1haWxWZXJpZmllZFN1Y2Nlc3MuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[c:/Users/janep/Downloads/final_buyzaar/BuyZaar/Views/Email/VerifyEmailNotice.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRW1haWxcVmVyaWZ5RW1haWxOb3RpY2UuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
 [c:/Users/janep/Downloads/final_buyzaar/BuyZaar/Views/Home/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
