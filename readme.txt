@@ -7,5 +7,8 @@ Password: testadmin102!
 Email: test101@buyzaar.com
 Password: test101
 
+Email: testshopper1@buyzaar.com
+Password: testshopper1
+
 Test Seller 101
 
