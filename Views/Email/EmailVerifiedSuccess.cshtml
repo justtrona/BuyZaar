@@ -1,0 +1,22 @@
+@{
+    ViewData["Title"] = "Email Verified";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-body p-5 text-center">
+                    <h2 class="fw-bold mb-3 text-success">Email Verified Successfully</h2>
+                    <p class="text-muted mb-4">
+                        Your Buyzaar account is now verified. You can log in and start using your account.
+                    </p>
+
+                    <a asp-controller="Account" asp-action="Login" class="btn btn-success px-4">
+                        Proceed to Login
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
