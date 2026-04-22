@@ -46,3 +46,23 @@ button.accept-policy {
   white-space: nowrap;
   line-height: 60px;
 }
+
+.user-menu-btn {
+    border-radius: 12px;
+    padding: 8px 14px;
+    font-weight: 500;
+    border: 1px solid #e5e7eb;
+    background: #fff;
+}
+
+.dropdown-menu {
+    border-radius: 14px;
+    border: none;
+    padding: 10px 0;
+    min-width: 220px;
+}
+
+.dropdown-item {
+    padding: 10px 16px;
+    font-size: 0.95rem;
+}

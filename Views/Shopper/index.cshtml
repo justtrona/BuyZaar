@@ -1,21 +1,131 @@
 @{
     ViewData["Title"] = "Shopper Dashboard";
+    var sellerStatus = ViewBag.SellerApplicationStatus as string ?? "Not Applied";
 }
 
-<h2>Shopper Dashboard</h2>
+<link rel="stylesheet" href="~/css/dashboard.css" />
 
-<p>Welcome to your shopper dashboard.</p>
-<p>From here, you will later be able to manage your profile, orders, and seller application.</p>
+<div class="dashboard-container">
 
-@if (TempData["ApplicationMessage"] != null)
-{
-    <div class="alert alert-info">
-        @TempData["ApplicationMessage"]
+    <div class="dashboard-hero">
+        <div>
+            <span class="role-badge shopper-badge">Shopper</span>
+            <h1>Welcome back, @User.Identity?.Name!</h1>
+            <p>Manage your shopping activity, orders, and seller application from one place.</p>
+        </div>
+
+        <a href="#" class="btn btn-primary btn-lg hero-btn">
+            Browse Products
+        </a>
     </div>
-}
 
-<p>
-    <a asp-controller="Shopper" asp-action="ApplySeller" class="btn btn-primary">
-        Apply as Seller
-    </a>
-</p>
+    @if (TempData["ApplicationMessage"] != null)
+    {
+        <div class="alert alert-info mt-3">
+            @TempData["ApplicationMessage"]
+        </div>
+    }
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <p>My Orders</p>
+            <h2>3</h2>
+            <span>Orders placed</span>
+        </div>
+
+        <div class="stat-card">
+            <p>Cart Items</p>
+            <h2>5</h2>
+            <span>Items waiting in cart</span>
+        </div>
+
+        <div class="stat-card">
+            <p>Pending Deliveries</p>
+            <h2>2</h2>
+            <span>Orders on the way</span>
+        </div>
+
+        <div class="stat-card">
+            <p>Seller Status</p>
+            <h2>@sellerStatus</h2>
+            <span>Application review status</span>
+        </div>
+    </div>
+
+    <div class="content-grid">
+        <div class="dashboard-card">
+            <h4>Quick Actions</h4>
+
+            <div class="action-grid">
+                <a href="#" class="action-card">
+                    <h5>Browse Products</h5>
+                    <p>Explore items available in the marketplace.</p>
+                </a>
+
+                <a href="#" class="action-card">
+                    <h5>My Cart</h5>
+                    <p>Review and manage items in your cart.</p>
+                </a>
+
+                <a href="#" class="action-card">
+                    <h5>My Orders</h5>
+                    <p>Track your recent and completed orders.</p>
+                </a>
+
+                @if (sellerStatus == "Not Applied")
+                {
+                    <a asp-controller="Shopper" asp-action="ApplySeller" class="action-card">
+                        <h5>Apply as Seller</h5>
+                        <p>Submit an application to start selling on BuyZaar.</p>
+                    </a>
+                }
+                else if (sellerStatus == "Pending")
+                {
+                    <div class="action-card disabled-card">
+                        <h5>Application Pending</h5>
+                        <p>Your seller application is under admin review.</p>
+                    </div>
+                }
+                else if (sellerStatus == "Approved")
+                {
+                    <a asp-controller="Seller" asp-action="Index" class="action-card approved-card">
+                        <h5>Switch to Seller</h5>
+                        <p>Your seller account is approved. Open your seller dashboard.</p>
+                    </a>
+                }
+                else if (sellerStatus == "Rejected")
+                {
+                    <div class="action-card rejected-card">
+                        <h5>Application Rejected</h5>
+                        <p>Your previous application was rejected.</p>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="dashboard-card">
+            <h4>Recent Activity</h4>
+            <ul class="activity-list">
+                <li>Your order #1008 is being prepared.</li>
+                <li>You added 2 items to your cart.</li>
+
+                @if (sellerStatus == "Pending")
+                {
+                    <li>Your seller application is under review.</li>
+                }
+                else if (sellerStatus == "Approved")
+                {
+                    <li>Your seller application has been approved.</li>
+                }
+                else if (sellerStatus == "Rejected")
+                {
+                    <li>Your seller application was rejected.</li>
+                }
+                else if (sellerStatus == "Not Applied")
+                {
+                    <li>You have not applied as a seller yet.</li>
+                }
+            </ul>
+        </div>
+    </div>
+</div>

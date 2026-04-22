@@ -20,8 +20,34 @@ namespace BuyZaar.Controllers
             _context = context;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+                return RedirectToAction("Login", "Account");
+
+            string sellerStatus = "Not Applied";
+
+            // If the user already has the Seller role, always show Approved
+            if (await _userManager.IsInRoleAsync(user, "Seller"))
+            {
+                sellerStatus = "Approved";
+            }
+            else
+            {
+                var latestApplication = await _context.SellerApplications
+                    .Where(sa => sa.UserId == user.Id)
+                    .OrderByDescending(sa => sa.CreatedAt)
+                    .FirstOrDefaultAsync();
+
+                if (latestApplication != null)
+                {
+                    sellerStatus = latestApplication.Status;
+                }
+            }
+
+            ViewBag.SellerApplicationStatus = sellerStatus;
+
             return View();
         }
 
@@ -32,12 +58,22 @@ namespace BuyZaar.Controllers
             if (user == null)
                 return RedirectToAction("Login", "Account");
 
-            var existingApplication = await _context.SellerApplications
-                .FirstOrDefaultAsync(sa => sa.UserId == user.Id);
-
-            if (existingApplication != null)
+            // Already a seller: do not allow another application
+            if (await _userManager.IsInRoleAsync(user, "Seller"))
             {
-                TempData["ApplicationMessage"] = $"You already have a seller application with status: {existingApplication.Status}.";
+                TempData["ApplicationMessage"] = "Your seller account is already approved.";
+                return RedirectToAction("Index");
+            }
+
+            var latestApplication = await _context.SellerApplications
+                .Where(sa => sa.UserId == user.Id)
+                .OrderByDescending(sa => sa.CreatedAt)
+                .FirstOrDefaultAsync();
+
+            // If still pending, do not allow re-apply
+            if (latestApplication != null && latestApplication.Status == "Pending")
+            {
+                TempData["ApplicationMessage"] = $"You already have a seller application with status: {latestApplication.Status}.";
                 return RedirectToAction("Index");
             }
 
@@ -60,12 +96,22 @@ namespace BuyZaar.Controllers
             if (user == null)
                 return RedirectToAction("Login", "Account");
 
-            var existingApplication = await _context.SellerApplications
-                .FirstOrDefaultAsync(sa => sa.UserId == user.Id);
-
-            if (existingApplication != null)
+            // Already a seller: do not allow another application
+            if (await _userManager.IsInRoleAsync(user, "Seller"))
             {
-                TempData["ApplicationMessage"] = $"You already submitted a seller application with status: {existingApplication.Status}.";
+                TempData["ApplicationMessage"] = "Your seller account is already approved.";
+                return RedirectToAction("Index");
+            }
+
+            var latestApplication = await _context.SellerApplications
+                .Where(sa => sa.UserId == user.Id)
+                .OrderByDescending(sa => sa.CreatedAt)
+                .FirstOrDefaultAsync();
+
+            // If still pending, do not allow re-apply
+            if (latestApplication != null && latestApplication.Status == "Pending")
+            {
+                TempData["ApplicationMessage"] = $"You already submitted a seller application with status: {latestApplication.Status}.";
                 return RedirectToAction("Index");
             }
 

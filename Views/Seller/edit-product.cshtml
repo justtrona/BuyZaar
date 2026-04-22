@@ -1,0 +1,56 @@
+@model BuyZaar.ViewModels.ProductViewModel
+
+@{
+    ViewData["Title"] = "Edit Product";
+}
+
+<link rel="stylesheet" href="~/css/dashboard.css" />
+
+<div class="dashboard-container">
+    <div class="dashboard-hero">
+        <div>
+            <span class="role-badge seller-badge">Seller</span>
+            <h1>Edit Product</h1>
+            <p>Update your product listing details.</p>
+        </div>
+    </div>
+
+    <div class="dashboard-card">
+        <form asp-action="EditProduct" method="post">
+            @Html.AntiForgeryToken()
+            <input asp-for="Id" type="hidden" />
+
+            <div asp-validation-summary="All" class="alert alert-danger"></div>
+
+            <div class="mb-3">
+                <label asp-for="Name" class="form-label"></label>
+                <input asp-for="Name" class="form-control" />
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Description" class="form-label"></label>
+                <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Category" class="form-label"></label>
+                <input asp-for="Category" class="form-control" />
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="Price" class="form-label"></label>
+                    <input asp-for="Price" class="form-control" type="number" step="0.01" />
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label asp-for="Stock" class="form-label"></label>
+                    <input asp-for="Stock" class="form-control" type="number" />
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Update Product</button>
+            <a asp-controller="Seller" asp-action="Products" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+</div>

@@ -1,0 +1,140 @@
+.dashboard-container {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+/* HERO */
+.dashboard-hero {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fff;
+    padding: 25px;
+    border-radius: 18px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+}
+
+.dashboard-hero h1 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin: 8px 0;
+}
+
+.dashboard-hero p {
+    color: #6b7280;
+}
+
+.hero-btn {
+    border-radius: 12px;
+}
+
+/* ROLE BADGE */
+.role-badge {
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+.seller-badge {
+    background: #ede9fe;
+    color: #6d28d9;
+}
+
+/* STATS */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 18px;
+}
+
+.stat-card {
+    background: #fff;
+    padding: 20px;
+    border-radius: 16px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+}
+
+.stat-card p {
+    color: #6b7280;
+    margin-bottom: 5px;
+}
+
+.stat-card h2 {
+    font-size: 1.8rem;
+    color: #4f46e5;
+    margin-bottom: 4px;
+}
+
+.stat-card span {
+    font-size: 0.9rem;
+    color: #9ca3af;
+}
+
+/* GRID */
+.content-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 20px;
+}
+
+/* CARD */
+.dashboard-card {
+    background: #fff;
+    padding: 20px;
+    border-radius: 18px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+}
+
+/* ACTIONS */
+.action-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.action-card {
+    background: #f8faff;
+    border-radius: 14px;
+    padding: 16px;
+    text-decoration: none;
+    color: #111;
+    border: 1px solid #e5e7eb;
+    transition: 0.2s;
+}
+
+.action-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(79,70,229,0.1);
+}
+
+.action-card h5 {
+    font-weight: 700;
+    margin-bottom: 5px;
+    color: #4338ca;
+}
+
+.action-card p {
+    font-size: 0.9rem;
+    color: #6b7280;
+}
+
+/* ACTIVITY */
+.activity-list {
+    margin-top: 15px;
+    padding-left: 18px;
+}
+
+.activity-list li {
+    margin-bottom: 10px;
+    color: #374151;
+}
+
+/* MOBILE */
+@media (max-width: 900px) {
+    .content-grid {
+        grid-template-columns: 1fr;
+    }
+}

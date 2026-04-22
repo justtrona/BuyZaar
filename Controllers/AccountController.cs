@@ -139,7 +139,11 @@ namespace BuyZaar.Controllers
                 return View(model);
             }
 
-            if (!await _userManager.IsEmailConfirmedAsync(user))
+            var isSuperAdmin = await _userManager.IsInRoleAsync(user, "SuperAdmin");
+            var isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
+
+            // Require email verification only for non-admin accounts
+            if (!isSuperAdmin && !isAdmin && !await _userManager.IsEmailConfirmedAsync(user))
             {
                 ModelState.AddModelError(string.Empty, "Please verify your email before logging in.");
                 return View(model);
@@ -154,10 +158,10 @@ namespace BuyZaar.Controllers
 
             if (result.Succeeded)
             {
-                if (await _userManager.IsInRoleAsync(user, "SuperAdmin"))
+                if (isSuperAdmin)
                     return RedirectToAction("Index", "SuperAdmin");
 
-                if (await _userManager.IsInRoleAsync(user, "Admin"))
+                if (isAdmin)
                     return RedirectToAction("Index", "Admin");
 
                 if (await _userManager.IsInRoleAsync(user, "Seller"))

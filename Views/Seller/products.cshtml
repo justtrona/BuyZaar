@@ -1,0 +1,107 @@
+@model IEnumerable<BuyZaar.Models.Product>
+
+@{
+    ViewData["Title"] = "Manage Products";
+}
+
+<link rel="stylesheet" href="~/css/product.css" />
+
+<div class="products-page-shell">
+
+    <!-- Page Header -->
+    <div class="products-header">
+        <div>
+            <span class="role-badge seller-badge">Seller</span>
+            <h1>Manage Products</h1>
+            <p>View, update, and manage all your product listings here.</p>
+        </div>
+
+        <a asp-controller="Seller" asp-action="CreateProduct" class="btn btn-primary add-product-btn">
+            Add Product
+        </a>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success custom-alert">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+
+    <div class="products-table-card">
+        @if (!Model.Any())
+        {
+            <div class="empty-products-state">
+                <h3>No products yet</h3>
+                <p>You have not added any products to your shop yet.</p>
+                <a asp-controller="Seller" asp-action="CreateProduct" class="btn btn-primary">
+                    Add Your First Product
+                </a>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table custom-products-table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Category</th>
+                            <th>Price</th>
+                            <th>Stock</th>
+                            <th>Date Added</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var product in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="product-name">@product.Name</div>
+                                    <div class="product-description">@product.Description</div>
+                                </td>
+                                <td>@product.Category</td>
+                                <td>₱@product.Price.ToString("N2")</td>
+                                <td>
+                                    @if (product.Stock <= 5)
+                                    {
+                                        <span class="stock-badge stock-low">@product.Stock in stock</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="stock-badge stock-ok">@product.Stock in stock</span>
+                                    }
+                                </td>
+                                <td>@product.CreatedAt.ToString("MMM dd, yyyy")</td>
+                                <td class="text-center">
+                                    <div class="action-buttons">
+                                        <a asp-controller="Seller"
+                                           asp-action="EditProduct"
+                                           asp-route-id="@product.Id"
+                                           class="btn btn-sm btn-outline-primary">
+                                            Edit
+                                        </a>
+
+                                        <form asp-controller="Seller"
+                                              asp-action="DeleteProduct"
+                                              asp-route-id="@product.Id"
+                                              method="post"
+                                              class="d-inline">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit"
+                                                    class="btn btn-sm btn-outline-danger"
+                                                    onclick="return confirm('Are you sure you want to delete this product?')">
+                                                Delete
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>
