@@ -1,8 +1,15 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@page
+@{
+    Layout = "_Layout";  // Use the default layout for the landing page
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<h1>Welcome to BuyZaar</h1>
+<p>Your one-stop shop for amazing products!</p>
+
+@if (!User.Identity.IsAuthenticated)
+{
+    <div>
+        <a class="btn btn-outline-primary" href="/Account/Login">Login</a>
+        <a class="btn btn-primary" href="/Account/Register">Register</a>
+    </div>
+}

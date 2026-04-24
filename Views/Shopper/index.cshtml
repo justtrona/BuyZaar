@@ -1,5 +1,5 @@
 @{
-    ViewData["Title"] = "Shopper Dashboard";
+    Layout = "_SellerShopperLayout"; 
     var sellerStatus = ViewBag.SellerApplicationStatus as string ?? "Not Applied";
 }
 
@@ -7,6 +7,7 @@
 
 <div class="dashboard-container">
 
+    <!-- Hero Section -->
     <div class="dashboard-hero">
         <div>
             <span class="role-badge shopper-badge">Shopper</span>
@@ -26,6 +27,7 @@
         </div>
     }
 
+    <!-- Stats Section -->
     <div class="stats-grid">
         <div class="stat-card">
             <p>My Orders</p>
@@ -52,7 +54,9 @@
         </div>
     </div>
 
+    <!-- Content Section -->
     <div class="content-grid">
+        <!-- Quick Actions -->
         <div class="dashboard-card">
             <h4>Quick Actions</h4>
 
@@ -103,6 +107,7 @@
             </div>
         </div>
 
+        <!-- Recent Activity Section -->
         <div class="dashboard-card">
             <h4>Recent Activity</h4>
             <ul class="activity-list">

@@ -1,3 +1,3 @@
 ﻿@{
-    Layout = "_Layout";
+    Layout = ViewData["Layout"] as string ?? "_Layout";  // Default to _Layout if no layout is set
 }

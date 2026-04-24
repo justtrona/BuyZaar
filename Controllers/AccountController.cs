@@ -22,6 +22,7 @@ namespace BuyZaar.Controllers
             _emailService = emailService;
         }
 
+        // Register method (unchanged)
         [HttpGet]
         public IActionResult Register()
         {
@@ -82,6 +83,7 @@ namespace BuyZaar.Controllers
             return View(model);
         }
 
+        // Email verification methods (unchanged)
         [HttpGet]
         public IActionResult VerifyEmailNotice(string email)
         {
@@ -119,70 +121,72 @@ namespace BuyZaar.Controllers
             return View("~/Views/Email/EmailVerifiedSuccess.cshtml");
         }
 
+        // Login method with redirection based on role
         [HttpGet]
         public IActionResult Login()
         {
             return View();
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(LoginViewModel model)
-        {
-            if (!ModelState.IsValid)
-                return View(model);
+    [HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> Login(LoginViewModel model)
+{
+    if (!ModelState.IsValid)
+        return View(model);
 
-            var user = await _userManager.FindByEmailAsync(model.Email);
-            if (user == null)
-            {
-                ModelState.AddModelError(string.Empty, "Invalid login attempt.");
-                return View(model);
-            }
+    var user = await _userManager.FindByEmailAsync(model.Email);
+    if (user == null)
+    {
+        ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+        return View(model);
+    }
 
-            var isSuperAdmin = await _userManager.IsInRoleAsync(user, "SuperAdmin");
-            var isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
+    var isSuperAdmin = await _userManager.IsInRoleAsync(user, "SuperAdmin");
+    var isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
 
-            // Require email verification only for non-admin accounts
-            if (!isSuperAdmin && !isAdmin && !await _userManager.IsEmailConfirmedAsync(user))
-            {
-                ModelState.AddModelError(string.Empty, "Please verify your email before logging in.");
-                return View(model);
-            }
+    // Require email verification only for non-admin accounts
+    if (!isSuperAdmin && !isAdmin && !await _userManager.IsEmailConfirmedAsync(user))
+    {
+        ModelState.AddModelError(string.Empty, "Please verify your email before logging in.");
+        return View(model);
+    }
 
-            var result = await _signInManager.PasswordSignInAsync(
-                user.UserName!,
-                model.Password,
-                model.RememberMe,
-                lockoutOnFailure: false
-            );
+    var result = await _signInManager.PasswordSignInAsync(
+        user.UserName!,
+        model.Password,
+        model.RememberMe,
+        lockoutOnFailure: false
+    );
 
-            if (result.Succeeded)
-            {
-                if (isSuperAdmin)
-                    return RedirectToAction("Index", "SuperAdmin");
+   if (result.Succeeded)
+{
+    // Redirect to the appropriate dashboard based on the role
+    if (isSuperAdmin)
+        return RedirectToAction("Index", "SuperAdmin");
 
-                if (isAdmin)
-                    return RedirectToAction("Index", "Admin");
+    if (isAdmin)
+        return RedirectToAction("Index", "Admin");
 
-                if (await _userManager.IsInRoleAsync(user, "Seller"))
-                    return RedirectToAction("Index", "Seller");
+    if (await _userManager.IsInRoleAsync(user, "Seller"))
+        return RedirectToAction("Index", "Seller");  // Redirect to Seller Dashboard
 
-                if (await _userManager.IsInRoleAsync(user, "Shopper"))
-                    return RedirectToAction("Index", "Shopper");
+    if (await _userManager.IsInRoleAsync(user, "Shopper"))
+        return RedirectToAction("Index", "Shopper");  // Redirect to Shopper Dashboard
 
-                return RedirectToAction("Index", "Home");
-            }
+    return RedirectToAction("Index", "Home");  // Default redirect for other roles
+}
 
-            ModelState.AddModelError(string.Empty, "Invalid login attempt.");
-            return View(model);
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Logout()
-        {
-            await _signInManager.SignOutAsync();
-            return RedirectToAction("Login", "Account");
-        }
+    ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+    return View(model);
+}
+       // Logout method
+[HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> Logout()
+{
+    await _signInManager.SignOutAsync();
+    return RedirectToAction("Login", "Account");  // Redirect to the login page after logout
+}
     }
 }
