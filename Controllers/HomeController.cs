@@ -13,9 +13,11 @@ namespace BuyZaar.Controllers
             _emailService = emailService;
         }
 
+        // ✅ Landing Page as the Index
         public IActionResult Index()
         {
-            return View();
+               return View("~/Views/LandingPage/Landing.cshtml");  // Correct path to the view
+  // This will render LandingPage.cshtml
         }
 
         public IActionResult Privacy()
@@ -23,7 +25,7 @@ namespace BuyZaar.Controllers
             return View();
         }
 
-        // ✅ NEW: Test Email Action
+        // Test Email Action (for testing email functionality)
         public IActionResult TestEmail()
         {
             try

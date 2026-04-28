@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http;
 using System.ComponentModel.DataAnnotations;
 
 namespace BuyZaar.ViewModels
@@ -7,11 +8,11 @@ namespace BuyZaar.ViewModels
         public int Id { get; set; }
 
         [Required]
-        [Display(Name = "Product Name")]
+        [StringLength(100)]
         public string Name { get; set; } = string.Empty;
 
         [Required]
-        [Display(Name = "Description")]
+        [StringLength(500)]
         public string Description { get; set; } = string.Empty;
 
         [Required]
@@ -23,6 +24,11 @@ namespace BuyZaar.ViewModels
         public int Stock { get; set; }
 
         [Required]
+        [StringLength(100)]
         public string Category { get; set; } = string.Empty;
+
+        public List<IFormFile>? ProductImages { get; set; }
+
+        public List<string> ExistingImages { get; set; } = new();
     }
 }

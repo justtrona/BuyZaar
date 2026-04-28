@@ -1,0 +1,87 @@
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";  <!-- Correct path to the global layout -->
+}
+
+<!-- Hero Section -->
+<section class="hero-section text-center py-5">
+    <div class="container">
+        <h1 class="display-4">Discover Deals, Explore Styles – Only at BuyZaar</h1>
+        <p>Guaranteed to boost your mood, shop the latest trends now!</p>
+        <a href="#categories" class="btn btn-primary btn-lg">Shop Now</a>
+    </div>
+</section>
+
+<section id="categories" class="categories-section">
+    <h2>Shop by Categories</h2>
+    <div class="row">
+        <!-- Women Category -->
+        <div class="col-md-4">
+            <div class="category-card">
+                <div class="category-card-images">
+                    <img src="~/images/woman-clothes.jpg" alt="Women" class="img-fluid">
+                    <img src="~/images/women-handbag.jpg" alt="Women Accessories" class="img-fluid">
+                    <img src="~/images/women-sandals.jpg" alt="Women Shoes" class="img-fluid">
+                </div>
+                <h3>Women</h3>
+                <a href="#" class="btn btn-primary">Shop Women</a>
+            </div>
+        </div>
+        <!-- Men Category -->
+        <div class="col-md-4">
+            <div class="category-card">
+                <div class="category-card-images">
+                    <img src="~/images/men-clothes.jpg" alt="Men" class="img-fluid">
+                    <img src="~/images/men-watch.jpg" alt="Men Accessories" class="img-fluid">
+                    <img src="~/images/men-shoes.jpg" alt="Men Shoes" class="img-fluid">
+                </div>
+                <h3>Men</h3>
+                <a href="#" class="btn btn-primary">Shop Men</a>
+            </div>
+        </div>
+        <!-- Electronics Category -->
+        <div class="col-md-4">
+            <div class="category-card">
+                <div class="category-card-images">
+                    <img src="~/images/laptop-electronics.jpg" alt="Electronics" class="img-fluid">
+                    <img src="~/images/headphones-electronics.jpg" alt="Electronics Headphones" class="img-fluid">
+                    <img src="~/images/iphone-electronics.jpg" alt="Smartphone Electronics" class="img-fluid">
+                </div>
+                <h3>Electronics</h3>
+                <a href="#" class="btn btn-primary">Shop Electronics</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Products Section -->
+<section class="featured-products py-5">
+    <div class="container text-center">
+        <h2>Featured Products</h2>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="product-card">
+                    <img src="~/images/product1.jpg" alt="Product Name" class="img-fluid">
+                    <h4>Product Name</h4>
+                    <p>Php99.99</p>
+                    <a href="#" class="btn btn-primary">Add to Cart</a>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="product-card">
+                    <img src="~/images/product2.jpg" alt="Product Name" class="img-fluid">
+                    <h4>Product Name</h4>
+                    <p>Php99.99</p>
+                    <a href="#" class="btn btn-primary">Add to Cart</a>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="product-card">
+                    <img src="~/images/product3.jpg" alt="Product Name" class="img-fluid">
+                    <h4>Product Name</h4>
+                    <p>Php99.99</p>
+                    <a href="#" class="btn btn-primary">Add to Cart</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

@@ -1,0 +1,150 @@
+@{
+    var activeRole = ViewBag.ActiveRole as string ?? "";
+
+    var isSeller = User.IsInRole("Seller");
+    var isShopper = User.IsInRole("Shopper");
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - BuyZaar</title>
+
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/styles.css" asp-append-version="true" />
+</head>
+<body>
+    <div class="dashboard-layout">
+
+        <!-- SIDEBAR -->
+        <aside class="dashboard-sidebar">
+            <div class="sidebar-logo">
+                <img src="~/images/icon_logo.png" alt="BuyZaar Logo" />
+                <h5>BuyZaar</h5>
+            </div>
+
+            <nav class="sidebar-nav">
+
+                @if (activeRole == "Seller")
+                {
+                    <a asp-controller="Seller" asp-action="Index">Dashboard</a>
+                    <a asp-controller="Seller" asp-action="Products">Manage Products</a>
+                    <a asp-controller="Seller" asp-action="CreateProduct">Add Product</a>
+                    <a href="#">Orders</a>
+                    <a href="#">Inventory</a>
+                    <a href="#">Sales Records</a>
+                    <a href="#">Shop Profile</a>
+                }
+                else if (activeRole == "Shopper")
+                {
+                    <a asp-controller="Shopper" asp-action="Index">Dashboard</a>
+                    <a href="#">Browse Products</a>
+                    <a href="#">My Cart</a>
+                    <a href="#">My Orders</a>
+                    <a href="#">Track Orders</a>
+                    <a href="#">Profile</a>
+                    <a asp-controller="Shopper" asp-action="ApplySeller">Apply as Seller</a>
+                }
+
+            </nav>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="dashboard-main">
+
+            <!-- TOPBAR -->
+            <div class="dashboard-topbar">
+
+                <!-- NOTIFICATION DROPDOWN -->
+                <div class="dropdown me-2">
+                    <button class="btn btn-light position-relative notification-btn"
+                            type="button"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                        🔔
+                        <span class="notification-badge">3</span>
+                    </button>
+
+                    <ul class="dropdown-menu dropdown-menu-end notification-dropdown">
+                        <li class="dropdown-header">Notifications</li>
+
+                        @if (activeRole == "Seller")
+                        {
+                            <li><a class="dropdown-item" href="#">New order received</a></li>
+                            <li><a class="dropdown-item" href="#">Low stock alert</a></li>
+                            <li><a class="dropdown-item" href="#">Product listing updated</a></li>
+                        }
+                        else if (activeRole == "Shopper")
+                        {
+                            <li><a class="dropdown-item" href="#">Order is being prepared</a></li>
+                            <li><a class="dropdown-item" href="#">Cart item reminder</a></li>
+                            <li><a class="dropdown-item" href="#">Seller application update</a></li>
+                        }
+
+                        <li><hr class="dropdown-divider" /></li>
+                        <li><a class="dropdown-item text-center" href="#">View All</a></li>
+                    </ul>
+                </div>
+
+                <!-- USER DROPDOWN -->
+                <div class="dropdown">
+                    <button class="btn btn-primary dropdown-toggle dashboard-user-btn"
+                            type="button"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                        @User.Identity?.Name
+                    </button>
+
+                    <ul class="dropdown-menu dropdown-menu-end">
+
+                        @if (activeRole == "Seller")
+                        {
+                            <li>
+                                <a class="dropdown-item" asp-controller="Shopper" asp-action="Index">
+                                    Switch to Shopper
+                                </a>
+                            </li>
+                        }
+                        else if (activeRole == "Shopper" && isSeller)
+                        {
+                            <li>
+                                <a class="dropdown-item" asp-controller="Seller" asp-action="Index">
+                                    Switch to Seller
+                                </a>
+                            </li>
+                        }
+
+                        <li>
+                            <a class="dropdown-item" href="#">
+                                Settings
+                            </a>
+                        </li>
+
+                        <li><hr class="dropdown-divider" /></li>
+
+                        <li>
+                            <form asp-controller="Account" asp-action="Logout" method="post">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="dropdown-item text-danger">
+                                    Logout
+                                </button>
+                            </form>
+                        </li>
+
+                    </ul>
+                </div>
+
+            </div>
+
+            @RenderBody()
+
+        </main>
+
+    </div>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

@@ -1,9 +1,9 @@
 @{
-    Layout = "_SellerShopperLayout";
+   
+    Layout = "_DashboardLayout";
+    ViewBag.ActiveRole = "Seller";
     var productCount = ViewBag.ProductCount ?? 0;
 }
-
-<link rel="stylesheet" href="~/css/dashboard.css" />
 
 <div class="dashboard-container">
 
@@ -15,78 +15,60 @@
             <p>Manage your products, orders, and shop performance from one place.</p>
         </div>
 
-        <a asp-controller="Seller" asp-action="CreateProduct" class="btn btn-primary btn-lg hero-btn">
+        <a asp-controller="Seller" asp-action="CreateProduct" class="btn btn-primary hero-btn">
             Add Product
         </a>
     </div>
 
     <!-- STATS -->
     <div class="stats-grid">
-
         <div class="stat-card">
             <p>Total Products</p>
             <h2>@productCount</h2>
-            <span>Products listed</span>
         </div>
 
         <div class="stat-card">
             <p>Pending Orders</p>
             <h2>0</h2>
-            <span>Orders to process</span>
         </div>
 
         <div class="stat-card">
             <p>Low Stock</p>
             <h2>0</h2>
-            <span>Products needing restock</span>
         </div>
 
         <div class="stat-card">
             <p>Monthly Sales</p>
             <h2>₱0</h2>
-            <span>Current month</span>
         </div>
-
     </div>
 
     <!-- CONTENT -->
     <div class="content-grid">
-
-        <!-- QUICK ACTIONS -->
         <div class="dashboard-card">
             <h4>Quick Actions</h4>
 
             <div class="action-grid">
-
                 <a asp-controller="Seller" asp-action="Products" class="action-card">
                     <h5>Manage Products</h5>
-                    <p>Edit, remove, or update your product listings.</p>
                 </a>
 
                 <a href="#" class="action-card">
                     <h5>Orders</h5>
-                    <p>Check and process customer orders.</p>
                 </a>
 
                 <a href="#" class="action-card">
                     <h5>Shop Profile</h5>
-                    <p>Manage your store information and shop details.</p>
                 </a>
-
             </div>
         </div>
 
-        <!-- ACTIVITY -->
         <div class="dashboard-card">
             <h4>Recent Activity</h4>
-
-            <ul class="activity-list">
-                <li>You can now add and manage your products.</li>
-                <li>Your store is ready to start selling.</li>
-                <li>Keep your stock updated for better order handling.</li>
+            <ul>
+                <li>Your store is ready.</li>
+                <li>You can now add products.</li>
             </ul>
         </div>
-
     </div>
-
 </div>

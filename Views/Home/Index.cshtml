@@ -3,13 +3,9 @@
     Layout = "_Layout";  // Use the default layout for the landing page
 }
 
-<h1>Welcome to BuyZaar</h1>
-<p>Your one-stop shop for amazing products!</p>
-
-@if (!User.Identity.IsAuthenticated)
-{
-    <div>
-        <a class="btn btn-outline-primary" href="/Account/Login">Login</a>
-        <a class="btn btn-primary" href="/Account/Register">Register</a>
+<div class="container text-center">
+    <div class="centered-content">
+        <h1>Welcome to BuyZaar</h1>
+        <p>Your one-stop shop for amazing products!</p>
     </div>
-}
+</div>

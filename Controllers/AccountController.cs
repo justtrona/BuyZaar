@@ -185,7 +185,7 @@ public async Task<IActionResult> Login(LoginViewModel model)
 [ValidateAntiForgeryToken]
 public async Task<IActionResult> Logout()
 {
-    await _signInManager.SignOutAsync();
+    await _signInManager.SignOutAsync();  // Sign out the user
     return RedirectToAction("Login", "Account");  // Redirect to the login page after logout
 }
     }

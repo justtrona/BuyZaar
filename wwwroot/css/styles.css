@@ -1,115 +1,558 @@
-/* Ensuring full height layout */
-html, body {
-    height: 100%;
-    margin: 0;
+/* Hero Section */
+.hero-section {
+    background: url('~/images/hero-banner.jpg') no-repeat center center;
+    background-size: cover;
+    padding: 100px 0;
+    color: #fff;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
 
-/* Overall layout styling */
-.app-layout {
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh; /* Full height for the page */
+/* Categories Section */
+.categories-section {
+    background-color: #f8f9fa;
+    padding: 50px 0;
 }
 
-/* Topbar (Header) styling */
-.topbar {
-    background: #ffffff;
-    border-bottom: 1px solid #e5e7eb;
-    padding: 14px 24px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-    flex-wrap: wrap;
+.category-card {
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-.topbar .sidebar-brand {
-    display: flex;
-    align-items: center;
+/* Featured Products Section */
+.featured-products {
+    background-color: #fff;
+    padding: 50px 0;
 }
 
-.topbar .logo {
-    width: 120px; /* Adjust logo size */
+.product-card {
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.product-card img {
+    max-width: 100%;
+    border-radius: 8px;
+}
+
+/* Footer */
+.footer-custom {
+    background-color: #f1f1f1;
+    padding: 20px 0;
+    color: #333;
+}
+
+.social-links a {
+    color: #6c757d;
+    text-decoration: none;
+    margin: 0 10px;
+}
+
+.social-links a:hover {
+    color: #4338ca;
+}
+
+/* Logo Styling */
+.logo {
+    width: 130px;  /* Adjust size of the logo */
     height: auto;
 }
 
-.topbar .d-flex {
+/* Topbar Styling */
+.topbar {
     display: flex;
-    gap: 20px;
+    justify-content: space-between; /* Space between logo and links */
+    align-items: center;
+    padding: 15px 30px;
+    background-color: #ffffff;
+    border-bottom: 1px solid #e5e7eb;
+    height: 70px;
 }
 
+/* Navigation Links Styling */
 .sidebar-link {
-    padding: 12px;
+    font-size: 1rem;
+    color: #333;
     text-decoration: none;
-    color: #1f2937;
-    font-weight: 500;
 }
 
-/* Login/Register buttons */
-.topbar .btn {
-    margin-left: 10px;
+.sidebar-link:hover {
+    color: #6f42c1;  /* Hover color */
+}
+/* Ensure auth buttons (Login/Register) are visible and correctly positioned */
+.auth-buttons {
+    display: flex;
+    gap: 15px;
+    z-index: 10;  /* Ensure the buttons are above other content */
 }
 
-/* Main content area */
-.main-area {
-    flex: 1;
+.auth-buttons .btn {
+    font-size: 1rem;
+    padding: 8px 20px;
+    display: inline-block;  /* Make sure buttons are visible */
+    visibility: visible;  /* Ensure they are not hidden */
+    position: relative;
+}
+
+/* Style for the login and register buttons */
+.auth-buttons .btn-outline-primary {
+    border-color: #6f42c1;
+    color: #6f42c1;
+}
+
+.auth-buttons .btn-primary {
+    background-color: #6f42c1;
+    border-color: #6f42c1;
+    color: #fff;
+}
+
+.auth-buttons .btn-outline-primary:hover {
+    background-color: #6f42c1;
+    color: white;
+}
+
+.auth-buttons .btn-primary:hover {
+    background-color: #5a2c92;
+    border-color: #5a2c92;
+}
+
+/* Ensure the layout fills the screen */
+.app-layout {
     display: flex;
     flex-direction: column;
+    min-height: 100vh; /* Full viewport height */
+}
+
+/* Main content area that takes up the remaining space */
+.page-content {
+    flex: 1;  /* Grow to fill the space between topbar and footer */
 }
 
 /* Footer Styling */
 .footer-custom {
-    background-color: #ffffff;
-    padding: 20px;
-    text-align: center;
-    border-top: 1px solid #e5e7eb;
+    background-color: #f1f1f1;
+    padding: 20px 0;
+    color: #333;
     margin-top: auto; /* Push footer to the bottom */
 }
 
-/* Footer Content */
-.footer-content {
-    font-size: 0.9rem;
-    color: #6b7280;
-}
-
-.footer-link {
-    color: #4338ca;
-    text-decoration: none;
-}
-
-.footer-link:hover {
-    text-decoration: underline;
-}
-
-.social-links {
-    margin-top: 10px;
-    font-size: 1rem;
-}
-
-.footer-social-link {
-    color: #4338ca;
-    text-decoration: none;
-    margin: 0 5px;
-}
-
-.footer-social-link:hover {
-    text-decoration: underline;
-}
-
-/* Mobile Responsiveness */
-@media (max-width: 991.98px) {
+/* Adjust for Mobile */
+@media (max-width: 768px) {
     .topbar {
         flex-direction: column;
         align-items: center;
+        height: auto;
     }
 
-    .topbar .logo {
-        width: 100px;
+    .sidebar-brand {
+        margin-bottom: 10px;
     }
 
-    .topbar .d-flex {
+    .sidebar-link {
+        margin-right: 15px;
+    }
+
+    .auth-buttons {
+        margin-top: 10px;
+    }
+}
+/* Category Card Layout (Aesthetic Enhancement) */
+.category-card {
+    background-color: #fff;
+    border-radius: 15px; /* Rounded corners for a soft look */
+    padding: 25px;
+    text-align: center;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1); /* Softer shadow with a larger spread */
+    height: 500px; /* Fixed height */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease; /* Smooth transitions */
+}
+
+/* Center the 'Shop by Categories' heading */
+.categories-section h2 {
+    text-align: center;
+    width: 100%;
+    margin-bottom: 30px; /* Optional: Add space below the heading */
+}
+
+.category-card:hover {
+    transform: translateY(-10px); /* Elevate the card on hover */
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2); /* Darker shadow on hover */
+}
+
+/* Stack the images inside the category card */
+.category-card .category-card-images {
+    position: absolute;
+    top: 20%;
+    left: 0;
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 60%;
+    width: 100%;
+}
+
+.category-card img {
+    position: absolute;
+    width: 85%; /* Larger images */
+    max-height: 180px; /* Consistent height */
+    object-fit: contain;
+    border-radius: 10px; /* Rounded image corners */
+    z-index: 1;
+    transition: transform 0.3s ease; /* Smooth image hover transition */
+}
+
+.category-card img:nth-child(1) {
+    top: 0;
+    z-index: 3;
+}
+
+.category-card img:nth-child(2) {
+    top: 15%;
+    z-index: 2;
+}
+
+.category-card img:nth-child(3) {
+    top: 30%;
+    z-index: 1;
+}
+
+/* Hover effect for images */
+.category-card img:hover {
+    transform: scale(1.05); /* Slight zoom effect on hover */
+}
+
+/* Styling for category card heading */
+.category-card h3 {
+    margin-top: 25px;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #333; /* Darker color for better contrast */
+    letter-spacing: 0.5px;
+}
+
+/* Styling for category card button */
+.category-card .btn-primary {
+    background: linear-gradient(135deg, #6f42c1, #b25bc1); /* Gradient button */
+    border-color: #6f42c1;
+    color: white;
+    padding: 12px 25px;
+    border-radius: 5px;
+    margin-top: 15px;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: background 0.3s ease; /* Smooth background transition */
+}
+
+.category-card .btn-primary:hover {
+    background: linear-gradient(135deg, #5a2c92, #9a49a6); /* Darker gradient on hover */
+}
+
+/* Adjust layout for mobile responsiveness */
+@media (max-width: 768px) {
+    .category-card .category-card-images img {
+        width: 100%;
+        max-width: 120px; /* Larger size for mobile screens */
+    }
+
+    .category-card h3 {
+        font-size: 1.2rem; /* Smaller heading on mobile */
+    }
+
+    .category-card .btn-primary {
+        padding: 10px 20px;
+    }
+}
+
+/* ================= DASHBOARD ================= */
+
+.dashboard-container {
+    max-width: 1200px;
+    margin: 30px auto;
+    padding: 0 20px;
+}
+
+/* HERO */
+.dashboard-hero {
+    background: linear-gradient(135deg, #6f42c1, #0d6efd);
+    color: white;
+    padding: 30px;
+    border-radius: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.dashboard-hero h1 {
+    margin: 10px 0;
+}
+
+.hero-btn {
+    padding: 10px 20px;
+    border-radius: 10px;
+}
+
+/* STATS */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.stat-card {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    text-align: center;
+}
+
+/* CONTENT */
+.content-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 15px;
+}
+
+.dashboard-card {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.action-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.action-card {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 10px;
+    text-align: center;
+    text-decoration: none;
+    color: #333;
+    transition: 0.2s;
+}
+
+.action-card:hover {
+    background: #e2e6ff;
+    color: #0d6efd;
+}
+
+/* MOBILE */
+@media (max-width: 768px) {
+    .stats-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .content-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .action-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .dashboard-hero {
         flex-direction: column;
-        gap: 10px;
-        align-items: center;
+        align-items: flex-start;
     }
+}
+
+/* ================= DASHBOARD SIDEBAR LAYOUT ================= */
+
+.dashboard-layout {
+    display: flex;
+    min-height: 100vh;
+    background: #f8f9fc;
+}
+
+.dashboard-sidebar {
+    width: 260px;
+    background: #ffffff;
+    border-right: 1px solid #e5e7eb;
+    padding: 24px 18px;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+}
+
+.sidebar-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 35px;
+}
+
+.sidebar-logo img {
+    width: 48px;
+    height: auto;
+}
+
+.sidebar-logo h5 {
+    margin: 0;
+    font-weight: 700;
+    color: #111827;
+}
+
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.sidebar-nav a {
+    text-decoration: none;
+    color: #374151;
+    padding: 12px 14px;
+    border-radius: 10px;
+    font-weight: 500;
+    transition: 0.2s;
+}
+
+.sidebar-nav a:hover {
+    background: #eef2ff;
+    color: #6f42c1;
+}
+
+.sidebar-logout {
+    margin-top: auto;
+}
+
+.sidebar-logout button {
+    width: 100%;
+    border: none;
+    background: #fee2e2;
+    color: #dc2626;
+    padding: 12px 14px;
+    border-radius: 10px;
+    font-weight: 600;
+}
+
+.sidebar-logout button:hover {
+    background: #fecaca;
+}
+
+.dashboard-main {
+    margin-left: 260px;
+    width: calc(100% - 260px);
+    padding: 30px;
+}
+
+/* Make your existing dashboard container fit better */
+.dashboard-container,
+.products-page-shell {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+    .dashboard-layout {
+        flex-direction: column;
+    }
+
+    .dashboard-sidebar {
+        position: relative;
+        width: 100%;
+        height: auto;
+        border-right: none;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .dashboard-main {
+        margin-left: 0;
+        width: 100%;
+        padding: 20px;
+    }
+}
+
+.dashboard-topbar {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 20px;
+}
+
+.dashboard-user-btn {
+    border-radius: 10px;
+    padding: 10px 18px;
+    font-weight: 600;
+}
+
+.dropdown-menu form {
+    margin: 0;
+}
+
+.dropdown-menu button {
+    width: 100%;
+    text-align: left;
+}
+
+.dashboard-topbar {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 20px;
+}
+
+.dashboard-user-btn {
+    border-radius: 10px;
+    padding: 10px 18px;
+    font-weight: 600;
+}
+
+.dropdown-menu form {
+    margin: 0;
+}
+
+.dropdown-menu button {
+    width: 100%;
+    text-align: left;
+}
+
+/* NOTIFICATION BUTTON */
+.notification-btn {
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 18px;
+}
+
+/* RED BADGE */
+.notification-badge {
+    position: absolute;
+    top: 5px;
+    right: 6px;
+    background: red;
+    color: white;
+    font-size: 11px;
+    padding: 2px 6px;
+    border-radius: 50%;
+}
+
+/* DROPDOWN */
+.notification-dropdown {
+    width: 250px;
+}
+
+.notification-dropdown .dropdown-item {
+    font-size: 14px;
 }

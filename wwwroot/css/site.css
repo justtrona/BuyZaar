@@ -29,3 +29,53 @@ body {
 .brand-accent {
     color: #F97316;
 }
+.centered-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;  /* Align text in column */
+    height: 80vh; /* 80% of the viewport height */
+    max-width: 800px; /* Limit max width to avoid excessive stretching */
+    margin: 0 auto; /* Center horizontally */
+    text-align: center;
+}
+
+h1 {
+    font-size: 3rem;  /* Adjust font size for h1 */
+    margin-bottom: 20px;
+}
+
+p {
+    font-size: 1.25rem; /* Adjust font size for p */
+    color: #6c757d;
+}
+
+/* Make sure the page takes full height and the footer stays at the bottom */
+html, body {
+    height: 100%;
+}
+
+footer {
+    position: relative;
+    bottom: 0;
+    width: 100%;
+}
+
+/* Styling the topbar */
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background-color: #ffffff;
+    border-bottom: 1px solid #ddd;
+}
+
+.topbar .dropdown {
+    margin-left: auto; /* Push the dropdown to the right */
+}
+
+.topbar .dropdown-menu {
+    right: 0 !important; /* Ensure the dropdown aligns to the right */
+    left: auto !important; /* Avoid conflicting alignments */
+}

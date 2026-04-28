@@ -24,18 +24,20 @@ namespace BuyZaar.Models
         [Range(0, 999999)]
         public int Stock { get; set; }
 
+        [Required]
         [StringLength(100)]
         public string Category { get; set; } = string.Empty;
 
-        public string? ImageUrl { get; set; }
+        public ICollection<ProductImage> Images { get; set; } = new List<ProductImage>();
 
         [Required]
         public string SellerId { get; set; } = string.Empty;
 
-        [ForeignKey("SellerId")]
+        [ForeignKey(nameof(SellerId))]
         public ApplicationUser? Seller { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
+
         public DateTime? UpdatedAt { get; set; }
     }
 }

@@ -1,14 +1,14 @@
 @model IEnumerable<BuyZaar.Models.Product>
 
 @{
+    Layout = "_DashboardLayout";
+    ViewBag.ActiveRole = "Seller";
     ViewData["Title"] = "Manage Products";
 }
 
 <link rel="stylesheet" href="~/css/product.css" />
 
 <div class="products-page-shell">
-
-    <!-- Page Header -->
     <div class="products-header">
         <div>
             <span class="role-badge seller-badge">Seller</span>
@@ -53,16 +53,37 @@
                             <th class="text-center">Actions</th>
                         </tr>
                     </thead>
+
                     <tbody>
                         @foreach (var product in Model)
                         {
+                            var firstImage = product.Images?.FirstOrDefault();
+
                             <tr>
                                 <td>
-                                    <div class="product-name">@product.Name</div>
-                                    <div class="product-description">@product.Description</div>
+                                    <div class="product-table-info">
+
+                                        @if (firstImage != null)
+                                        {
+                                            <img src="@firstImage.ImagePath" class="product-table-img" />
+                                        }
+                                        else
+                                        {
+                                            <img src="~/images/no-image.png" class="product-table-img" />
+                                        }
+
+                                        <div>
+                                            <div class="product-name">@product.Name</div>
+                                            <div class="product-description">@product.Description</div>
+                                        </div>
+
+                                    </div>
                                 </td>
+
                                 <td>@product.Category</td>
+
                                 <td>₱@product.Price.ToString("N2")</td>
+
                                 <td>
                                     @if (product.Stock <= 5)
                                     {
@@ -73,9 +94,12 @@
                                         <span class="stock-badge stock-ok">@product.Stock in stock</span>
                                     }
                                 </td>
+
                                 <td>@product.CreatedAt.ToString("MMM dd, yyyy")</td>
+
                                 <td class="text-center">
                                     <div class="action-buttons">
+
                                         <a asp-controller="Seller"
                                            asp-action="EditProduct"
                                            asp-route-id="@product.Id"
@@ -95,11 +119,13 @@
                                                 Delete
                                             </button>
                                         </form>
+
                                     </div>
                                 </td>
                             </tr>
                         }
                     </tbody>
+
                 </table>
             </div>
         }

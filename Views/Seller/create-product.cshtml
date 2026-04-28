@@ -1,13 +1,14 @@
 @model BuyZaar.ViewModels.ProductViewModel
 
 @{
+    Layout = "_DashboardLayout";
+    ViewBag.ActiveRole = "Seller";
     ViewData["Title"] = "Add Product";
 }
 
 <link rel="stylesheet" href="~/css/product.css" />
 
 <div class="product-page-shell">
-
     <div class="product-page-header">
         <div class="header-left">
             <span class="role-badge seller-badge">Seller</span>
@@ -23,7 +24,6 @@
     </div>
 
     <div class="product-form-card">
-
         <div class="form-card-header">
             <h3>Product Information</h3>
             <p>Fill in the details below to add a new item to your store.</p>
@@ -34,11 +34,10 @@
             <div asp-validation-summary="All" class="alert alert-danger custom-alert"></div>
         }
 
-        <form asp-action="CreateProduct" method="post" novalidate>
+        <form asp-action="CreateProduct" method="post" enctype="multipart/form-data" novalidate>
             @Html.AntiForgeryToken()
 
             <div class="product-form-grid">
-
                 <div class="form-group full-width">
                     <label asp-for="Name" class="form-label">Product Name</label>
                     <input asp-for="Name" class="form-control custom-input" placeholder="Enter product name" />
@@ -69,6 +68,18 @@
                     <span asp-validation-for="Stock" class="text-danger small"></span>
                 </div>
 
+                <div class="form-group full-width">
+                    <label asp-for="ProductImages" class="form-label">Product Images</label>
+                    <input asp-for="ProductImages"
+                           class="form-control custom-input"
+                           type="file"
+                           multiple
+                           accept="image/*" />
+                    <span asp-validation-for="ProductImages" class="text-danger small"></span>
+                    <small class="text-muted">
+                        You can upload multiple product images. Allowed: JPG, JPEG, PNG, WEBP.
+                    </small>
+                </div>
             </div>
 
             <div class="form-divider"></div>

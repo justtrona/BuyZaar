@@ -1,13 +1,13 @@
 @{
-    Layout = "_SellerShopperLayout"; 
+    
+    Layout = "_DashboardLayout";
+    ViewBag.ActiveRole = "Shopper";
     var sellerStatus = ViewBag.SellerApplicationStatus as string ?? "Not Applied";
 }
 
-<link rel="stylesheet" href="~/css/dashboard.css" />
-
 <div class="dashboard-container">
 
-    <!-- Hero Section -->
+    <!-- HERO -->
     <div class="dashboard-hero">
         <div>
             <span class="role-badge shopper-badge">Shopper</span>
@@ -15,19 +15,19 @@
             <p>Manage your shopping activity, orders, and seller application from one place.</p>
         </div>
 
-        <a href="#" class="btn btn-primary btn-lg hero-btn">
+        <a href="#" class="btn btn-primary hero-btn">
             Browse Products
         </a>
     </div>
 
     @if (TempData["ApplicationMessage"] != null)
     {
-        <div class="alert alert-info mt-3">
+        <div class="alert alert-info mt-3 mb-4">
             @TempData["ApplicationMessage"]
         </div>
     }
 
-    <!-- Stats Section -->
+    <!-- STATS -->
     <div class="stats-grid">
         <div class="stat-card">
             <p>My Orders</p>
@@ -54,9 +54,10 @@
         </div>
     </div>
 
-    <!-- Content Section -->
+    <!-- CONTENT -->
     <div class="content-grid">
-        <!-- Quick Actions -->
+
+        <!-- QUICK ACTIONS -->
         <div class="dashboard-card">
             <h4>Quick Actions</h4>
 
@@ -107,9 +108,10 @@
             </div>
         </div>
 
-        <!-- Recent Activity Section -->
+        <!-- RECENT ACTIVITY -->
         <div class="dashboard-card">
             <h4>Recent Activity</h4>
+
             <ul class="activity-list">
                 <li>Your order #1008 is being prepared.</li>
                 <li>You added 2 items to your cart.</li>
