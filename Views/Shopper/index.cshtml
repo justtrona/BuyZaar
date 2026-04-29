@@ -1,5 +1,4 @@
 @{
-    
     Layout = "_DashboardLayout";
     ViewBag.ActiveRole = "Shopper";
     var sellerStatus = ViewBag.SellerApplicationStatus as string ?? "Not Applied";
@@ -15,7 +14,7 @@
             <p>Manage your shopping activity, orders, and seller application from one place.</p>
         </div>
 
-        <a href="#" class="btn btn-primary hero-btn">
+        <a asp-controller="Shopper" asp-action="BrowseProducts" class="btn btn-primary hero-btn">
             Browse Products
         </a>
     </div>
@@ -62,7 +61,7 @@
             <h4>Quick Actions</h4>
 
             <div class="action-grid">
-                <a href="#" class="action-card">
+                <a asp-controller="Shopper" asp-action="BrowseProducts" class="action-card">
                     <h5>Browse Products</h5>
                     <p>Explore items available in the marketplace.</p>
                 </a>

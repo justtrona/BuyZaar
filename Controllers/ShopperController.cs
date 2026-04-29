@@ -22,13 +22,14 @@ namespace BuyZaar.Controllers
 
         public async Task<IActionResult> Index()
         {
+            ViewBag.ActiveRole = "Shopper";
+
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
                 return RedirectToAction("Login", "Account");
 
             string sellerStatus = "Not Applied";
 
-            // If the user already has the Seller role, always show Approved
             if (await _userManager.IsInRoleAsync(user, "Seller"))
             {
                 sellerStatus = "Approved";
@@ -50,45 +51,58 @@ namespace BuyZaar.Controllers
 
             return View();
         }
+public async Task<IActionResult> BrowseProducts(string? search, string? category, string? sort)
+{
+    ViewBag.ActiveRole = "Shopper";
 
-        [HttpGet]
-        public async Task<IActionResult> ApplySeller()
-        {
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null)
-                return RedirectToAction("Login", "Account");
+    var query = _context.Products
+        .Include(p => p.Images)
+        .Include(p => p.Seller)
+        .Where(p => p.Stock > 0)
+        .AsQueryable();
 
-            // Already a seller: do not allow another application
-            if (await _userManager.IsInRoleAsync(user, "Seller"))
-            {
-                TempData["ApplicationMessage"] = "Your seller account is already approved.";
-                return RedirectToAction("Index");
-            }
+    if (!string.IsNullOrWhiteSpace(search))
+    {
+        query = query.Where(p =>
+            p.Name.Contains(search) ||
+            p.Description.Contains(search) ||
+            p.Category.Contains(search));
+    }
 
-            var latestApplication = await _context.SellerApplications
-                .Where(sa => sa.UserId == user.Id)
-                .OrderByDescending(sa => sa.CreatedAt)
-                .FirstOrDefaultAsync();
+    if (!string.IsNullOrWhiteSpace(category))
+    {
+        query = query.Where(p => p.Category == category);
+    }
 
-            // If still pending, do not allow re-apply
-            if (latestApplication != null && latestApplication.Status == "Pending")
-            {
-                TempData["ApplicationMessage"] = $"You already have a seller application with status: {latestApplication.Status}.";
-                return RedirectToAction("Index");
-            }
+    query = sort switch
+    {
+        "price_low" => query.OrderBy(p => p.Price),
+        "price_high" => query.OrderByDescending(p => p.Price),
+        "newest" => query.OrderByDescending(p => p.CreatedAt),
+        _ => query.OrderByDescending(p => p.CreatedAt)
+    };
 
-            var model = new SellerApplicationViewModel
-            {
-                FullName = user.FullName
-            };
+    var products = await query.ToListAsync();
 
-            return View(model);
-        }
+    ViewBag.Search = search;
+    ViewBag.Category = category;
+    ViewBag.Sort = sort;
 
+    ViewBag.Categories = await _context.Products
+        .Where(p => p.Stock > 0)
+        .Select(p => p.Category)
+        .Distinct()
+        .OrderBy(c => c)
+        .ToListAsync();
+
+    return View(products);
+}
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ApplySeller(SellerApplicationViewModel model)
         {
+            ViewBag.ActiveRole = "Shopper";
+
             if (!ModelState.IsValid)
                 return View(model);
 
@@ -96,7 +110,6 @@ namespace BuyZaar.Controllers
             if (user == null)
                 return RedirectToAction("Login", "Account");
 
-            // Already a seller: do not allow another application
             if (await _userManager.IsInRoleAsync(user, "Seller"))
             {
                 TempData["ApplicationMessage"] = "Your seller account is already approved.";
@@ -108,7 +121,6 @@ namespace BuyZaar.Controllers
                 .OrderByDescending(sa => sa.CreatedAt)
                 .FirstOrDefaultAsync();
 
-            // If still pending, do not allow re-apply
             if (latestApplication != null && latestApplication.Status == "Pending")
             {
                 TempData["ApplicationMessage"] = $"You already submitted a seller application with status: {latestApplication.Status}.";

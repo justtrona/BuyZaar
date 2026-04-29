@@ -171,8 +171,11 @@ public async Task<IActionResult> Login(LoginViewModel model)
     if (await _userManager.IsInRoleAsync(user, "Seller"))
         return RedirectToAction("Index", "Seller");  // Redirect to Seller Dashboard
 
+    // if (await _userManager.IsInRoleAsync(user, "Shopper"))
+    //     return RedirectToAction("Index", "Shopper");  // Redirect to Shopper Dashboard
+
     if (await _userManager.IsInRoleAsync(user, "Shopper"))
-        return RedirectToAction("Index", "Shopper");  // Redirect to Shopper Dashboard
+    return RedirectToAction("BrowseProducts", "Shopper");
 
     return RedirectToAction("Index", "Home");  // Default redirect for other roles
 }

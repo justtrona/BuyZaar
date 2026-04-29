@@ -39,13 +39,16 @@
                 }
                 else if (activeRole == "Shopper")
                 {
-                    <a asp-controller="Shopper" asp-action="Index">Dashboard</a>
-                    <a href="#">Browse Products</a>
+                    <a asp-controller="Shopper" asp-action="BrowseProducts">Home</a>
                     <a href="#">My Cart</a>
                     <a href="#">My Orders</a>
                     <a href="#">Track Orders</a>
-                    <a href="#">Profile</a>
-                    <a asp-controller="Shopper" asp-action="ApplySeller">Apply as Seller</a>
+                    <a asp-controller="Shopper" asp-action="Index">Profile</a>
+
+                    @if (!isSeller)
+                    {
+                        <a asp-controller="Shopper" asp-action="ApplySeller">Apply as Seller</a>
+                    }
                 }
 
             </nav>
@@ -102,7 +105,7 @@
                         @if (activeRole == "Seller")
                         {
                             <li>
-                                <a class="dropdown-item" asp-controller="Shopper" asp-action="Index">
+                                <a class="dropdown-item" asp-controller="Shopper" asp-action="BrowseProducts">
                                     Switch to Shopper
                                 </a>
                             </li>
@@ -115,6 +118,12 @@
                                 </a>
                             </li>
                         }
+
+                        <li>
+                            <a class="dropdown-item" asp-controller="Shopper" asp-action="Index">
+                                Profile
+                            </a>
+                        </li>
 
                         <li>
                             <a class="dropdown-item" href="#">

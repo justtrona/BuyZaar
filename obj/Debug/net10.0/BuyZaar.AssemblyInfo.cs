@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("BuyZaar")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f49dd7181d937f4327628f10a6573f06d9140bba")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ec0dab4142739fbb521cd664a9b63654951c1e50")]
 [assembly: System.Reflection.AssemblyProductAttribute("BuyZaar")]
 [assembly: System.Reflection.AssemblyTitleAttribute("BuyZaar")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

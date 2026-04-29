@@ -1,0 +1,127 @@
+@model IEnumerable<BuyZaar.Models.Product>
+
+@{
+    Layout = "_DashboardLayout";
+    ViewBag.ActiveRole = "Shopper";
+    ViewData["Title"] = "Browse Products";
+
+    var categories = ViewBag.Categories as List<string> ?? new List<string>();
+    var selectedCategory = ViewBag.Category as string;
+    var searchValue = ViewBag.Search as string;
+    var selectedSort = ViewBag.Sort as string;
+}
+
+<link rel="stylesheet" href="~/css/product.css" asp-append-version="true" />
+
+<div class="products-page-shell">
+
+    <div class="products-header">
+        <div>
+            <span class="role-badge shopper-badge">Shopper</span>
+            <h1>Browse Products</h1>
+            <p>Search, filter, and discover products in the BuyZaar marketplace.</p>
+        </div>
+    </div>
+
+    <form asp-controller="Shopper" asp-action="BrowseProducts" method="get" class="shop-filter-card">
+        <div class="shop-search-box">
+            <input type="text"
+                   name="search"
+                   value="@searchValue"
+                   class="form-control"
+                   placeholder="Search products, categories, or descriptions..." />
+        </div>
+
+        <div>
+            <select name="category" class="form-control">
+                <option value="">All Categories</option>
+
+                @foreach (var category in categories)
+                {
+                    <option value="@category" selected="@(selectedCategory == category)">
+                        @category
+                    </option>
+                }
+            </select>
+        </div>
+
+        <div>
+            <select name="sort" class="form-control">
+                <option value="newest" selected="@(selectedSort == "newest" || string.IsNullOrEmpty(selectedSort))">
+                    Newest
+                </option>
+                <option value="price_low" selected="@(selectedSort == "price_low")">
+                    Price: Low to High
+                </option>
+                <option value="price_high" selected="@(selectedSort == "price_high")">
+                    Price: High to Low
+                </option>
+            </select>
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+            Search
+        </button>
+
+        <a asp-controller="Shopper" asp-action="BrowseProducts" class="btn btn-outline-secondary">
+            Reset
+        </a>
+    </form>
+
+    @if (!Model.Any())
+    {
+        <div class="empty-products-state">
+            <h3>No products found</h3>
+            <p>Try changing your search or category filter.</p>
+        </div>
+    }
+    else
+    {
+        <div class="browse-results-header">
+            <p>Showing <strong>@Model.Count()</strong> product(s)</p>
+        </div>
+
+        <div class="shopper-products-grid">
+            @foreach (var product in Model)
+            {
+                var firstImage = product.Images?.FirstOrDefault()?.ImagePath ?? "/images/no-image.png";
+                var sellerName = product.Seller?.FullName ?? product.Seller?.UserName ?? "Unknown Seller";
+
+                <div class="shopper-product-card">
+                    <div class="shopper-product-image-wrap">
+                        <img src="@Url.Content(firstImage)" class="shopper-product-img" alt="@product.Name" />
+                    </div>
+
+                    <div class="shopper-product-body">
+                        <span class="category-badge">@product.Category</span>
+
+                        <h4>@product.Name</h4>
+
+                        <small class="product-seller">
+                            @sellerName
+                        </small>
+
+                        <p class="shopper-product-desc">
+                            @product.Description
+                        </p>
+
+                        <div class="shopper-product-meta">
+                            <strong>₱@product.Price.ToString("N2")</strong>
+                            <span>@product.Stock in stock</span>
+                        </div>
+
+                        <div class="shopper-product-actions">
+                            <a href="#" class="btn btn-outline-primary btn-sm">
+                                View Details
+                            </a>
+
+                            <a href="#" class="btn btn-primary btn-sm">
+                                Add to Cart
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
