@@ -1,0 +1,173 @@
+@model List<BuyZaar.Models.CartItem>
+
+@{
+    Layout = "_DashboardLayout";
+    ViewBag.ActiveRole = "Shopper";
+    ViewData["Title"] = "My Cart";
+
+    var total = Model.Sum(i => (i.Product?.Price ?? 0) * i.Quantity);
+}
+
+<link rel="stylesheet" href="~/css/product.css" asp-append-version="true" />
+
+<div class="products-page-shell">
+
+    @Html.AntiForgeryToken()
+
+    <h2 style="margin-bottom:20px;">My Cart</h2>
+
+    @if (!Model.Any())
+    {
+        <div class="empty-state">
+            <h4>Your cart is empty</h4>
+            <p>Start adding products to your cart.</p>
+
+            <a asp-controller="Shopper"
+               asp-action="BrowseProducts"
+               class="btn btn-primary">
+                Browse Products
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="product-form-card">
+
+            <table class="table custom-table align-middle">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Variant</th>
+                        <th>Size</th>
+                        <th>Price</th>
+                        <th>Qty</th>
+                        <th>Total</th>
+                        <th></th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        var img = item.Product?.Images?.FirstOrDefault()?.ImagePath ?? "/images/no-image.png";
+                        var price = item.Product?.Price ?? 0;
+                        var itemTotal = price * item.Quantity;
+
+                        <tr>
+                            <td>
+                                <div class="product-table-info">
+                                    <img src="@Url.Content(img)"
+                                         class="product-table-img"
+                                         alt="@item.Product?.Name" />
+
+                                  <div>
+    <small class="text-muted">
+        @(item.Product?.Seller?.FullName ?? item.Product?.Seller?.UserName ?? "Unknown Seller")
+    </small><br />
+
+    <strong>@item.Product?.Name</strong><br />
+
+    <small class="text-muted">@item.Product?.Category</small>
+</div>
+                                </div>
+                            </td>
+
+                            <td>
+                                @(string.IsNullOrWhiteSpace(item.SelectedVariant) ? "-" : item.SelectedVariant)
+                            </td>
+
+                            <td>
+                                @(string.IsNullOrWhiteSpace(item.SelectedSize) ? "-" : item.SelectedSize)
+                            </td>
+
+                            <td>
+                                ₱@price.ToString("N2")
+                            </td>
+
+                            <td>
+                                <div class="qty-control">
+                                    <button type="button"
+                                            onclick="updateCartQty(@item.Id, @(item.Quantity - 1))">
+                                        −
+                                    </button>
+
+                                    <input type="number"
+                                           value="@item.Quantity"
+                                           min="1"
+                                           readonly />
+
+                                    <button type="button"
+                                            onclick="updateCartQty(@item.Id, @(item.Quantity + 1))">
+                                        +
+                                    </button>
+                                </div>
+                            </td>
+
+                            <td>
+                                ₱@itemTotal.ToString("N2")
+                            </td>
+
+                            <td>
+                                <form asp-controller="Shopper"
+                                      asp-action="RemoveFromCart"
+                                      method="post">
+                                    @Html.AntiForgeryToken()
+
+                                    <input type="hidden" name="cartItemId" value="@item.Id" />
+
+                                    <button type="submit"
+                                            class="btn btn-sm btn-danger"
+                                            onclick="return confirm('Remove this item from your cart?')">
+                                        ✕
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <div style="margin-top:20px; text-align:right;">
+                <h4>Total: ₱@total.ToString("N2")</h4>
+
+                <button class="btn btn-success mt-2">
+                    Proceed to Checkout
+                </button>
+            </div>
+
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        function updateCartQty(id, quantity) {
+            if (quantity < 1) {
+                return;
+            }
+
+            fetch('/Shopper/UpdateCartQuantityAjax', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                },
+                body: JSON.stringify({
+                    id: id,
+                    quantity: quantity
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert(data.message || 'Unable to update cart.');
+                }
+            })
+            .catch(() => {
+                alert('Something went wrong while updating the cart.');
+            });
+        }
+    </script>
+}

@@ -28,16 +28,26 @@ namespace BuyZaar.Models
         [StringLength(100)]
         public string Category { get; set; } = string.Empty;
 
+        // ✅ PRODUCT IMAGES
         public ICollection<ProductImage> Images { get; set; } = new List<ProductImage>();
 
+        // ✅ SELLER RELATION
         [Required]
         public string SellerId { get; set; } = string.Empty;
 
         [ForeignKey(nameof(SellerId))]
         public ApplicationUser? Seller { get; set; }
 
+        // ✅ TIMESTAMPS
         public DateTime CreatedAt { get; set; } = DateTime.Now;
-
         public DateTime? UpdatedAt { get; set; }
+
+        // ✅ COLORS / VARIANTS (e.g. Black, White)
+        [StringLength(500)]
+        public string? AvailableVariants { get; set; }
+
+        // ✅ SIZES (e.g. S, M, L, XL or 36, 37, 38)
+        [StringLength(500)]
+        public string? AvailableSizes { get; set; }
     }
 }

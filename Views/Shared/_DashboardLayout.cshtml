@@ -20,38 +20,110 @@
 
         <!-- SIDEBAR -->
         <aside class="dashboard-sidebar">
-            <div class="sidebar-logo">
-                <img src="~/images/icon_logo.png" alt="BuyZaar Logo" />
-                <h5>BuyZaar</h5>
+
+            <div class="sidebar-main">
+                <div class="sidebar-logo">
+                    <img src="~/images/icon_logo.png" alt="BuyZaar Logo" />
+                    <h5>BuyZaar</h5>
+                </div>
+
+                <nav class="sidebar-nav">
+                    @if (activeRole == "Seller")
+                    {
+                        <a asp-controller="Seller" asp-action="Index">Dashboard</a>
+                        <a asp-controller="Seller" asp-action="Products">Manage Products</a>
+                        <a asp-controller="Seller" asp-action="CreateProduct">Add Product</a>
+                        <a href="#">Orders</a>
+                        <a href="#">Inventory</a>
+                        <a href="#">Sales Records</a>
+                        <a href="#">Shop Profile</a>
+                    }
+                    else if (activeRole == "Shopper")
+                    {
+                        <a asp-controller="Shopper" asp-action="BrowseProducts">Home</a>
+
+                        <a asp-controller="Shopper" asp-action="MyCart">
+                            My Cart
+                        </a>
+
+                        <a href="#">My Orders</a>
+                        <a href="#">Track Orders</a>
+                        <a asp-controller="Shopper" asp-action="Index">Profile</a>
+
+                        @if (!isSeller)
+                        {
+                            <a asp-controller="Shopper" asp-action="ApplySeller">Apply as Seller</a>
+                        }
+                    }
+                </nav>
             </div>
 
-            <nav class="sidebar-nav">
+            <!-- SIDEBAR ACCOUNT -->
+            <div class="sidebar-account">
+                <div class="sidebar-user">
+                    <div class="sidebar-avatar">
+                        @((User.Identity?.Name ?? "U").Substring(0, 1).ToUpper())
+                    </div>
 
-                @if (activeRole == "Seller")
-                {
-                    <a asp-controller="Seller" asp-action="Index">Dashboard</a>
-                    <a asp-controller="Seller" asp-action="Products">Manage Products</a>
-                    <a asp-controller="Seller" asp-action="CreateProduct">Add Product</a>
-                    <a href="#">Orders</a>
-                    <a href="#">Inventory</a>
-                    <a href="#">Sales Records</a>
-                    <a href="#">Shop Profile</a>
-                }
-                else if (activeRole == "Shopper")
-                {
-                    <a asp-controller="Shopper" asp-action="BrowseProducts">Home</a>
-                    <a href="#">My Cart</a>
-                    <a href="#">My Orders</a>
-                    <a href="#">Track Orders</a>
-                    <a asp-controller="Shopper" asp-action="Index">Profile</a>
+                    <div class="sidebar-user-info">
+                        <div class="sidebar-user-name">
+                            @User.Identity?.Name
+                        </div>
 
-                    @if (!isSeller)
-                    {
-                        <a asp-controller="Shopper" asp-action="ApplySeller">Apply as Seller</a>
-                    }
-                }
+                        <div class="sidebar-user-role">
+                            @activeRole
+                        </div>
+                    </div>
 
-            </nav>
+                    <div class="dropdown ms-auto">
+                        <button class="sidebar-settings-btn"
+                                type="button"
+                                data-bs-toggle="dropdown"
+                                aria-expanded="false">
+                            ⚙
+                        </button>
+
+                        <ul class="dropdown-menu sidebar-settings-menu">
+                            <li>
+                                <a class="dropdown-item" asp-controller="Shopper" asp-action="Index">
+                                    Profile
+                                </a>
+                            </li>
+
+                            <li>
+                                <a class="dropdown-item" href="#">
+                                    Settings
+                                </a>
+                            </li>
+
+                            @if (activeRole == "Seller")
+                            {
+                                <li>
+                                    <a class="dropdown-item" asp-controller="Shopper" asp-action="BrowseProducts">
+                                        Switch to Shopper
+                                    </a>
+                                </li>
+                            }
+                            else if (activeRole == "Shopper" && isSeller)
+                            {
+                                <li>
+                                    <a class="dropdown-item" asp-controller="Seller" asp-action="Index">
+                                        Switch to Seller
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+
+                <form asp-controller="Account" asp-action="Logout" method="post" class="sidebar-signout-form">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="sidebar-logout-btn">
+                        Sign out
+                    </button>
+                </form>
+            </div>
+
         </aside>
 
         <!-- MAIN CONTENT -->
@@ -60,89 +132,43 @@
             <!-- TOPBAR -->
             <div class="dashboard-topbar">
 
-                <!-- NOTIFICATION DROPDOWN -->
-                <div class="dropdown me-2">
-                    <button class="btn btn-light position-relative notification-btn"
-                            type="button"
-                            data-bs-toggle="dropdown"
-                            aria-expanded="false">
-                        🔔
-                        <span class="notification-badge">3</span>
-                    </button>
-
-                    <ul class="dropdown-menu dropdown-menu-end notification-dropdown">
-                        <li class="dropdown-header">Notifications</li>
-
-                        @if (activeRole == "Seller")
-                        {
-                            <li><a class="dropdown-item" href="#">New order received</a></li>
-                            <li><a class="dropdown-item" href="#">Low stock alert</a></li>
-                            <li><a class="dropdown-item" href="#">Product listing updated</a></li>
-                        }
-                        else if (activeRole == "Shopper")
-                        {
-                            <li><a class="dropdown-item" href="#">Order is being prepared</a></li>
-                            <li><a class="dropdown-item" href="#">Cart item reminder</a></li>
-                            <li><a class="dropdown-item" href="#">Seller application update</a></li>
-                        }
-
-                        <li><hr class="dropdown-divider" /></li>
-                        <li><a class="dropdown-item text-center" href="#">View All</a></li>
-                    </ul>
+                <div class="dashboard-topbar-content">
+                    @RenderSection("TopbarContent", required: false)
                 </div>
 
-                <!-- USER DROPDOWN -->
-                <div class="dropdown">
-                    <button class="btn btn-primary dropdown-toggle dashboard-user-btn"
-                            type="button"
-                            data-bs-toggle="dropdown"
-                            aria-expanded="false">
-                        @User.Identity?.Name
-                    </button>
+                <div class="dashboard-topbar-actions">
+                    @if (!IsSectionDefined("TopbarContent"))
+                    {
+                        <div class="dropdown">
+                            <button class="btn btn-light position-relative notification-btn"
+                                    type="button"
+                                    data-bs-toggle="dropdown"
+                                    aria-expanded="false">
+                                🔔
+                                <span class="notification-badge">3</span>
+                            </button>
 
-                    <ul class="dropdown-menu dropdown-menu-end">
+                            <ul class="dropdown-menu dropdown-menu-end notification-dropdown">
+                                <li class="dropdown-header">Notifications</li>
 
-                        @if (activeRole == "Seller")
-                        {
-                            <li>
-                                <a class="dropdown-item" asp-controller="Shopper" asp-action="BrowseProducts">
-                                    Switch to Shopper
-                                </a>
-                            </li>
-                        }
-                        else if (activeRole == "Shopper" && isSeller)
-                        {
-                            <li>
-                                <a class="dropdown-item" asp-controller="Seller" asp-action="Index">
-                                    Switch to Seller
-                                </a>
-                            </li>
-                        }
+                                @if (activeRole == "Seller")
+                                {
+                                    <li><a class="dropdown-item" href="#">New order received</a></li>
+                                    <li><a class="dropdown-item" href="#">Low stock alert</a></li>
+                                    <li><a class="dropdown-item" href="#">Product listing updated</a></li>
+                                }
+                                else if (activeRole == "Shopper")
+                                {
+                                    <li><a class="dropdown-item" href="#">Order is being prepared</a></li>
+                                    <li><a class="dropdown-item" href="#">Cart item reminder</a></li>
+                                    <li><a class="dropdown-item" href="#">Seller application update</a></li>
+                                }
 
-                        <li>
-                            <a class="dropdown-item" asp-controller="Shopper" asp-action="Index">
-                                Profile
-                            </a>
-                        </li>
-
-                        <li>
-                            <a class="dropdown-item" href="#">
-                                Settings
-                            </a>
-                        </li>
-
-                        <li><hr class="dropdown-divider" /></li>
-
-                        <li>
-                            <form asp-controller="Account" asp-action="Logout" method="post">
-                                @Html.AntiForgeryToken()
-                                <button type="submit" class="dropdown-item text-danger">
-                                    Logout
-                                </button>
-                            </form>
-                        </li>
-
-                    </ul>
+                                <li><hr class="dropdown-divider" /></li>
+                                <li><a class="dropdown-item text-center" href="#">View All</a></li>
+                            </ul>
+                        </div>
+                    }
                 </div>
 
             </div>

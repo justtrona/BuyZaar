@@ -83,11 +83,13 @@ namespace BuyZaar.Controllers
                 Price = model.Price,
                 Stock = model.Stock,
                 Category = model.Category,
+                AvailableVariants = model.AvailableVariants,
+                AvailableSizes = model.AvailableSizes,
                 SellerId = user.Id,
                 CreatedAt = DateTime.Now
             };
 
-            await AddProductImagesAsync(product, model.ProductImages, "create-product", model);
+            await AddProductImagesAsync(product, model.ProductImages);
 
             if (!ModelState.IsValid)
                 return View("create-product", model);
@@ -123,6 +125,8 @@ namespace BuyZaar.Controllers
                 Price = product.Price,
                 Stock = product.Stock,
                 Category = product.Category,
+                AvailableVariants = product.AvailableVariants,
+                AvailableSizes = product.AvailableSizes,
                 ExistingImages = product.Images.Select(i => i.ImagePath).ToList()
             };
 
@@ -154,9 +158,11 @@ namespace BuyZaar.Controllers
             product.Price = model.Price;
             product.Stock = model.Stock;
             product.Category = model.Category;
+            product.AvailableVariants = model.AvailableVariants;
+            product.AvailableSizes = model.AvailableSizes;
             product.UpdatedAt = DateTime.Now;
 
-            await AddProductImagesAsync(product, model.ProductImages, "edit-product", model);
+            await AddProductImagesAsync(product, model.ProductImages);
 
             if (!ModelState.IsValid)
                 return View("edit-product", model);
@@ -186,13 +192,7 @@ namespace BuyZaar.Controllers
 
             foreach (var image in product.Images)
             {
-                var physicalPath = Path.Combine(
-                    _environment.WebRootPath,
-                    image.ImagePath.TrimStart('/').Replace("/", Path.DirectorySeparatorChar.ToString())
-                );
-
-                if (System.IO.File.Exists(physicalPath))
-                    System.IO.File.Delete(physicalPath);
+                DeleteImageFile(image.ImagePath);
             }
 
             _context.Products.Remove(product);
@@ -202,13 +202,38 @@ namespace BuyZaar.Controllers
             return RedirectToAction("Products");
         }
 
-        
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteProductImage(int productId, string imagePath)
+        {
+            ViewBag.ActiveRole = "Seller";
 
-        private async Task AddProductImagesAsync(
-            Product product,
-            List<IFormFile>? images,
-            string viewName,
-            ProductViewModel model)
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+                return RedirectToAction("Login", "Account");
+
+            var product = await _context.Products
+                .Include(p => p.Images)
+                .FirstOrDefaultAsync(p => p.Id == productId && p.SellerId == user.Id);
+
+            if (product == null)
+                return NotFound();
+
+            var image = product.Images.FirstOrDefault(i => i.ImagePath == imagePath);
+
+            if (image == null)
+                return RedirectToAction("EditProduct", new { id = productId });
+
+            DeleteImageFile(image.ImagePath);
+
+            _context.ProductImages.Remove(image);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Product image deleted successfully.";
+            return RedirectToAction("EditProduct", new { id = productId });
+        }
+
+        private async Task AddProductImagesAsync(Product product, List<IFormFile>? images)
         {
             if (images == null || !images.Any())
                 return;
@@ -246,41 +271,18 @@ namespace BuyZaar.Controllers
             }
         }
 
-        [HttpPost]
-[ValidateAntiForgeryToken]
-public async Task<IActionResult> DeleteProductImage(int productId, string imagePath)
-{
-    ViewBag.ActiveRole = "Seller";
+        private void DeleteImageFile(string imagePath)
+        {
+            if (string.IsNullOrWhiteSpace(imagePath))
+                return;
 
-    var user = await _userManager.GetUserAsync(User);
-    if (user == null)
-        return RedirectToAction("Login", "Account");
+            var physicalPath = Path.Combine(
+                _environment.WebRootPath,
+                imagePath.TrimStart('/').Replace("/", Path.DirectorySeparatorChar.ToString())
+            );
 
-    var product = await _context.Products
-        .Include(p => p.Images)
-        .FirstOrDefaultAsync(p => p.Id == productId && p.SellerId == user.Id);
-
-    if (product == null)
-        return NotFound();
-
-    var image = product.Images.FirstOrDefault(i => i.ImagePath == imagePath);
-
-    if (image == null)
-        return RedirectToAction("EditProduct", new { id = productId });
-
-    var physicalPath = Path.Combine(
-        _environment.WebRootPath,
-        image.ImagePath.TrimStart('/').Replace("/", Path.DirectorySeparatorChar.ToString())
-    );
-
-    if (System.IO.File.Exists(physicalPath))
-        System.IO.File.Delete(physicalPath);
-
-    _context.ProductImages.Remove(image);
-    await _context.SaveChangesAsync();
-
-    TempData["SuccessMessage"] = "Product image deleted successfully.";
-    return RedirectToAction("EditProduct", new { id = productId });
-}
+            if (System.IO.File.Exists(physicalPath))
+                System.IO.File.Delete(physicalPath);
+        }
     }
 }

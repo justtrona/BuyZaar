@@ -13,60 +13,73 @@
 
 <link rel="stylesheet" href="~/css/product.css" asp-append-version="true" />
 
-<div class="products-page-shell">
+@section TopbarContent {
+    <form asp-controller="Shopper" asp-action="BrowseProducts" method="get" class="marketplace-topbar">
 
-    <div class="products-header">
-        <div>
-            <span class="role-badge shopper-badge">Shopper</span>
-            <h1>Browse Products</h1>
-            <p>Search, filter, and discover products in the BuyZaar marketplace.</p>
-        </div>
-    </div>
+        <input type="text"
+               name="search"
+               value="@searchValue"
+               class="form-control marketplace-search"
+               placeholder="Search products, categories, or descriptions..." />
 
-    <form asp-controller="Shopper" asp-action="BrowseProducts" method="get" class="shop-filter-card">
-        <div class="shop-search-box">
-            <input type="text"
-                   name="search"
-                   value="@searchValue"
-                   class="form-control"
-                   placeholder="Search products, categories, or descriptions..." />
-        </div>
-
-        <div>
-            <select name="category" class="form-control">
-                <option value="">All Categories</option>
-
-                @foreach (var category in categories)
-                {
-                    <option value="@category" selected="@(selectedCategory == category)">
-                        @category
-                    </option>
-                }
-            </select>
-        </div>
-
-        <div>
-            <select name="sort" class="form-control">
-                <option value="newest" selected="@(selectedSort == "newest" || string.IsNullOrEmpty(selectedSort))">
-                    Newest
+        <select name="category" class="form-control marketplace-select">
+            <option value="">All Categories</option>
+            @foreach (var category in categories)
+            {
+                <option value="@category" selected="@(selectedCategory == category)">
+                    @category
                 </option>
-                <option value="price_low" selected="@(selectedSort == "price_low")">
-                    Price: Low to High
-                </option>
-                <option value="price_high" selected="@(selectedSort == "price_high")">
-                    Price: High to Low
-                </option>
-            </select>
-        </div>
+            }
+        </select>
 
-        <button type="submit" class="btn btn-primary">
-            Search
-        </button>
+        <select name="sort" class="form-control marketplace-select">
+            <option value="newest" selected="@(selectedSort == "newest" || string.IsNullOrEmpty(selectedSort))">Newest</option>
+            <option value="price_low" selected="@(selectedSort == "price_low")">Price: Low to High</option>
+            <option value="price_high" selected="@(selectedSort == "price_high")">Price: High to Low</option>
+        </select>
 
-        <a asp-controller="Shopper" asp-action="BrowseProducts" class="btn btn-outline-secondary">
+        <button type="submit" class="btn btn-primary marketplace-search-btn">Search</button>
+
+        <a asp-controller="Shopper" asp-action="BrowseProducts" class="btn btn-outline-secondary marketplace-reset-btn">
             Reset
         </a>
+
+        <a asp-controller="Shopper" asp-action="MyCart" class="marketplace-icon-btn" title="Cart">
+            🛒
+            <span id="cartBadge" class="marketplace-badge">0</span>
+        </a>
+
+        <div class="dropdown">
+            <button class="marketplace-icon-btn"
+                    type="button"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                    title="Notifications">
+                🔔
+                <span class="marketplace-badge">3</span>
+            </button>
+
+            <ul class="dropdown-menu dropdown-menu-end notification-dropdown">
+                <li class="dropdown-header">Notifications</li>
+                <li><a class="dropdown-item" href="#">Order is being prepared</a></li>
+                <li><a class="dropdown-item" href="#">Cart item reminder</a></li>
+                <li><a class="dropdown-item" href="#">Seller application update</a></li>
+                <li><hr class="dropdown-divider" /></li>
+                <li><a class="dropdown-item text-center" href="#">View All</a></li>
+            </ul>
+        </div>
     </form>
+}
+
+<div class="products-page-shell">
+
+    <p class="browse-subtitle">
+        Search, filter, and discover products in the BuyZaar marketplace.
+    </p>
+
+    <div id="cartToast" class="cart-toast">
+        Added to cart successfully.
+    </div>
 
     @if (!Model.Any())
     {
@@ -86,6 +99,9 @@
             {
                 var firstImage = product.Images?.FirstOrDefault()?.ImagePath ?? "/images/no-image.png";
                 var sellerName = product.Seller?.FullName ?? product.Seller?.UserName ?? "Unknown Seller";
+                var hasColors = !string.IsNullOrWhiteSpace(product.AvailableVariants);
+                var hasSizes = !string.IsNullOrWhiteSpace(product.AvailableSizes);
+                var needsOptions = hasColors || hasSizes;
 
                 <div class="shopper-product-card">
                     <div class="shopper-product-image-wrap">
@@ -98,12 +114,24 @@
                         <h4>@product.Name</h4>
 
                         <small class="product-seller">
-                            @sellerName
+                            Store: @sellerName
                         </small>
 
                         <p class="shopper-product-desc">
                             @product.Description
                         </p>
+
+                        <div class="product-card-options">
+                            @if (hasColors)
+                            {
+                                <span>Colors available</span>
+                            }
+
+                            @if (hasSizes)
+                            {
+                                <span>Sizes available</span>
+                            }
+                        </div>
 
                         <div class="shopper-product-meta">
                             <strong>₱@product.Price.ToString("N2")</strong>
@@ -111,13 +139,38 @@
                         </div>
 
                         <div class="shopper-product-actions">
-                            <a href="#" class="btn btn-outline-primary btn-sm">
+                            <a asp-controller="Shopper"
+                               asp-action="ViewDetails"
+                               asp-route-id="@product.Id"
+                               class="btn btn-outline-primary btn-sm">
                                 View Details
                             </a>
 
-                            <a href="#" class="btn btn-primary btn-sm">
-                                Add to Cart
-                            </a>
+                            @if (needsOptions)
+                            {
+                                <a asp-controller="Shopper"
+                                   asp-action="ViewDetails"
+                                   asp-route-id="@product.Id"
+                                   class="btn btn-primary btn-sm">
+                                    Add to Cart
+                                </a>
+                            }
+                            else
+                            {
+                                <form asp-controller="Shopper"
+                                      asp-action="AddToCart"
+                                      method="post"
+                                      class="add-cart-form">
+                                    @Html.AntiForgeryToken()
+
+                                    <input type="hidden" name="productId" value="@product.Id" />
+                                    <input type="hidden" name="quantity" value="1" />
+
+                                    <button type="submit" class="btn btn-primary btn-sm">
+                                        Add to Cart
+                                    </button>
+                                </form>
+                            }
                         </div>
                     </div>
                 </div>
@@ -125,3 +178,61 @@
         </div>
     }
 </div>
+
+@section Scripts {
+    <script>
+        document.querySelectorAll(".add-cart-form").forEach(form => {
+            form.addEventListener("submit", function (e) {
+                e.preventDefault();
+
+                const button = form.querySelector("button");
+                const formData = new FormData(form);
+
+                button.disabled = true;
+                button.innerText = "Adding...";
+
+                fetch(form.action, {
+                    method: "POST",
+                    body: formData
+                })
+                .then(response => {
+                    if (response.ok) {
+                        showCartToast();
+
+                        const badge = document.getElementById("cartBadge");
+                        if (badge) {
+                            const current = parseInt(badge.innerText || "0");
+                            badge.innerText = current + 1;
+                        }
+
+                        button.innerText = "Added";
+                        setTimeout(() => {
+                            button.disabled = false;
+                            button.innerText = "Add to Cart";
+                        }, 900);
+                    } else {
+                        alert("Unable to add product to cart.");
+                        button.disabled = false;
+                        button.innerText = "Add to Cart";
+                    }
+                })
+                .catch(() => {
+                    alert("Something went wrong.");
+                    button.disabled = false;
+                    button.innerText = "Add to Cart";
+                });
+            });
+        });
+
+        function showCartToast() {
+            const toast = document.getElementById("cartToast");
+            if (!toast) return;
+
+            toast.classList.add("show");
+
+            setTimeout(() => {
+                toast.classList.remove("show");
+            }, 1800);
+        }
+    </script>
+}

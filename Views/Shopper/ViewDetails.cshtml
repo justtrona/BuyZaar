@@ -1,0 +1,306 @@
+@model BuyZaar.Models.Product
+
+@{
+    Layout = "_DashboardLayout";
+    ViewBag.ActiveRole = "Shopper";
+    ViewData["Title"] = Model.Name;
+
+    var images = Model.Images?.ToList() ?? new List<BuyZaar.Models.ProductImage>();
+    var mainImage = images.FirstOrDefault()?.ImagePath ?? "/images/no-image.png";
+    var sellerName = Model.Seller?.FullName ?? Model.Seller?.UserName ?? "Unknown Seller";
+
+    var sizeBasedCategories = new[] { "Clothing", "Shoes" };
+    var shouldShowSizes = sizeBasedCategories.Contains(Model.Category);
+
+    var variants = !string.IsNullOrWhiteSpace(Model.AvailableVariants)
+        ? Model.AvailableVariants.Split(',', StringSplitOptions.RemoveEmptyEntries)
+        : Array.Empty<string>();
+
+    var sizes = shouldShowSizes && !string.IsNullOrWhiteSpace(Model.AvailableSizes)
+        ? Model.AvailableSizes.Split(',', StringSplitOptions.RemoveEmptyEntries)
+        : Array.Empty<string>();
+}
+
+<link rel="stylesheet" href="~/css/shopperviewdetails.css" asp-append-version="true" />
+
+<div class="product-details-page">
+
+    <a asp-controller="Shopper" asp-action="BrowseProducts" class="back-to-products">
+        ← Back to Products
+    </a>
+
+    <div class="product-details-container">
+
+        <div class="product-images">
+            <img id="mainProductImage"
+                 src="@Url.Content(mainImage)"
+                 class="main-image"
+                 alt="@Model.Name" />
+
+            @if (images.Any())
+            {
+                <div class="thumbnail-list">
+                    @foreach (var image in images)
+                    {
+                        <img src="@Url.Content(image.ImagePath)"
+                             alt="@Model.Name"
+                             onclick="document.getElementById('mainProductImage').src='@Url.Content(image.ImagePath)'" />
+                    }
+                </div>
+            }
+        </div>
+
+        <div class="product-details">
+
+            <div class="product-category">@Model.Category</div>
+
+            <div class="product-title">@Model.Name</div>
+
+            <div class="product-rating">
+                ★★★★★ <span>4.8 · 120 reviews</span>
+            </div>
+
+            <div class="product-seller">
+                Shop: <strong>@sellerName</strong>
+            </div>
+
+            <div class="product-price">
+                ₱@Model.Price.ToString("N2")
+            </div>
+
+            <div class="product-stock @(Model.Stock <= 5 ? "low-stock" : "")">
+                @Model.Stock available
+            </div>
+
+            @if (variants.Any())
+            {
+                <div class="variant-section">
+                    <label>Select Color / Variant</label>
+
+                    <div class="variant-options">
+                        @foreach (var v in variants)
+                        {
+                            var variant = v.Trim();
+
+                            <label class="variant-option">
+                                <input type="radio"
+                                       name="selectedVariant"
+                                       value="@variant" />
+                                <span>@variant</span>
+                            </label>
+                        }
+                    </div>
+                </div>
+            }
+
+            @if (sizes.Any())
+            {
+                <div class="variant-section">
+                    <label>Select Size</label>
+
+                    <div class="variant-options">
+                        @foreach (var s in sizes)
+                        {
+                            var size = s.Trim();
+
+                            <label class="variant-option">
+                                <input type="radio"
+                                       name="selectedSize"
+                                       value="@size" />
+                                <span>@size</span>
+                            </label>
+                        }
+                    </div>
+                </div>
+            }
+
+            <div class="product-description">
+                @Model.Description
+            </div>
+
+            <div class="extra-info">
+                <div>
+                    <strong>Shipping</strong>
+                    Standard delivery
+                </div>
+                <div>
+                    <strong>Payment</strong>
+                    Secure checkout
+                </div>
+                <div>
+                    <strong>Returns</strong>
+                    Subject to seller policy
+                </div>
+            </div>
+
+            <div class="quantity-box">
+                <button type="button" onclick="decreaseQty()">−</button>
+                <input id="quantityInput" type="number" value="1" min="1" max="@Model.Stock" />
+                <button type="button" onclick="increaseQty(@Model.Stock)">+</button>
+            </div>
+
+            <div class="product-actions">
+                <form asp-controller="Shopper"
+                      asp-action="AddToCart"
+                      method="post"
+                      class="cart-form"
+                      onsubmit="return prepareCartForm();">
+                    @Html.AntiForgeryToken()
+
+                    <input type="hidden" name="productId" value="@Model.Id" />
+                    <input type="hidden" id="selectedVariantInput" name="selectedVariant" />
+                    <input type="hidden" id="selectedSizeInput" name="selectedSize" />
+                    <input type="hidden" id="quantityHidden" name="quantity" value="1" />
+
+                    <button type="submit" class="btn btn-outline-primary">
+                        Add to Cart
+                    </button>
+                </form>
+
+                <button type="button" class="btn btn-primary" onclick="buyNow()">
+                    Buy Now
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="product-lower-section">
+        <div class="product-tabs">
+            <button class="tab-btn active" type="button">Reviews</button>
+            <button class="tab-btn" type="button">Discussion</button>
+        </div>
+
+        <div class="review-discussion-grid">
+            <div class="reviews-card">
+                <h4>Customer Reviews</h4>
+
+                <div class="review-summary">
+                    <div class="review-score">4.8</div>
+                    <div>
+                        <div class="review-stars">★★★★★</div>
+                        <p>Based on 120 reviews</p>
+                    </div>
+                </div>
+
+                <div class="review-item">
+                    <strong>Anna D.</strong>
+                    <span>★★★★★</span>
+                    <p>Good quality product. The item arrived safely and looks exactly like the photos.</p>
+                </div>
+
+                <div class="review-item">
+                    <strong>Mark T.</strong>
+                    <span>★★★★☆</span>
+                    <p>Nice product for the price. Delivery was okay and packaging was secure.</p>
+                </div>
+
+                <div class="review-item">
+                    <strong>Jenny P.</strong>
+                    <span>★★★★★</span>
+                    <p>Very satisfied. I would buy from this shop again.</p>
+                </div>
+            </div>
+
+            <div class="discussion-card">
+                <h4>Product Discussion</h4>
+
+                <div class="discussion-item">
+                    <strong>Q:</strong> Is this available in other colors or sizes?
+                    <p><strong>A:</strong> Please check the color options above. Sizes only apply to clothing and shoes.</p>
+                </div>
+
+                <div class="discussion-item">
+                    <strong>Q:</strong> Is this item ready to ship?
+                    <p><strong>A:</strong> Availability depends on current stock.</p>
+                </div>
+
+                <textarea class="discussion-input" placeholder="Ask a question about this product..."></textarea>
+                <button type="button" class="btn btn-primary discussion-btn">
+                    Post Question
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function increaseQty(max) {
+            const input = document.getElementById("quantityInput");
+            let value = parseInt(input.value || "1");
+
+            if (value < max) {
+                input.value = value + 1;
+            }
+        }
+
+        function decreaseQty() {
+            const input = document.getElementById("quantityInput");
+            let value = parseInt(input.value || "1");
+
+            if (value > 1) {
+                input.value = value - 1;
+            }
+        }
+
+        function getSelectedVariant() {
+            const selected = document.querySelector('input[type="radio"][name="selectedVariant"]:checked');
+            return selected ? selected.value : "";
+        }
+
+        function getSelectedSize() {
+            const selected = document.querySelector('input[type="radio"][name="selectedSize"]:checked');
+            return selected ? selected.value : "";
+        }
+
+        function getQuantity() {
+            const input = document.getElementById("quantityInput");
+            return parseInt(input.value || "1");
+        }
+
+        function validateSelections() {
+            const hasVariants = document.querySelectorAll('input[type="radio"][name="selectedVariant"]').length > 0;
+            const hasSizes = document.querySelectorAll('input[type="radio"][name="selectedSize"]').length > 0;
+
+            if (hasVariants && !getSelectedVariant()) {
+                alert("Please select a color or variant.");
+                return false;
+            }
+
+            if (hasSizes && !getSelectedSize()) {
+                alert("Please select a size.");
+                return false;
+            }
+
+            return true;
+        }
+
+        function prepareCartForm() {
+            if (!validateSelections()) {
+                return false;
+            }
+
+            document.getElementById("selectedVariantInput").value = getSelectedVariant();
+            document.getElementById("selectedSizeInput").value = getSelectedSize();
+            document.getElementById("quantityHidden").value = getQuantity();
+
+            return true;
+        }
+
+        function buyNow() {
+            if (!validateSelections()) return;
+
+            const variant = getSelectedVariant();
+            const size = getSelectedSize();
+            const quantity = getQuantity();
+
+            alert(
+                "Proceeding to checkout\n" +
+                "Variant: " + (variant || "Default") + "\n" +
+                "Size: " + (size || "Not applicable") + "\n" +
+                "Quantity: " + quantity
+            );
+        }
+    </script>
+}

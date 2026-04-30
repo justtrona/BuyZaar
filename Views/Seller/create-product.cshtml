@@ -6,7 +6,7 @@
     ViewData["Title"] = "Add Product";
 }
 
-<link rel="stylesheet" href="~/css/product.css" />
+<link rel="stylesheet" href="~/css/product.css" asp-append-version="true" />
 
 <div class="product-page-shell">
     <div class="product-page-header">
@@ -26,7 +26,7 @@
     <div class="product-form-card">
         <div class="form-card-header">
             <h3>Product Information</h3>
-            <p>Fill in the details below to add a new item to your store.</p>
+            <p>Fill in the product details, including available colors and sizes if applicable.</p>
         </div>
 
         @if (!ViewData.ModelState.IsValid)
@@ -38,47 +38,96 @@
             @Html.AntiForgeryToken()
 
             <div class="product-form-grid">
+
                 <div class="form-group full-width">
                     <label asp-for="Name" class="form-label">Product Name</label>
-                    <input asp-for="Name" class="form-control custom-input" placeholder="Enter product name" />
+                    <input asp-for="Name"
+                           class="form-control custom-input"
+                           placeholder="e.g. Haylou Watch, Oversized Shirt, Running Shoes" />
                     <span asp-validation-for="Name" class="text-danger small"></span>
                 </div>
 
                 <div class="form-group full-width">
                     <label asp-for="Description" class="form-label">Description</label>
-                    <textarea asp-for="Description" class="form-control custom-input custom-textarea" rows="5" placeholder="Describe your product"></textarea>
+                    <textarea asp-for="Description"
+                              class="form-control custom-input custom-textarea"
+                              rows="5"
+                              placeholder="Describe your product, material, features, and important details"></textarea>
                     <span asp-validation-for="Description" class="text-danger small"></span>
                 </div>
 
-            <div class="form-group full-width">
-    <label asp-for="Category" class="form-label">Category</label>
+                <div class="form-group full-width">
+                    <label asp-for="Category" class="form-label">Category</label>
+                    <select asp-for="Category" class="form-control custom-input">
+                        <option value="">-- Select Category --</option>
+                        <option value="Electronics">Electronics</option>
+                        <option value="Clothing">Clothing</option>
+                        <option value="Shoes">Shoes</option>
+                        <option value="Accessories">Accessories</option>
+                        <option value="Beauty & Personal Care">Beauty & Personal Care</option>
+                        <option value="Home & Living">Home & Living</option>
+                        <option value="Food & Beverages">Food & Beverages</option>
+                        <option value="Books & Stationery">Books & Stationery</option>
+                        <option value="Sports & Outdoors">Sports & Outdoors</option>
+                        <option value="Toys & Games">Toys & Games</option>
+                        <option value="Automotive">Automotive</option>
+                        <option value="Others">Others</option>
+                    </select>
+                    <span asp-validation-for="Category" class="text-danger small"></span>
+                </div>
 
-    <select asp-for="Category" class="form-control custom-input">
-        <option value="">-- Select Category --</option>
-        <option value="Electronics">Electronics</option>
-        <option value="Clothing">Clothing</option>
-        <option value="Accessories">Accessories</option>
-        <option value="Beauty & Personal Care">Beauty & Personal Care</option>
-        <option value="Home & Living">Home & Living</option>
-        <option value="Food & Beverages">Food & Beverages</option>
-        <option value="Books & Stationery">Books & Stationery</option>
-        <option value="Sports & Outdoors">Sports & Outdoors</option>
-        <option value="Toys & Games">Toys & Games</option>
-        <option value="Automotive">Automotive</option>
-        <option value="Others">Others</option>
-    </select>
+                <div class="form-group full-width">
+                    <label asp-for="AvailableVariants" class="form-label">Available Colors / Variants</label>
+                    <input asp-for="AvailableVariants"
+                           class="form-control custom-input"
+                           placeholder="e.g. Black, Beige, White, Army Green" />
+                    <span asp-validation-for="AvailableVariants" class="text-danger small"></span>
+                    <small class="text-muted">
+                        Use this for colors or style variants. Separate each option with a comma.
+                    </small>
+                </div>
 
-    <span asp-validation-for="Category" class="text-danger small"></span>
-</div>
+                <div class="form-group full-width">
+                    <label class="form-label">Available Sizes</label>
+
+                    <div class="size-options">
+                        @foreach (var size in new[] { "XS", "S", "M", "L", "XL", "XXL" })
+                        {
+                            <button type="button"
+                                    class="size-btn"
+                                    onclick="toggleSize('@size')">
+                                @size
+                            </button>
+                        }
+                    </div>
+
+                    <div id="selectedSizes" class="selected-sizes"></div>
+
+                    <input type="hidden" asp-for="AvailableSizes" id="sizesInput" />
+
+                    <span asp-validation-for="AvailableSizes" class="text-danger small"></span>
+
+                    <small class="text-muted">
+                        Click sizes to select. Click again or press × to remove. Leave blank if not applicable.
+                    </small>
+                </div>
+
                 <div class="form-group">
                     <label asp-for="Price" class="form-label">Price (₱)</label>
-                    <input asp-for="Price" class="form-control custom-input" type="number" step="0.01" placeholder="0.00" />
+                    <input asp-for="Price"
+                           class="form-control custom-input"
+                           type="number"
+                           step="0.01"
+                           placeholder="0.00" />
                     <span asp-validation-for="Price" class="text-danger small"></span>
                 </div>
 
                 <div class="form-group">
-                    <label asp-for="Stock" class="form-label">Stock</label>
-                    <input asp-for="Stock" class="form-control custom-input" type="number" placeholder="0" />
+                    <label asp-for="Stock" class="form-label">Total Stock</label>
+                    <input asp-for="Stock"
+                           class="form-control custom-input"
+                           type="number"
+                           placeholder="0" />
                     <span asp-validation-for="Stock" class="text-danger small"></span>
                 </div>
 
@@ -94,6 +143,7 @@
                         You can upload multiple product images. Allowed: JPG, JPEG, PNG, WEBP.
                     </small>
                 </div>
+
             </div>
 
             <div class="form-divider"></div>
@@ -113,4 +163,5 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/product.js" asp-append-version="true"></script>
 }

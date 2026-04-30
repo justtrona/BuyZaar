@@ -6,7 +6,7 @@
     ViewData["Title"] = "Manage Products";
 }
 
-<link rel="stylesheet" href="~/css/product.css" />
+<link rel="stylesheet" href="~/css/product.css" asp-append-version="true" />
 
 <div class="products-page-shell">
     <div class="products-header">
@@ -34,6 +34,7 @@
             <div class="empty-products-state">
                 <h3>No products yet</h3>
                 <p>You have not added any products to your shop yet.</p>
+
                 <a asp-controller="Seller" asp-action="CreateProduct" class="btn btn-primary">
                     Add Your First Product
                 </a>
@@ -47,6 +48,8 @@
                         <tr>
                             <th>Product</th>
                             <th>Category</th>
+                            <th>Colors / Variants</th>
+                            <th>Sizes</th>
                             <th>Price</th>
                             <th>Stock</th>
                             <th>Date Added</th>
@@ -57,32 +60,61 @@
                     <tbody>
                         @foreach (var product in Model)
                         {
-                            var firstImage = product.Images?.FirstOrDefault();
+                            var firstImage = product.Images?.FirstOrDefault()?.ImagePath ?? "/images/no-image.png";
 
                             <tr>
                                 <td>
                                     <div class="product-table-info">
-
-                                        @if (firstImage != null)
-                                        {
-                                            <img src="@firstImage.ImagePath" class="product-table-img" />
-                                        }
-                                        else
-                                        {
-                                            <img src="~/images/no-image.png" class="product-table-img" />
-                                        }
+                                        <img src="@Url.Content(firstImage)"
+                                             class="product-table-img"
+                                             alt="@product.Name" />
 
                                         <div>
                                             <div class="product-name">@product.Name</div>
                                             <div class="product-description">@product.Description</div>
                                         </div>
-
                                     </div>
                                 </td>
 
-                                <td>@product.Category</td>
+                                <td>
+                                    <span class="category-badge">@product.Category</span>
+                                </td>
 
-                                <td>₱@product.Price.ToString("N2")</td>
+                                <td>
+                                    @if (!string.IsNullOrWhiteSpace(product.AvailableVariants))
+                                    {
+                                        <div class="variant-list">
+                                            @foreach (var variant in product.AvailableVariants.Split(',', StringSplitOptions.RemoveEmptyEntries))
+                                            {
+                                                <span class="variant-badge">@variant.Trim()</span>
+                                            }
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small">No colors</span>
+                                    }
+                                </td>
+
+                                <td>
+                                    @if (!string.IsNullOrWhiteSpace(product.AvailableSizes))
+                                    {
+                                        <div class="variant-list">
+                                            @foreach (var size in product.AvailableSizes.Split(',', StringSplitOptions.RemoveEmptyEntries))
+                                            {
+                                                <span class="variant-badge">@size.Trim()</span>
+                                            }
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small">No sizes</span>
+                                    }
+                                </td>
+
+                                <td class="price">
+                                    ₱@product.Price.ToString("N2")
+                                </td>
 
                                 <td>
                                     @if (product.Stock <= 5)
@@ -99,7 +131,6 @@
 
                                 <td class="text-center">
                                     <div class="action-buttons">
-
                                         <a asp-controller="Seller"
                                            asp-action="EditProduct"
                                            asp-route-id="@product.Id"
@@ -113,13 +144,13 @@
                                               method="post"
                                               class="d-inline">
                                             @Html.AntiForgeryToken()
+
                                             <button type="submit"
                                                     class="btn btn-sm btn-outline-danger"
                                                     onclick="return confirm('Are you sure you want to delete this product?')">
                                                 Delete
                                             </button>
                                         </form>
-
                                     </div>
                                 </td>
                             </tr>
