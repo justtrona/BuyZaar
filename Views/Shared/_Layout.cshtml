@@ -10,20 +10,16 @@
 <body>
     <div class="app-layout">
 <div class="topbar">
-    <!-- Logo Section -->
     <a href="/" class="sidebar-brand d-flex align-items-center">
         <img src="~/images/text_logo.png" alt="BuyZaar Logo" class="logo" />
     </a>
     
-    <!-- Navigation Links (Home, Privacy, etc.) -->
     <div class="d-flex gap-4">
         <a class="sidebar-link" href="#">Home</a>
         <a class="sidebar-link" href="#">Privacy</a>
     </div>
     
-    <!-- Always Show Auth buttons (for testing purposes) -->
     <div class="d-flex gap-2" style="z-index: 9999;">
-        <!-- Login/Register buttons always visible -->
         <div class="auth-buttons">
             <a class="btn btn-outline-primary" href="/Account/Login">Login</a>
             <a class="btn btn-primary" href="/Account/Register">Register</a>
@@ -31,9 +27,8 @@
     </div>
 </div>
 
-        <!-- Main Content Area -->
         <main class="page-content">
-            @RenderBody()  <!-- Content of the page will be injected here -->
+            @RenderBody()  
         </main>
 
         <!-- Footer -->

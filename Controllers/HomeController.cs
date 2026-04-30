@@ -13,7 +13,7 @@ namespace BuyZaar.Controllers
             _emailService = emailService;
         }
 
-        // ✅ Landing Page as the Index
+        //  Landing Page as the Index
         public IActionResult Index()
         {
                return View("~/Views/LandingPage/Landing.cshtml");  // Correct path to the view
