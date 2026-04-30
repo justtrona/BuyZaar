@@ -22,7 +22,7 @@ namespace BuyZaar.Controllers
             _emailService = emailService;
         }
 
-        // Register method (unchanged)
+        // Register method 
         [HttpGet]
         public IActionResult Register()
         {
@@ -83,7 +83,7 @@ namespace BuyZaar.Controllers
             return View(model);
         }
 
-        // Email verification methods (unchanged)
+        // Email verification methods 
         [HttpGet]
         public IActionResult VerifyEmailNotice(string email)
         {
