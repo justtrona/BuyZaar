@@ -1,0 +1,138 @@
+@model BuyZaar.Models.Order
+
+@{
+    Layout = "_DashboardLayout";
+    ViewBag.ActiveRole = "Shopper";
+    ViewData["Title"] = "Order Details";
+
+    var firstItem = Model.OrderItems.FirstOrDefault();
+    var shopName = firstItem?.Product?.Seller?.FullName
+                   ?? firstItem?.Product?.Seller?.UserName
+                   ?? "Unknown Shop";
+
+    var steps = new List<string> { "To Ship", "To Receive", "To Review", "Completed" };
+    var currentIndex = steps.IndexOf(Model.Status);
+    if (currentIndex < 0) currentIndex = 0;
+}
+
+<link rel="stylesheet" href="~/css/orderdetails.css" asp-append-version="true" />
+
+<div class="order-details-page">
+    <a asp-controller="Shopper" asp-action="MyOrders" class="back-link">
+        ← Back to My Orders
+    </a>
+
+    <div class="details-header">
+        <div>
+            <h1>Order #@Model.Id</h1>
+            <p>Placed on @Model.CreatedAt.ToString("MMM dd, yyyy hh:mm tt")</p>
+        </div>
+
+        <span class="details-status">@Model.Status</span>
+    </div>
+
+    <div class="tracking-card">
+        <h2>Track Parcel</h2>
+
+        <div class="tracking-steps">
+            @for (int i = 0; i < steps.Count; i++)
+            {
+                var active = i <= currentIndex ? "active" : "";
+
+                <div class="tracking-step @active">
+                    <div class="step-circle">@(i + 1)</div>
+                    <span>@steps[i]</span>
+                </div>
+            }
+        </div>
+
+        <p class="tracking-note">
+            @if (Model.Status == "To Ship")
+            {
+                @:Your order is waiting for the seller to prepare and ship the parcel.
+            }
+            else if (Model.Status == "To Receive")
+            {
+                @:Your parcel is on the way. Please prepare your Cash on Delivery payment.
+            }
+            else if (Model.Status == "To Review")
+            {
+                @:Your order has been received. You may now review the product.
+            }
+            else if (Model.Status == "Completed")
+            {
+                @:This order has been completed.
+            }
+            else
+            {
+                @:Your order tracking details will appear here.
+            }
+        </p>
+    </div>
+
+    <div class="details-grid">
+        <div class="details-card">
+            <h2>Shop Information</h2>
+            <p>@shopName</p>
+        </div>
+
+        <div class="details-card">
+            <h2>Delivery Information</h2>
+
+            <div class="delivery-info-list">
+                <p><strong>Receiver:</strong> @Model.ReceiverName</p>
+                <p><strong>Contact:</strong> @Model.ContactNumber</p>
+                <p><strong>Address:</strong> @Model.DeliveryAddress</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="details-card">
+        <h2>Order Items</h2>
+
+        @foreach (var item in Model.OrderItems)
+        {
+            var product = item.Product;
+            var image = product?.Images?.FirstOrDefault()?.ImagePath ?? "/images/no-image.png";
+
+            <div class="details-product">
+                <img src="@Url.Content(image)"
+                     alt="@(product?.Name ?? "Product")" />
+
+                <div>
+                    <h3>@(product?.Name ?? "Product")</h3>
+                    <p>Variant: @(item.SelectedVariant ?? "Default")</p>
+                    <p>Size: @(item.SelectedSize ?? "N/A")</p>
+                    <p>Quantity: @item.Quantity</p>
+                </div>
+
+                <strong>₱@item.Subtotal.ToString("N2")</strong>
+            </div>
+        }
+    </div>
+
+    <div class="details-total-card">
+        <span>Order Total</span>
+        <strong>₱@Model.TotalAmount.ToString("N2")</strong>
+    </div>
+
+    <div class="details-actions">
+        @if (Model.Status == "To Receive")
+        {
+            <form asp-controller="Shopper" asp-action="MarkOrderReceived" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="orderId" value="@Model.Id" />
+
+                <button type="submit" class="btn-primary-details">
+                    Order Received
+                </button>
+            </form>
+        }
+
+        <a asp-controller="Shopper"
+           asp-action="BrowseProducts"
+           class="btn-outline-details">
+            Buy Again
+        </a>
+    </div>
+</div>

@@ -46,8 +46,8 @@
                             My Cart
                         </a>
 
-                        <a href="#">My Orders</a>
-                        <a href="#">Track Orders</a>
+<a asp-controller="Shopper" asp-action="MyOrders">My Orders</a>                      
+      @* <a href="#">Track Orders</a> *@
                         <a asp-controller="Shopper" asp-action="Index">Profile</a>
 
                         @if (!isSeller)

@@ -20,34 +20,55 @@ namespace BuyZaar.Controllers
             _context = context;
         }
 
-        public async Task<IActionResult> Index()
-        {
-            ViewBag.ActiveRole = "Shopper";
+       public async Task<IActionResult> Index()
+{
+    ViewBag.ActiveRole = "Shopper";
 
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null)
-                return RedirectToAction("Login", "Account");
+    var user = await _userManager.GetUserAsync(User);
+    if (user == null)
+        return RedirectToAction("Login", "Account");
 
-            string sellerStatus = "Not Applied";
+    string sellerStatus = "Not Applied";
 
-            if (await _userManager.IsInRoleAsync(user, "Seller"))
-            {
-                sellerStatus = "Approved";
-            }
-            else
-            {
-                var latestApplication = await _context.SellerApplications
-                    .Where(sa => sa.UserId == user.Id)
-                    .OrderByDescending(sa => sa.CreatedAt)
-                    .FirstOrDefaultAsync();
+    if (await _userManager.IsInRoleAsync(user, "Seller"))
+    {
+        sellerStatus = "Approved";
+    }
+    else
+    {
+        var latestApplication = await _context.SellerApplications
+            .Where(sa => sa.UserId == user.Id)
+            .OrderByDescending(sa => sa.CreatedAt)
+            .FirstOrDefaultAsync();
 
-                if (latestApplication != null)
-                    sellerStatus = latestApplication.Status;
-            }
+        if (latestApplication != null)
+            sellerStatus = latestApplication.Status;
+    }
 
-            ViewBag.SellerApplicationStatus = sellerStatus;
-            return View();
-        }
+    ViewBag.SellerApplicationStatus = sellerStatus;
+
+    ViewBag.TotalOrders = await _context.Orders
+        .CountAsync(o => o.ShopperId == user.Id);
+
+    ViewBag.CartItems = await _context.CartItems
+        .Where(c => c.ShopperId == user.Id)
+        .SumAsync(c => c.Quantity);
+
+  ViewBag.PendingDeliveries = await _context.Orders
+    .CountAsync(o =>
+        o.ShopperId == user.Id &&
+        o.Status == "To Receive");
+
+    ViewBag.RecentOrders = await _context.Orders
+        .Include(o => o.OrderItems)
+            .ThenInclude(oi => oi.Product)
+        .Where(o => o.ShopperId == user.Id)
+        .OrderByDescending(o => o.CreatedAt)
+        .Take(3)
+        .ToListAsync();
+
+    return View(user);
+}
 
         public async Task<IActionResult> BrowseProducts(string? search, string? category, string? sort)
         {
@@ -95,6 +116,33 @@ namespace BuyZaar.Controllers
             return View(products);
         }
 
+
+[HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> UpdateProfile(string fullName, string phoneNumber)
+{
+    ViewBag.ActiveRole = "Shopper";
+
+    var user = await _userManager.GetUserAsync(User);
+    if (user == null)
+        return RedirectToAction("Login", "Account");
+
+    user.FullName = string.IsNullOrWhiteSpace(fullName) ? user.FullName : fullName.Trim();
+    user.PhoneNumber = string.IsNullOrWhiteSpace(phoneNumber) ? null : phoneNumber.Trim();
+
+    var result = await _userManager.UpdateAsync(user);
+
+    if (result.Succeeded)
+    {
+        TempData["ProfileMessage"] = "Profile updated successfully.";
+    }
+    else
+    {
+        TempData["ProfileMessage"] = "Unable to update profile. Please try again.";
+    }
+
+    return RedirectToAction("Index");
+}
         public async Task<IActionResult> ViewDetails(int id)
         {
             ViewBag.ActiveRole = "Shopper";
@@ -268,6 +316,242 @@ namespace BuyZaar.Controllers
 
             return RedirectToAction("MyCart");
         }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> BuyNowCheckout(int productId, int quantity, string? selectedVariant, string? selectedSize)
+        {
+            ViewBag.ActiveRole = "Shopper";
+
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+                return RedirectToAction("Login", "Account");
+
+            if (quantity < 1)
+                quantity = 1;
+
+            var product = await _context.Products
+                .Include(p => p.Images)
+                .Include(p => p.Seller)
+                .FirstOrDefaultAsync(p => p.Id == productId && p.Stock > 0);
+
+            if (product == null)
+                return NotFound();
+
+            if (quantity > product.Stock)
+            {
+                TempData["ErrorMessage"] = "Not enough stock available.";
+                return RedirectToAction("ViewDetails", new { id = productId });
+            }
+
+            selectedVariant = string.IsNullOrWhiteSpace(selectedVariant) ? null : selectedVariant.Trim();
+            selectedSize = string.IsNullOrWhiteSpace(selectedSize) ? null : selectedSize.Trim();
+
+            var model = new CheckoutViewModel
+            {
+                ProductId = product.Id,
+                ProductName = product.Name,
+                ProductImage = product.Images.FirstOrDefault()?.ImagePath ?? "/images/no-image.png",
+                Price = product.Price,
+                Quantity = quantity,
+                Subtotal = product.Price * quantity,
+                SelectedVariant = selectedVariant,
+                SelectedSize = selectedSize,
+                DeliveryAddress = ""
+            };
+
+            return View("Checkout", model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> PlaceOrder(CheckoutViewModel model)
+        {
+            ViewBag.ActiveRole = "Shopper";
+
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+                return RedirectToAction("Login", "Account");
+
+            if (string.IsNullOrWhiteSpace(model.HouseNo) ||
+                string.IsNullOrWhiteSpace(model.Street) ||
+                string.IsNullOrWhiteSpace(model.Barangay) ||
+                string.IsNullOrWhiteSpace(model.CityMunicipality) ||
+                string.IsNullOrWhiteSpace(model.Province))
+            {
+                TempData["ErrorMessage"] = "Please complete your delivery address.";
+                return View("Checkout", model);
+            }
+
+            model.DeliveryAddress =
+                $"{model.HouseNo.Trim()}, {model.Street.Trim()}, {model.Barangay.Trim()}, {model.CityMunicipality.Trim()}, {model.Province.Trim()}" +
+                (string.IsNullOrWhiteSpace(model.Landmark) ? "" : $", Landmark: {model.Landmark.Trim()}");
+
+            if (model.Quantity < 1)
+                model.Quantity = 1;
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+
+            try
+            {
+                var product = await _context.Products
+                    .FirstOrDefaultAsync(p => p.Id == model.ProductId);
+
+                if (product == null)
+                    return NotFound();
+
+                if (product.Stock < model.Quantity)
+                {
+                    await transaction.RollbackAsync();
+
+                    TempData["ErrorMessage"] = "Not enough stock available.";
+                    return RedirectToAction("ViewDetails", new { id = model.ProductId });
+                }
+
+                var order = new Order
+                {
+                    ShopperId = user.Id,
+                    DeliveryAddress = model.DeliveryAddress.Trim(),
+                    TotalAmount = product.Price * model.Quantity,
+                    ReceiverName = model.ReceiverName,
+                    ContactNumber = model.ContactNumber,
+                    Status = "To Ship",
+                    CreatedAt = DateTime.Now
+                };
+
+                var orderItem = new OrderItem
+                {
+                    ProductId = product.Id,
+                    Quantity = model.Quantity,
+                    Price = product.Price,
+                    Subtotal = product.Price * model.Quantity,
+                    SelectedVariant = string.IsNullOrWhiteSpace(model.SelectedVariant) ? null : model.SelectedVariant.Trim(),
+                    SelectedSize = string.IsNullOrWhiteSpace(model.SelectedSize) ? null : model.SelectedSize.Trim()
+                };
+
+                order.OrderItems.Add(orderItem);
+
+                product.Stock -= model.Quantity;
+
+                _context.Orders.Add(order);
+                _context.Products.Update(product);
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                TempData["SuccessMessage"] = "Order created successfully.";
+
+                return RedirectToAction("OrderSuccess", new { id = order.Id });
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                TempData["ErrorMessage"] = "Something went wrong while placing your order.";
+                return View("Checkout", model);
+            }
+        }
+
+       public async Task<IActionResult> OrderSuccess(int id)
+{
+    ViewBag.ActiveRole = "Shopper";
+
+    var user = await _userManager.GetUserAsync(User);
+    if (user == null)
+        return RedirectToAction("Login", "Account");
+
+    var order = await _context.Orders
+        .Include(o => o.OrderItems)
+            .ThenInclude(oi => oi.Product)
+                .ThenInclude(p => p!.Images)
+        .FirstOrDefaultAsync(o => o.Id == id && o.ShopperId == user.Id);
+
+    if (order == null)
+        return NotFound();
+
+    return View(order);
+}
+       public async Task<IActionResult> MyOrders(string? status)
+{
+    ViewBag.ActiveRole = "Shopper";
+
+    var user = await _userManager.GetUserAsync(User);
+    if (user == null)
+        return RedirectToAction("Login", "Account");
+
+    var query = _context.Orders
+        .Include(o => o.OrderItems)
+            .ThenInclude(oi => oi.Product)
+                .ThenInclude(p => p!.Images)
+        .Include(o => o.OrderItems)
+            .ThenInclude(oi => oi.Product)
+                .ThenInclude(p => p!.Seller)
+        .Where(o => o.ShopperId == user.Id)
+        .AsQueryable();
+
+    if (!string.IsNullOrWhiteSpace(status))
+    {
+        if (status == "To Pay")
+        {
+            query = query.Where(o =>
+                o.Status == "To Pay" ||
+                o.Status == "Pending Payment");
+        }
+        else
+        {
+            query = query.Where(o => o.Status == status);
+        }
+    }
+
+    var orders = await query
+        .OrderByDescending(o => o.CreatedAt)
+        .ToListAsync();
+
+    return View(orders);
+}
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> MarkOrderReceived(int orderId)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+                return RedirectToAction("Login", "Account");
+
+            var order = await _context.Orders
+                .FirstOrDefaultAsync(o => o.Id == orderId && o.ShopperId == user.Id);
+
+            if (order == null)
+                return NotFound();
+
+            order.Status = "To Review";
+
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("MyOrders", new { status = "To Review" });
+        }
+
+        public async Task<IActionResult> OrderDetails(int id)
+{
+    ViewBag.ActiveRole = "Shopper";
+
+    var user = await _userManager.GetUserAsync(User);
+    if (user == null)
+        return RedirectToAction("Login", "Account");
+
+    var order = await _context.Orders
+        .Include(o => o.OrderItems)
+            .ThenInclude(oi => oi.Product)
+                .ThenInclude(p => p!.Images)
+        .Include(o => o.OrderItems)
+            .ThenInclude(oi => oi.Product)
+                .ThenInclude(p => p!.Seller)
+        .FirstOrDefaultAsync(o => o.Id == id && o.ShopperId == user.Id);
+
+    if (order == null)
+        return NotFound();
+
+    return View(order);
+}
 
         [HttpGet]
         public async Task<IActionResult> ApplySeller()

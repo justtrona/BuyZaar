@@ -1,0 +1,198 @@
+@model List<BuyZaar.Models.Order>
+
+@{
+    Layout = "_DashboardLayout";
+    ViewBag.ActiveRole = "Shopper";
+    ViewData["Title"] = "My Orders";
+
+    string currentFilter = Context.Request.Query["status"].ToString();
+
+    var groupedOrders = Model
+        .GroupBy(o => new
+        {
+            ShopName = o.OrderItems.FirstOrDefault()?.Product?.Seller?.FullName
+                       ?? o.OrderItems.FirstOrDefault()?.Product?.Seller?.UserName
+                       ?? "Unknown Shop",
+
+            DateGroup = o.CreatedAt.ToString("yyyy-MM-dd HH:mm"),
+            Status = o.Status,
+            Address = o.DeliveryAddress
+        })
+        .OrderByDescending(g => g.Max(o => o.CreatedAt))
+        .ToList();
+}
+
+<link rel="stylesheet" href="~/css/myorders.css" asp-append-version="true" />
+
+<div class="my-orders-page">
+    <div class="orders-header">
+        <h1>My Orders</h1>
+        <p>View, track, and manage your recent purchases.</p>
+    </div>
+
+    <div class="orders-tabs">
+        <a asp-controller="Shopper" asp-action="MyOrders"
+           class="@(string.IsNullOrEmpty(currentFilter) ? "active" : "")">
+            All
+        </a>
+
+        <a asp-controller="Shopper" asp-action="MyOrders" asp-route-status="To Pay"
+           class="@(currentFilter == "To Pay" ? "active" : "")">
+            To Pay
+        </a>
+
+        <a asp-controller="Shopper" asp-action="MyOrders" asp-route-status="To Ship"
+           class="@(currentFilter == "To Ship" ? "active" : "")">
+            To Ship
+        </a>
+
+        <a asp-controller="Shopper" asp-action="MyOrders" asp-route-status="To Receive"
+           class="@(currentFilter == "To Receive" ? "active" : "")">
+            To Receive
+        </a>
+
+        <a asp-controller="Shopper" asp-action="MyOrders" asp-route-status="To Review"
+           class="@(currentFilter == "To Review" ? "active" : "")">
+            To Review
+        </a>
+
+        <a asp-controller="Shopper" asp-action="MyOrders" asp-route-status="Returns"
+           class="@(currentFilter == "Returns" ? "active" : "")">
+            Returns
+        </a>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="empty-orders">
+            <h2>No orders found</h2>
+            <p>You do not have orders in this section yet.</p>
+
+            <a asp-controller="Shopper"
+               asp-action="BrowseProducts"
+               class="btn-shop-now">
+                Start Shopping
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="orders-list">
+            @foreach (var group in groupedOrders)
+            {
+                var orders = group.ToList();
+                var firstOrder = orders.First();
+                var totalAmount = orders.Sum(o => o.TotalAmount);
+
+                <div class="order-card order-card-link"
+                     onclick="window.location.href='@Url.Action("OrderDetails", "Shopper", new { id = firstOrder.Id })'">
+
+                    <div class="order-shop-header">
+                        <div>
+                            <h2>@group.Key.ShopName</h2>
+                            <p>
+                                Order placed: @firstOrder.CreatedAt.ToString("MMM dd, yyyy hh:mm tt")
+                            </p>
+                        </div>
+
+                        <span class="order-status">
+                            @group.Key.Status
+                        </span>
+                    </div>
+
+                    <div class="order-id-list">
+                        @foreach (var order in orders)
+                        {
+                            <span>Order #@order.Id</span>
+                        }
+                    </div>
+
+                    @foreach (var order in orders)
+                    {
+                        @foreach (var item in order.OrderItems)
+                        {
+                            var product = item.Product;
+                            var image = product?.Images?.FirstOrDefault()?.ImagePath ?? "/images/no-image.png";
+
+                            <div class="order-product">
+                                <img src="@Url.Content(image)"
+                                     alt="@(product?.Name ?? "Product")"
+                                     class="order-product-img" />
+
+                                <div class="order-product-info">
+                                    <h3>@(product?.Name ?? "Product")</h3>
+
+                                    <p>
+                                        Variant: @(item.SelectedVariant ?? "Default")
+                                        · Size: @(item.SelectedSize ?? "N/A")
+                                    </p>
+
+                                    <p>Qty: @item.Quantity</p>
+                                </div>
+
+                                <div class="order-product-price">
+                                    ₱@item.Subtotal.ToString("N2")
+                                </div>
+                            </div>
+                        }
+                    }
+
+                    <div class="order-address">
+                        <strong>Delivery Address</strong>
+                        <p>@group.Key.Address</p>
+                    </div>
+
+                    <div class="order-footer">
+                        <div class="order-total">
+                            <span>Order Total</span>
+                            <strong>₱@totalAmount.ToString("N2")</strong>
+                        </div>
+
+                        <div class="order-actions" onclick="event.stopPropagation();">
+                            @if (group.Key.Status == "To Pay" || group.Key.Status == "Pending Payment")
+                            {
+                                <button type="button" class="btn-primary-order">
+                                    Pay Now
+                                </button>
+                            }
+                            else if (group.Key.Status == "To Ship")
+                            {
+                                <button type="button" class="btn-disabled">
+                                    Waiting for Seller
+                                </button>
+                            }
+                            else if (group.Key.Status == "To Receive")
+                            {
+                                @foreach (var order in orders)
+                                {
+                                    <form asp-controller="Shopper"
+                                          asp-action="MarkOrderReceived"
+                                          method="post">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="orderId" value="@order.Id" />
+
+                                        <button type="submit" class="btn-primary-order">
+                                            Order Received
+                                        </button>
+                                    </form>
+                                }
+                            }
+                            else if (group.Key.Status == "To Review")
+                            {
+                                <button type="button" class="btn-primary-order">
+                                    Write Review
+                                </button>
+                            }
+
+                            <a asp-controller="Shopper"
+                               asp-action="BrowseProducts"
+                               class="btn-outline-order">
+                                Buy Again
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

@@ -1,0 +1,163 @@
+.order-success-page {
+    min-height: 75vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 30px;
+}
+
+.success-card {
+    width: 100%;
+    max-width: 820px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 24px;
+    padding: 40px;
+    box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+    text-align: center;
+}
+
+.success-icon {
+    width: 76px;
+    height: 76px;
+    margin: 0 auto 18px;
+    border-radius: 50%;
+    background: #dcfce7;
+    color: #16a34a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 42px;
+    font-weight: 900;
+}
+
+.success-card h1 {
+    font-size: 32px;
+    font-weight: 900;
+    color: #111827;
+    margin-bottom: 10px;
+}
+
+.success-message {
+    color: #6b7280;
+    margin-bottom: 28px;
+}
+
+.order-info-box {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+    margin-bottom: 22px;
+}
+
+.order-info-box div,
+.delivery-box,
+.items-box {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 16px;
+    text-align: left;
+}
+
+.order-info-box span {
+    display: block;
+    font-size: 13px;
+    color: #6b7280;
+    margin-bottom: 4px;
+}
+
+.order-info-box strong {
+    color: #111827;
+    font-size: 16px;
+}
+
+.status {
+    color: #2563eb !important;
+}
+
+.delivery-box,
+.items-box {
+    margin-bottom: 18px;
+}
+
+.delivery-box h3,
+.items-box h3 {
+    font-size: 18px;
+    font-weight: 800;
+    margin-bottom: 8px;
+    color: #111827;
+}
+
+.delivery-box p {
+    margin: 0;
+    color: #374151;
+}
+
+.order-item-success {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 0;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.order-item-success:last-child {
+    border-bottom: none;
+}
+
+.order-item-success p {
+    margin: 5px 0 0;
+    color: #6b7280;
+    font-size: 14px;
+}
+
+.success-actions {
+    display: flex;
+    gap: 14px;
+    margin-top: 24px;
+}
+
+.btn-continue,
+.btn-secondary-action {
+    flex: 1;
+    text-decoration: none;
+    padding: 14px 18px;
+    border-radius: 14px;
+    font-weight: 800;
+    transition: 0.2s ease;
+}
+
+.btn-continue {
+    background: #2563eb;
+    color: white;
+}
+
+.btn-continue:hover {
+    background: #1d4ed8;
+    color: white;
+}
+
+.btn-secondary-action {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.btn-secondary-action:hover {
+    background: #e5e7eb;
+    color: #111827;
+}
+
+@media (max-width: 700px) {
+    .success-card {
+        padding: 28px 20px;
+    }
+
+    .order-info-box {
+        grid-template-columns: 1fr;
+    }
+
+    .success-actions {
+        flex-direction: column;
+    }
+}

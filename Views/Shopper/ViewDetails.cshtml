@@ -157,9 +157,22 @@
                     </button>
                 </form>
 
-                <button type="button" class="btn btn-primary" onclick="buyNow()">
-                    Buy Now
-                </button>
+                <form asp-controller="Shopper"
+                      asp-action="BuyNowCheckout"
+                      method="post"
+                      class="cart-form"
+                      onsubmit="return prepareBuyNowForm();">
+                    @Html.AntiForgeryToken()
+
+                    <input type="hidden" name="productId" value="@Model.Id" />
+                    <input type="hidden" id="buyNowVariantInput" name="selectedVariant" />
+                    <input type="hidden" id="buyNowSizeInput" name="selectedSize" />
+                    <input type="hidden" id="buyNowQuantityInput" name="quantity" value="1" />
+
+                    <button type="submit" class="btn btn-primary">
+                        Buy Now
+                    </button>
+                </form>
             </div>
 
         </div>
@@ -256,7 +269,13 @@
 
         function getQuantity() {
             const input = document.getElementById("quantityInput");
-            return parseInt(input.value || "1");
+            let value = parseInt(input.value || "1");
+
+            if (isNaN(value) || value < 1) {
+                value = 1;
+            }
+
+            return value;
         }
 
         function validateSelections() {
@@ -288,19 +307,16 @@
             return true;
         }
 
-        function buyNow() {
-            if (!validateSelections()) return;
+        function prepareBuyNowForm() {
+            if (!validateSelections()) {
+                return false;
+            }
 
-            const variant = getSelectedVariant();
-            const size = getSelectedSize();
-            const quantity = getQuantity();
+            document.getElementById("buyNowVariantInput").value = getSelectedVariant();
+            document.getElementById("buyNowSizeInput").value = getSelectedSize();
+            document.getElementById("buyNowQuantityInput").value = getQuantity();
 
-            alert(
-                "Proceeding to checkout\n" +
-                "Variant: " + (variant || "Default") + "\n" +
-                "Size: " + (size || "Not applicable") + "\n" +
-                "Quantity: " + quantity
-            );
+            return true;
         }
     </script>
-}
+} 

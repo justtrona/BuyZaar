@@ -4,15 +4,11 @@
     Layout = "_DashboardLayout";
     ViewBag.ActiveRole = "Shopper";
     ViewData["Title"] = "My Cart";
-
-    var total = Model.Sum(i => (i.Product?.Price ?? 0) * i.Quantity);
 }
 
 <link rel="stylesheet" href="~/css/product.css" asp-append-version="true" />
 
 <div class="products-page-shell">
-
-    @Html.AntiForgeryToken()
 
     <h2 style="margin-bottom:20px;">My Cart</h2>
 
@@ -31,116 +27,181 @@
     }
     else
     {
-        <div class="product-form-card">
+        <form asp-controller="Shopper" asp-action="CheckoutSelectedCart" method="post">
+            @Html.AntiForgeryToken()
 
-            <table class="table custom-table align-middle">
-                <thead>
-                    <tr>
-                        <th>Product</th>
-                        <th>Variant</th>
-                        <th>Size</th>
-                        <th>Price</th>
-                        <th>Qty</th>
-                        <th>Total</th>
-                        <th></th>
-                    </tr>
-                </thead>
+            <div class="product-form-card">
 
-                <tbody>
-                    @foreach (var item in Model)
-                    {
-                        var img = item.Product?.Images?.FirstOrDefault()?.ImagePath ?? "/images/no-image.png";
-                        var price = item.Product?.Price ?? 0;
-                        var itemTotal = price * item.Quantity;
-
+                <table class="table custom-table align-middle">
+                    <thead>
                         <tr>
-                            <td>
-                                <div class="product-table-info">
-                                    <img src="@Url.Content(img)"
-                                         class="product-table-img"
-                                         alt="@item.Product?.Name" />
+                            <th>
+                                <input type="checkbox" id="selectAllCart" />
+                            </th>
+                            <th>Product</th>
+                            <th>Variant</th>
+                            <th>Size</th>
+                            <th>Price</th>
+                            <th>Qty</th>
+                            <th>Total</th>
+                            <th></th>
+                        </tr>
+                    </thead>
 
-                                  <div>
-    <small class="text-muted">
-        @(item.Product?.Seller?.FullName ?? item.Product?.Seller?.UserName ?? "Unknown Seller")
-    </small><br />
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            var img = item.Product?.Images?.FirstOrDefault()?.ImagePath ?? "/images/no-image.png";
+                            var price = item.Product?.Price ?? 0;
+                            var itemTotal = price * item.Quantity;
 
-    <strong>@item.Product?.Name</strong><br />
+                            <tr>
+                                <td>
+                                    <input type="checkbox"
+                                           name="selectedCartItemIds"
+                                           value="@item.Id"
+                                           class="cart-checkbox"
+                                           data-subtotal="@itemTotal" />
+                                </td>
 
-    <small class="text-muted">@item.Product?.Category</small>
-</div>
-                                </div>
-                            </td>
+                                <td>
+                                    <div class="product-table-info">
+                                        <img src="@Url.Content(img)"
+                                             class="product-table-img"
+                                             alt="@item.Product?.Name" />
 
-                            <td>
-                                @(string.IsNullOrWhiteSpace(item.SelectedVariant) ? "-" : item.SelectedVariant)
-                            </td>
+                                        <div>
+                                            <small class="text-muted">
+                                                @(item.Product?.Seller?.FullName ?? item.Product?.Seller?.UserName ?? "Unknown Seller")
+                                            </small><br />
 
-                            <td>
-                                @(string.IsNullOrWhiteSpace(item.SelectedSize) ? "-" : item.SelectedSize)
-                            </td>
+                                            <strong>@item.Product?.Name</strong><br />
 
-                            <td>
-                                ₱@price.ToString("N2")
-                            </td>
+                                            <small class="text-muted">@item.Product?.Category</small>
+                                        </div>
+                                    </div>
+                                </td>
 
-                            <td>
-                                <div class="qty-control">
+                                <td>
+                                    @(string.IsNullOrWhiteSpace(item.SelectedVariant) ? "-" : item.SelectedVariant)
+                                </td>
+
+                                <td>
+                                    @(string.IsNullOrWhiteSpace(item.SelectedSize) ? "-" : item.SelectedSize)
+                                </td>
+
+                                <td>
+                                    ₱@price.ToString("N2")
+                                </td>
+
+                                <td>
+                                    <div class="qty-control">
+                                        <button type="button"
+                                                onclick="updateCartQty(@item.Id, @(item.Quantity - 1))">
+                                            −
+                                        </button>
+
+                                        <input type="number"
+                                               value="@item.Quantity"
+                                               min="1"
+                                               readonly />
+
+                                        <button type="button"
+                                                onclick="updateCartQty(@item.Id, @(item.Quantity + 1))">
+                                            +
+                                        </button>
+                                    </div>
+                                </td>
+
+                                <td>
+                                    ₱@itemTotal.ToString("N2")
+                                </td>
+
+                                <td>
                                     <button type="button"
-                                            onclick="updateCartQty(@item.Id, @(item.Quantity - 1))">
-                                        −
-                                    </button>
-
-                                    <input type="number"
-                                           value="@item.Quantity"
-                                           min="1"
-                                           readonly />
-
-                                    <button type="button"
-                                            onclick="updateCartQty(@item.Id, @(item.Quantity + 1))">
-                                        +
-                                    </button>
-                                </div>
-                            </td>
-
-                            <td>
-                                ₱@itemTotal.ToString("N2")
-                            </td>
-
-                            <td>
-                                <form asp-controller="Shopper"
-                                      asp-action="RemoveFromCart"
-                                      method="post">
-                                    @Html.AntiForgeryToken()
-
-                                    <input type="hidden" name="cartItemId" value="@item.Id" />
-
-                                    <button type="submit"
                                             class="btn btn-sm btn-danger"
-                                            onclick="return confirm('Remove this item from your cart?')">
+                                            onclick="removeCartItem(@item.Id)">
                                         ✕
                                     </button>
-                                </form>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
 
-            <div style="margin-top:20px; text-align:right;">
-                <h4>Total: ₱@total.ToString("N2")</h4>
+                <div style="margin-top:20px; text-align:right;">
+                    <h4>Selected Total: <span id="selectedTotalText">₱0.00</span></h4>
 
-                <button class="btn btn-success mt-2">
-                    Proceed to Checkout
-                </button>
+                    <button type="submit" class="btn btn-success mt-2">
+                        Proceed to Checkout
+                    </button>
+                </div>
             </div>
+        </form>
 
-        </div>
+        @foreach (var item in Model)
+        {
+            <form id="removeForm-@item.Id"
+                  asp-controller="Shopper"
+                  asp-action="RemoveFromCart"
+                  method="post"
+                  style="display:none;">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="cartItemId" value="@item.Id" />
+            </form>
+        }
     }
 </div>
 
 @section Scripts {
     <script>
+        const selectAll = document.getElementById("selectAllCart");
+        const checkboxes = document.querySelectorAll(".cart-checkbox");
+        const selectedTotalText = document.getElementById("selectedTotalText");
+
+        function updateSelectedTotal() {
+            let total = 0;
+
+            checkboxes.forEach(cb => {
+                if (cb.checked) {
+                    total += parseFloat(cb.dataset.subtotal || "0");
+                }
+            });
+
+            if (selectedTotalText) {
+                selectedTotalText.textContent = "₱" + total.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+            }
+        }
+
+        selectAll?.addEventListener("change", function () {
+            checkboxes.forEach(cb => cb.checked = selectAll.checked);
+            updateSelectedTotal();
+        });
+
+        checkboxes.forEach(cb => {
+            cb.addEventListener("change", function () {
+                if (!cb.checked && selectAll) {
+                    selectAll.checked = false;
+                }
+
+                const allChecked = Array.from(checkboxes).every(x => x.checked);
+                if (selectAll) {
+                    selectAll.checked = allChecked;
+                }
+
+                updateSelectedTotal();
+            });
+        });
+
+        function removeCartItem(id) {
+            if (confirm("Remove this item from your cart?")) {
+                document.getElementById("removeForm-" + id).submit();
+            }
+        }
+
         function updateCartQty(id, quantity) {
             if (quantity < 1) {
                 return;
@@ -169,5 +230,7 @@
                 alert('Something went wrong while updating the cart.');
             });
         }
+
+        updateSelectedTotal();
     </script>
 }

@@ -1,137 +1,258 @@
+@model BuyZaar.Models.ApplicationUser
+
 @{
     Layout = "_DashboardLayout";
     ViewBag.ActiveRole = "Shopper";
+    ViewData["Title"] = "Shopper Profile";
+
     var sellerStatus = ViewBag.SellerApplicationStatus as string ?? "Not Applied";
+    var totalOrders = ViewBag.TotalOrders ?? 0;
+    var cartItems = ViewBag.CartItems ?? 0;
+    var pendingDeliveries = ViewBag.PendingDeliveries ?? 0;
+    var recentOrders = ViewBag.RecentOrders as List<BuyZaar.Models.Order> ?? new();
 }
 
-<div class="dashboard-container">
+<link rel="stylesheet" href="~/css/shopperprofile.css" asp-append-version="true" />
 
-    <!-- HERO -->
-    <div class="dashboard-hero">
-        <div>
-            <span class="role-badge shopper-badge">Shopper</span>
-            <h1>Welcome back, @User.Identity?.Name!</h1>
-            <p>Manage your shopping activity, orders, and seller application from one place.</p>
+<div class="shopper-profile-page">
+
+    <div class="profile-hero">
+        <div class="profile-user">
+            <div class="profile-avatar">
+                @((User.Identity?.Name ?? "U").Substring(0, 1).ToUpper())
+            </div>
+
+            <div>
+                <span class="role-badge">Shopper</span>
+                <h1>Hello, @User.Identity?.Name!</h1>
+                <p>Manage your orders, cart, deliveries, and seller application.</p>
+            </div>
         </div>
 
-        <a asp-controller="Shopper" asp-action="BrowseProducts" class="btn btn-primary hero-btn">
+        <a asp-controller="Shopper"
+           asp-action="BrowseProducts"
+           class="btn-main">
             Browse Products
         </a>
     </div>
 
     @if (TempData["ApplicationMessage"] != null)
     {
-        <div class="alert alert-info mt-3 mb-4">
+        <div class="profile-alert">
             @TempData["ApplicationMessage"]
         </div>
     }
 
-    <!-- STATS -->
-    <div class="stats-grid">
-        <div class="stat-card">
-            <p>My Orders</p>
-            <h2>3</h2>
-            <span>Orders placed</span>
-        </div>
+    <div class="profile-stats">
+        <a asp-controller="Shopper" asp-action="MyOrders" class="stat-card">
+            <span>My Orders</span>
+            <strong>@totalOrders</strong>
+            <p>Total orders placed</p>
+        </a>
+
+        <a asp-controller="Shopper" asp-action="MyCart" class="stat-card">
+            <span>Cart Items</span>
+            <strong>@cartItems</strong>
+            <p>Items waiting in cart</p>
+        </a>
+
+        <a asp-controller="Shopper" asp-action="MyOrders" asp-route-status="To Receive" class="stat-card">
+            <span>Pending Deliveries</span>
+            <strong>@pendingDeliveries</strong>
+            <p>Orders being processed</p>
+        </a>
 
         <div class="stat-card">
-            <p>Cart Items</p>
-            <h2>5</h2>
-            <span>Items waiting in cart</span>
-        </div>
-
-        <div class="stat-card">
-            <p>Pending Deliveries</p>
-            <h2>2</h2>
-            <span>Orders on the way</span>
-        </div>
-
-        <div class="stat-card">
-            <p>Seller Status</p>
-            <h2>@sellerStatus</h2>
-            <span>Application review status</span>
+            <span>Seller Status</span>
+            <strong class="status-text">@sellerStatus</strong>
+            <p>Application status</p>
         </div>
     </div>
 
-    <!-- CONTENT -->
-    <div class="content-grid">
+    <div class="profile-grid">
 
-        <!-- QUICK ACTIONS -->
-        <div class="dashboard-card">
-            <h4>Quick Actions</h4>
+        <div class="profile-card">
+    <div class="profile-card-header">
+        <h2>Profile Information</h2>
+        <button type="button" class="edit-profile-btn" onclick="toggleEditProfile()">
+            Edit
+        </button>
+    </div>
 
-            <div class="action-grid">
-                <a asp-controller="Shopper" asp-action="BrowseProducts" class="action-card">
-                    <h5>Browse Products</h5>
-                    <p>Explore items available in the marketplace.</p>
+    @if (TempData["ProfileMessage"] != null)
+    {
+        <div class="profile-alert small-alert">
+            @TempData["ProfileMessage"]
+        </div>
+    }
+
+    <div id="profileView" class="info-list">
+        <div>
+            <span>Username</span>
+            <strong>@User.Identity?.Name</strong>
+        </div>
+
+        <div>
+            <span>Full Name</span>
+            <strong>@(Model.FullName ?? "Not set")</strong>
+        </div>
+
+        <div>
+            <span>Email</span>
+            <strong>@(Model.Email ?? "Not set")</strong>
+        </div>
+
+        <div>
+            <span>Phone Number</span>
+            <strong>@(Model.PhoneNumber ?? "Not set")</strong>
+        </div>
+    </div>
+
+    <form id="profileEditForm"
+          asp-controller="Shopper"
+          asp-action="UpdateProfile"
+          method="post"
+          class="profile-edit-form"
+          style="display:none;">
+        @Html.AntiForgeryToken()
+
+        <div>
+            <label>Username</label>
+            <input value="@User.Identity?.Name" class="form-control" disabled />
+        </div>
+
+        <div>
+            <label>Email</label>
+            <input value="@Model.Email" class="form-control" disabled />
+        </div>
+
+        <div>
+            <label>Full Name</label>
+            <input name="fullName"
+                   value="@Model.FullName"
+                   class="form-control"
+                   placeholder="Enter your full name"
+                   required />
+        </div>
+
+        <div>
+            <label>Phone Number</label>
+            <input name="phoneNumber"
+                   value="@Model.PhoneNumber"
+                   class="form-control"
+                   placeholder="Ex. 09XXXXXXXXX" />
+        </div>
+
+        <div class="profile-edit-actions">
+            <button type="submit" class="save-profile-btn">
+                Save Changes
+            </button>
+
+            <button type="button" class="cancel-profile-btn" onclick="toggleEditProfile()">
+                Cancel
+            </button>
+        </div>
+    </form>
+</div>
+        <div class="profile-card">
+            <h2>Quick Actions</h2>
+
+            <div class="quick-actions">
+                <a asp-controller="Shopper" asp-action="BrowseProducts">
+                    Browse Products
                 </a>
 
-                <a href="#" class="action-card">
-                    <h5>My Cart</h5>
-                    <p>Review and manage items in your cart.</p>
+                <a asp-controller="Shopper" asp-action="MyCart">
+                    View Cart
                 </a>
 
-                <a href="#" class="action-card">
-                    <h5>My Orders</h5>
-                    <p>Track your recent and completed orders.</p>
+                <a asp-controller="Shopper" asp-action="MyOrders">
+                    My Orders
                 </a>
 
                 @if (sellerStatus == "Not Applied")
                 {
-                    <a asp-controller="Shopper" asp-action="ApplySeller" class="action-card">
-                        <h5>Apply as Seller</h5>
-                        <p>Submit an application to start selling on BuyZaar.</p>
+                    <a asp-controller="Shopper" asp-action="ApplySeller">
+                        Apply as Seller
                     </a>
-                }
-                else if (sellerStatus == "Pending")
-                {
-                    <div class="action-card disabled-card">
-                        <h5>Application Pending</h5>
-                        <p>Your seller application is under admin review.</p>
-                    </div>
                 }
                 else if (sellerStatus == "Approved")
                 {
-                    <a asp-controller="Seller" asp-action="Index" class="action-card approved-card">
-                        <h5>Switch to Seller</h5>
-                        <p>Your seller account is approved. Open your seller dashboard.</p>
+                    <a asp-controller="Seller" asp-action="Index">
+                        Switch to Seller
                     </a>
                 }
-                else if (sellerStatus == "Rejected")
+                else
                 {
-                    <div class="action-card rejected-card">
-                        <h5>Application Rejected</h5>
-                        <p>Your previous application was rejected.</p>
-                    </div>
+                    <span class="disabled-action">
+                        Seller Application: @sellerStatus
+                    </span>
                 }
             </div>
         </div>
+    </div>
 
-        <!-- RECENT ACTIVITY -->
-        <div class="dashboard-card">
-            <h4>Recent Activity</h4>
+    <div class="profile-card recent-orders-card">
+        <div class="section-title">
+            <div>
+                <h2>Recent Orders</h2>
+                <p>Your latest shopping activity.</p>
+            </div>
 
-            <ul class="activity-list">
-                <li>Your order #1008 is being prepared.</li>
-                <li>You added 2 items to your cart.</li>
-
-                @if (sellerStatus == "Pending")
-                {
-                    <li>Your seller application is under review.</li>
-                }
-                else if (sellerStatus == "Approved")
-                {
-                    <li>Your seller application has been approved.</li>
-                }
-                else if (sellerStatus == "Rejected")
-                {
-                    <li>Your seller application was rejected.</li>
-                }
-                else if (sellerStatus == "Not Applied")
-                {
-                    <li>You have not applied as a seller yet.</li>
-                }
-            </ul>
+            <a asp-controller="Shopper" asp-action="MyOrders">
+                View All
+            </a>
         </div>
+
+        @if (!recentOrders.Any())
+        {
+            <div class="empty-recent">
+                <h3>No recent orders</h3>
+                <p>Start shopping to see your orders here.</p>
+            </div>
+        }
+        else
+        {
+            <div class="recent-orders-list">
+                @foreach (var order in recentOrders)
+                {
+                    var firstItem = order.OrderItems.FirstOrDefault();
+                    var productName = firstItem?.Product?.Name ?? "Product";
+
+                    <a asp-controller="Shopper"
+                       asp-action="OrderDetails"
+                       asp-route-id="@order.Id"
+                       class="recent-order-item">
+
+                        <div>
+                            <strong>Order #@order.Id</strong>
+                            <p>@productName</p>
+                        </div>
+
+                        <div>
+                            <span class="order-status">@order.Status</span>
+                            <strong>₱@order.TotalAmount.ToString("N2")</strong>
+                        </div>
+                    </a>
+                }
+            </div>
+        }
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        function toggleEditProfile() {
+            const view = document.getElementById("profileView");
+            const form = document.getElementById("profileEditForm");
+
+            if (form.style.display === "none") {
+                form.style.display = "grid";
+                view.style.display = "none";
+            } else {
+                form.style.display = "none";
+                view.style.display = "grid";
+            }
+        }
+    </script>
+}
