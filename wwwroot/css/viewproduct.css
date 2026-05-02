@@ -1,0 +1,175 @@
+.view-product-page {
+    max-width: 1180px;
+    margin: 0 auto;
+}
+
+.back-link {
+    display: inline-block;
+    margin-bottom: 18px;
+    color: #2563eb;
+    font-weight: 900;
+    text-decoration: none;
+}
+
+.view-product-card {
+    display: grid;
+    grid-template-columns: 420px 1fr;
+    gap: 28px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 26px;
+    padding: 28px;
+    box-shadow: 0 18px 42px rgba(15, 23, 42, 0.06);
+}
+
+.product-gallery {
+    display: grid;
+    gap: 16px;
+}
+
+.main-product-image {
+    width: 100%;
+    height: 420px;
+    object-fit: cover;
+    border-radius: 22px;
+    background: #f1f5f9;
+    border: 1px solid #e5e7eb;
+}
+
+.thumbnail-list {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.thumbnail-img {
+    width: 72px;
+    height: 72px;
+    object-fit: cover;
+    border-radius: 14px;
+    border: 1px solid #e5e7eb;
+    background: #f1f5f9;
+}
+
+.product-details {
+    min-width: 0;
+}
+
+.category-pill {
+    display: inline-block;
+    background: #eff6ff;
+    color: #2563eb;
+    padding: 8px 13px;
+    border-radius: 999px;
+    font-weight: 900;
+    font-size: 13px;
+    margin-bottom: 12px;
+}
+
+.product-details h1 {
+    font-size: 36px;
+    font-weight: 900;
+    color: #0f172a;
+    margin: 0 0 12px;
+}
+
+.description {
+    color: #64748b;
+    line-height: 1.6;
+    margin-bottom: 22px;
+}
+
+.details-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+    margin-bottom: 22px;
+}
+
+.details-grid div {
+    background: #f8fafc;
+    border-radius: 18px;
+    padding: 16px;
+}
+
+.details-grid span {
+    display: block;
+    color: #64748b;
+    font-weight: 800;
+    font-size: 13px;
+    margin-bottom: 6px;
+}
+
+.details-grid strong {
+    color: #0f172a;
+    font-size: 18px;
+    font-weight: 900;
+}
+
+.info-section {
+    margin-top: 20px;
+}
+
+.info-section h3 {
+    font-size: 17px;
+    font-weight: 900;
+    color: #0f172a;
+    margin-bottom: 10px;
+}
+
+.tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.mini-tag {
+    background: #f1f5f9;
+    color: #334155;
+    padding: 7px 12px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.muted {
+    color: #64748b;
+}
+
+.view-product-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 28px;
+}
+
+.btn-edit-product,
+.btn-back-products {
+    padding: 13px 20px;
+    border-radius: 14px;
+    font-weight: 900;
+    text-decoration: none;
+}
+
+.btn-edit-product {
+    background: #2563eb;
+    color: white;
+}
+
+.btn-back-products {
+    background: #f1f5f9;
+    color: #475569;
+}
+
+@media (max-width: 900px) {
+    .view-product-card {
+        grid-template-columns: 1fr;
+    }
+
+    .main-product-image {
+        height: 320px;
+    }
+
+    .details-grid {
+        grid-template-columns: 1fr;
+    }
+}

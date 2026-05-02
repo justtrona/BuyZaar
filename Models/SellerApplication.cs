@@ -35,5 +35,7 @@ namespace BuyZaar.Models
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
         public ApplicationUser? User { get; set; }
+
+        public ICollection<SellerApplicationDocument> Documents { get; set; } = new List<SellerApplicationDocument>();
     }
 }

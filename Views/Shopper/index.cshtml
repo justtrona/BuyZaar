@@ -6,6 +6,8 @@
     ViewData["Title"] = "Shopper Profile";
 
     var sellerStatus = ViewBag.SellerApplicationStatus as string ?? "Not Applied";
+    var latestApplication = ViewBag.LatestSellerApplication as BuyZaar.Models.SellerApplication;
+
     var totalOrders = ViewBag.TotalOrders ?? 0;
     var cartItems = ViewBag.CartItems ?? 0;
     var pendingDeliveries = ViewBag.PendingDeliveries ?? 0;
@@ -59,116 +61,125 @@
         <a asp-controller="Shopper" asp-action="MyOrders" asp-route-status="To Receive" class="stat-card">
             <span>Pending Deliveries</span>
             <strong>@pendingDeliveries</strong>
-            <p>Orders being processed</p>
+            <p>Orders to receive</p>
         </a>
 
-        <div class="stat-card">
-            <span>Seller Status</span>
-            <strong class="status-text">@sellerStatus</strong>
-            <p>Application status</p>
-        </div>
+        @if (latestApplication != null)
+        {
+            <button type="button"
+                    class="stat-card stat-card-button"
+                    data-bs-toggle="modal"
+                    data-bs-target="#sellerApplicationModal">
+                <span>Seller Status</span>
+                <strong class="status-text">@sellerStatus</strong>
+                <p>Click to view application</p>
+            </button>
+        }
+        else
+        {
+            <a asp-controller="Shopper"
+               asp-action="ApplySeller"
+               class="stat-card">
+                <span>Seller Status</span>
+                <strong class="status-text">@sellerStatus</strong>
+                <p>Apply as seller</p>
+            </a>
+        }
     </div>
 
     <div class="profile-grid">
 
         <div class="profile-card">
-    <div class="profile-card-header">
-        <h2>Profile Information</h2>
-        <button type="button" class="edit-profile-btn" onclick="toggleEditProfile()">
-            Edit
-        </button>
-    </div>
+            <div class="profile-card-header">
+                <h2>Profile Information</h2>
+                <button type="button" class="edit-profile-btn" onclick="toggleEditProfile()">
+                    Edit
+                </button>
+            </div>
 
-    @if (TempData["ProfileMessage"] != null)
-    {
-        <div class="profile-alert small-alert">
-            @TempData["ProfileMessage"]
+            @if (TempData["ProfileMessage"] != null)
+            {
+                <div class="profile-alert small-alert">
+                    @TempData["ProfileMessage"]
+                </div>
+            }
+
+            <div id="profileView" class="info-list">
+                <div>
+                    <span>Username</span>
+                    <strong>@User.Identity?.Name</strong>
+                </div>
+
+                <div>
+                    <span>Full Name</span>
+                    <strong>@(Model.FullName ?? "Not set")</strong>
+                </div>
+
+                <div>
+                    <span>Email</span>
+                    <strong>@(Model.Email ?? "Not set")</strong>
+                </div>
+
+                <div>
+                    <span>Phone Number</span>
+                    <strong>@(Model.PhoneNumber ?? "Not set")</strong>
+                </div>
+            </div>
+
+            <form id="profileEditForm"
+                  asp-controller="Shopper"
+                  asp-action="UpdateProfile"
+                  method="post"
+                  class="profile-edit-form"
+                  style="display:none;">
+                @Html.AntiForgeryToken()
+
+                <div>
+                    <label>Username</label>
+                    <input value="@User.Identity?.Name" class="form-control" disabled />
+                </div>
+
+                <div>
+                    <label>Email</label>
+                    <input value="@Model.Email" class="form-control" disabled />
+                </div>
+
+                <div>
+                    <label>Full Name</label>
+                    <input name="fullName"
+                           value="@Model.FullName"
+                           class="form-control"
+                           placeholder="Enter your full name"
+                           required />
+                </div>
+
+                <div>
+                    <label>Phone Number</label>
+                    <input name="phoneNumber"
+                           value="@Model.PhoneNumber"
+                           class="form-control"
+                           placeholder="Ex. 09XXXXXXXXX" />
+                </div>
+
+                <div class="profile-edit-actions">
+                    <button type="submit" class="save-profile-btn">
+                        Save Changes
+                    </button>
+
+                    <button type="button" class="cancel-profile-btn" onclick="toggleEditProfile()">
+                        Cancel
+                    </button>
+                </div>
+            </form>
         </div>
-    }
 
-    <div id="profileView" class="info-list">
-        <div>
-            <span>Username</span>
-            <strong>@User.Identity?.Name</strong>
-        </div>
-
-        <div>
-            <span>Full Name</span>
-            <strong>@(Model.FullName ?? "Not set")</strong>
-        </div>
-
-        <div>
-            <span>Email</span>
-            <strong>@(Model.Email ?? "Not set")</strong>
-        </div>
-
-        <div>
-            <span>Phone Number</span>
-            <strong>@(Model.PhoneNumber ?? "Not set")</strong>
-        </div>
-    </div>
-
-    <form id="profileEditForm"
-          asp-controller="Shopper"
-          asp-action="UpdateProfile"
-          method="post"
-          class="profile-edit-form"
-          style="display:none;">
-        @Html.AntiForgeryToken()
-
-        <div>
-            <label>Username</label>
-            <input value="@User.Identity?.Name" class="form-control" disabled />
-        </div>
-
-        <div>
-            <label>Email</label>
-            <input value="@Model.Email" class="form-control" disabled />
-        </div>
-
-        <div>
-            <label>Full Name</label>
-            <input name="fullName"
-                   value="@Model.FullName"
-                   class="form-control"
-                   placeholder="Enter your full name"
-                   required />
-        </div>
-
-        <div>
-            <label>Phone Number</label>
-            <input name="phoneNumber"
-                   value="@Model.PhoneNumber"
-                   class="form-control"
-                   placeholder="Ex. 09XXXXXXXXX" />
-        </div>
-
-        <div class="profile-edit-actions">
-            <button type="submit" class="save-profile-btn">
-                Save Changes
-            </button>
-
-            <button type="button" class="cancel-profile-btn" onclick="toggleEditProfile()">
-                Cancel
-            </button>
-        </div>
-    </form>
-</div>
         <div class="profile-card">
             <h2>Quick Actions</h2>
 
             <div class="quick-actions">
-                <a asp-controller="Shopper" asp-action="BrowseProducts">
-                    Browse Products
-                </a>
-
-                <a asp-controller="Shopper" asp-action="MyCart">
-                    View Cart
-                </a>
-
-                <a asp-controller="Shopper" asp-action="MyOrders">
-                    My Orders
-                </a>
+                <a asp-controller="Shopper" asp-action="BrowseProducts">Browse Products</a>
+                <a asp-controller="Shopper" asp-action="MyCart">View Cart</a>
+                <a asp-controller="Shopper" asp-action="MyOrders">My Orders</a>
 
                 @if (sellerStatus == "Not Applied")
                 {
@@ -181,6 +192,15 @@
                     <a asp-controller="Seller" asp-action="Index">
                         Switch to Seller
                     </a>
+                }
+                else if (latestApplication != null)
+                {
+                    <button type="button"
+                            class="quick-action-button"
+                            data-bs-toggle="modal"
+                            data-bs-target="#sellerApplicationModal">
+                        View Seller Application
+                    </button>
                 }
                 else
                 {
@@ -239,6 +259,104 @@
         }
     </div>
 </div>
+
+@if (latestApplication != null)
+{
+    <div class="modal fade" id="sellerApplicationModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content seller-modal-content">
+                <div class="modal-header">
+                    <div>
+                        <h5 class="modal-title">Seller Application Details</h5>
+                        <small>Submitted on @latestApplication.CreatedAt.ToString("MMM dd, yyyy hh:mm tt")</small>
+                    </div>
+
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="seller-status-pill">
+                        Status: <strong>@latestApplication.Status</strong>
+                    </div>
+
+                    <div class="seller-modal-grid">
+                        <div>
+                            <span>Full Name</span>
+                            <strong>@latestApplication.FullName</strong>
+                        </div>
+
+                        <div>
+                            <span>Shop Name</span>
+                            <strong>@latestApplication.ShopName</strong>
+                        </div>
+
+                        <div>
+                            <span>Phone Number</span>
+                            <strong>@latestApplication.PhoneNumber</strong>
+                        </div>
+
+                        <div>
+                            <span>Business Address</span>
+                            <strong>@latestApplication.Address</strong>
+                        </div>
+
+                        <div class="seller-modal-full">
+                            <span>Business Description</span>
+                            <strong>@latestApplication.BusinessDescription</strong>
+                        </div>
+                    </div>
+
+                    <div class="seller-documents-modal">
+                        <h6>Uploaded Documents</h6>
+
+                        @if (latestApplication.Documents != null && latestApplication.Documents.Any())
+                        {
+                            foreach (var document in latestApplication.Documents)
+                            {
+                                <div class="seller-document-row">
+                                    <div>
+                                        <strong>@document.FileName</strong>
+                                        <p>@document.ContentType · @(document.FileSize / 1024) KB</p>
+                                    </div>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <p class="text-muted mb-0">No documents uploaded.</p>
+                        }
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    @if (latestApplication.Status == "Pending")
+                    {
+                        <form asp-controller="Shopper"
+                              asp-action="CancelSellerApplication"
+                              method="post"
+                              onsubmit="return confirm('Are you sure you want to cancel your seller application?');">
+                            @Html.AntiForgeryToken()
+
+                            <input type="hidden"
+                                   name="applicationId"
+                                   value="@latestApplication.Id" />
+
+                            <button type="submit" class="btn btn-danger">
+                                Cancel Application
+                            </button>
+                        </form>
+                    }
+
+                    <button type="button"
+                            class="btn btn-secondary"
+                            data-bs-dismiss="modal">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
 
 @section Scripts {
     <script>

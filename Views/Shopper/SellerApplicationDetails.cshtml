@@ -1,0 +1,58 @@
+@model BuyZaar.Models.SellerApplication
+
+@{
+    Layout = "_DashboardLayout";
+    ViewBag.ActiveRole = "Shopper";
+    ViewData["Title"] = "Seller Application Details";
+}
+
+<link rel="stylesheet" href="~/css/applyseller.css" asp-append-version="true" />
+
+<div class="seller-apply-page">
+    <div class="seller-apply-header">
+        <div>
+            <span class="seller-apply-badge">Application Submitted</span>
+            <h1>Seller Application Details</h1>
+            <p>You can view your submitted seller application below.</p>
+        </div>
+
+        <a asp-controller="Shopper" asp-action="Index" class="back-profile-btn">
+            Back to Profile
+        </a>
+    </div>
+
+<div class="seller-form-card application-details-card">
+    <h2>Submitted Information</h2>
+
+        <div class="info-list">
+            <div><span>Status</span><strong>@Model.Status</strong></div>
+            <div><span>Full Name</span><strong>@Model.FullName</strong></div>
+            <div><span>Shop Name</span><strong>@Model.ShopName</strong></div>
+            <div><span>Phone Number</span><strong>@Model.PhoneNumber</strong></div>
+            <div><span>Business Address</span><strong>@Model.Address</strong></div>
+            <div><span>Business Description</span><strong>@Model.BusinessDescription</strong></div>
+            <div><span>Date Submitted</span><strong>@Model.CreatedAt.ToString("MMM dd, yyyy hh:mm tt")</strong></div>
+        </div>
+
+        <div class="form-actions">
+            @if (Model.Status == "Pending")
+            {
+                <form asp-controller="Shopper"
+                      asp-action="CancelSellerApplication"
+                      method="post"
+                      onsubmit="return confirm('Cancel this seller application?');">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="applicationId" value="@Model.Id" />
+
+                    <button type="submit" class="cancel-application-btn">
+                        Cancel Application
+                    </button>
+                </form>
+            }
+
+            <a asp-controller="Shopper" asp-action="Index" class="submit-application-btn">
+                Back to Profile
+            </a>
+        </div>
+    </div>
+</div>

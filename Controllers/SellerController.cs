@@ -101,6 +101,25 @@ namespace BuyZaar.Controllers
             return RedirectToAction("Products");
         }
 
+        public async Task<IActionResult> ViewProduct(int id)
+{
+    ViewBag.ActiveRole = "Seller";
+
+    var user = await _userManager.GetUserAsync(User);
+    if (user == null)
+        return RedirectToAction("Login", "Account");
+
+    var product = await _context.Products
+        .Include(p => p.Images)
+        .Include(p => p.Seller)
+        .FirstOrDefaultAsync(p => p.Id == id && p.SellerId == user.Id);
+
+    if (product == null)
+        return NotFound();
+
+    return View(product);
+}
+
         [HttpGet]
         public async Task<IActionResult> EditProduct(int id)
         {

@@ -1,0 +1,330 @@
+.seller-apply-page {
+    max-width: 1180px;
+    margin: 0 auto;
+}
+
+.seller-apply-header {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: #ffffff;
+    border-radius: 28px;
+    padding: 34px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 20px 45px rgba(37, 99, 235, 0.22);
+}
+
+.seller-apply-badge {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.18);
+    padding: 7px 14px;
+    border-radius: 999px;
+    font-weight: 800;
+    margin-bottom: 10px;
+}
+
+.seller-apply-header h1 {
+    font-size: 38px;
+    font-weight: 900;
+    margin: 0;
+}
+
+.seller-apply-header p {
+    margin: 8px 0 0;
+    max-width: 720px;
+    opacity: 0.92;
+}
+
+.back-profile-btn {
+    background: #ffffff;
+    color: #2563eb;
+    padding: 13px 20px;
+    border-radius: 15px;
+    text-decoration: none;
+    font-weight: 900;
+    white-space: nowrap;
+}
+
+.back-profile-btn:hover {
+    background: #f1f5f9;
+    color: #1d4ed8;
+}
+
+.seller-apply-grid {
+    display: grid;
+    grid-template-columns: 0.75fr 1.25fr;
+    gap: 24px;
+}
+
+.seller-info-card,
+.seller-form-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 24px;
+    padding: 28px;
+    box-shadow: 0 16px 38px rgba(15, 23, 42, 0.06);
+}
+
+.seller-info-card h2,
+.seller-form-card h2 {
+    font-size: 26px;
+    font-weight: 900;
+    color: #0f172a;
+    margin-bottom: 20px;
+}
+
+.info-step {
+    display: flex;
+    gap: 14px;
+    margin-bottom: 18px;
+}
+
+.info-step span {
+    width: 36px;
+    height: 36px;
+    background: #dbeafe;
+    color: #2563eb;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    flex-shrink: 0;
+}
+
+.info-step strong {
+    color: #0f172a;
+    font-weight: 900;
+}
+
+.info-step p {
+    color: #64748b;
+    margin: 4px 0 0;
+}
+
+.seller-note {
+    margin-top: 22px;
+    background: #f8fafc;
+    color: #475569;
+    border-radius: 16px;
+    padding: 16px;
+    font-weight: 700;
+    line-height: 1.5;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+}
+
+.form-group {
+    margin-bottom: 18px;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 900;
+    color: #334155;
+    margin-bottom: 8px;
+}
+
+.form-control {
+    width: 100%;
+    border-radius: 14px;
+    border: 1px solid #d1d5db;
+    padding: 12px 14px;
+    font-size: 15px;
+}
+
+input.form-control,
+select.form-control {
+    height: 50px;
+}
+
+textarea.form-control {
+    resize: vertical;
+}
+
+.form-control:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+}
+
+.business-description-group {
+    grid-column: 1 / -1;
+    margin-bottom: 0;
+}
+
+.business-description-textarea {
+    width: 100%;
+    min-height: 150px;
+    resize: vertical;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 12px;
+    margin-top: 22px;
+}
+
+.submit-application-btn,
+.cancel-application-btn {
+    height: 48px;
+    min-width: 170px;
+    padding: 0 24px;
+    border-radius: 14px;
+    font-weight: 900;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+.submit-application-btn {
+    background: #2563eb;
+    color: #ffffff;
+    border: none;
+}
+
+.submit-application-btn:hover {
+    background: #1d4ed8;
+    color: #ffffff;
+}
+
+.cancel-application-btn {
+    background: #f1f5f9;
+    color: #475569;
+}
+
+.cancel-application-btn:hover {
+    background: #e5e7eb;
+    color: #0f172a;
+}
+
+@media (max-width: 900px) {
+    .seller-apply-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .seller-apply-grid,
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .form-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .submit-application-btn,
+    .cancel-application-btn {
+        width: 100%;
+    }
+}
+
+.application-details-card {
+    max-width: 100%;
+    padding: 32px;
+}
+
+.application-details-card h2 {
+    font-size: 28px;
+    font-weight: 900;
+    color: #0f172a;
+    margin-bottom: 22px;
+}
+
+.info-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 18px;
+}
+
+.info-list div {
+    background: #f8fafc;
+    border: 1px solid #e5e7eb;
+    border-radius: 18px;
+    padding: 18px 20px;
+}
+
+.info-list div:nth-child(5),
+.info-list div:nth-child(6),
+.info-list div:nth-child(7) {
+    grid-column: 1 / -1;
+}
+
+.info-list span {
+    display: block;
+    color: #64748b;
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.info-list strong {
+    display: block;
+    color: #0f172a;
+    font-size: 16px;
+    font-weight: 900;
+    line-height: 1.6;
+}
+
+.documents-box {
+    margin-top: 24px;
+    background: #f8fafc;
+    border: 1px solid #e5e7eb;
+    border-radius: 18px;
+    padding: 20px;
+}
+
+.documents-box h3 {
+    font-size: 20px;
+    font-weight: 900;
+    color: #0f172a;
+    margin-bottom: 14px;
+}
+
+.document-item {
+    background: white;
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+}
+
+.document-item p {
+    color: #64748b;
+    margin: 4px 0 0;
+}
+
+.application-details-card .form-actions {
+    margin-top: 26px;
+}
+
+.application-details-card .cancel-application-btn {
+    background: #fff1f2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+}
+
+.application-details-card .cancel-application-btn:hover {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+@media (max-width: 768px) {
+    .info-list {
+        grid-template-columns: 1fr;
+    }
+
+    .info-list div {
+        grid-column: 1 / -1;
+    }
+}

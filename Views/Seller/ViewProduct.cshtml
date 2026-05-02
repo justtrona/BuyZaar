@@ -1,0 +1,126 @@
+@model BuyZaar.Models.Product
+
+@{
+    Layout = "_DashboardLayout";
+    ViewBag.ActiveRole = "Seller";
+    ViewData["Title"] = "View Product";
+
+    var mainImage = Model.Images?.FirstOrDefault()?.ImagePath ?? "/images/no-image.png";
+}
+
+<link rel="stylesheet" href="~/css/viewproduct.css" asp-append-version="true" />
+
+<div class="view-product-page">
+    <a asp-controller="Seller"
+       asp-action="Products"
+       class="back-link">
+        ← Back to Products
+    </a>
+
+    <div class="view-product-card">
+        <div class="product-gallery">
+            <img src="@Url.Content(mainImage)"
+                 alt="@Model.Name"
+                 class="main-product-image" />
+
+            @if (Model.Images != null && Model.Images.Any())
+            {
+                <div class="thumbnail-list">
+                    @foreach (var image in Model.Images)
+                    {
+                        <img src="@Url.Content(image.ImagePath)"
+                             alt="@Model.Name"
+                             class="thumbnail-img" />
+                    }
+                </div>
+            }
+        </div>
+
+        <div class="product-details">
+            <span class="category-pill">@Model.Category</span>
+
+            <h1>@Model.Name</h1>
+
+            <p class="description">
+                @Model.Description
+            </p>
+
+            <div class="details-grid">
+                <div>
+                    <span>Price</span>
+                    <strong>₱@Model.Price.ToString("N2")</strong>
+                </div>
+
+                <div>
+                    <span>Stock</span>
+                    <strong>@Model.Stock item(s)</strong>
+                </div>
+
+                <div>
+                    <span>Date Added</span>
+                    <strong>@Model.CreatedAt.ToString("MMM dd, yyyy")</strong>
+                </div>
+
+                <div>
+                    <span>Last Updated</span>
+                    <strong>
+                        @(Model.UpdatedAt.HasValue
+                            ? Model.UpdatedAt.Value.ToString("MMM dd, yyyy")
+                            : "Not updated yet")
+                    </strong>
+                </div>
+            </div>
+
+            <div class="info-section">
+                <h3>Available Variants</h3>
+
+                @if (!string.IsNullOrWhiteSpace(Model.AvailableVariants))
+                {
+                    <div class="tag-list">
+                        @foreach (var variant in Model.AvailableVariants.Split(',', StringSplitOptions.RemoveEmptyEntries))
+                        {
+                            <span class="mini-tag">@variant.Trim()</span>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <p class="muted">No variants available.</p>
+                }
+            </div>
+
+            <div class="info-section">
+                <h3>Available Sizes</h3>
+
+                @if (!string.IsNullOrWhiteSpace(Model.AvailableSizes))
+                {
+                    <div class="tag-list">
+                        @foreach (var size in Model.AvailableSizes.Split(',', StringSplitOptions.RemoveEmptyEntries))
+                        {
+                            <span class="mini-tag">@size.Trim()</span>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <p class="muted">No sizes available.</p>
+                }
+            </div>
+
+            <div class="view-product-actions">
+                <a asp-controller="Seller"
+                   asp-action="EditProduct"
+                   asp-route-id="@Model.Id"
+                   class="btn-edit-product">
+                    Edit Product
+                </a>
+
+                <a asp-controller="Seller"
+                   asp-action="Products"
+                   class="btn-back-products">
+                    Back to List
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

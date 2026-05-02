@@ -6,159 +6,641 @@
     ViewData["Title"] = "Manage Products";
 }
 
-<link rel="stylesheet" href="~/css/product.css" asp-append-version="true" />
+<link rel="stylesheet" href="~/css/manageproduct.css" asp-append-version="true" />
 
-<div class="products-page-shell">
-    <div class="products-header">
+<div class="manage-products-page">
+    <div class="manage-products-header">
         <div>
-            <span class="role-badge seller-badge">Seller</span>
+            <span class="seller-label">Seller</span>
             <h1>Manage Products</h1>
-            <p>View, update, and manage all your product listings here.</p>
+            <p>View, update, and manage your product listings.</p>
         </div>
 
-        <a asp-controller="Seller" asp-action="CreateProduct" class="btn btn-primary add-product-btn">
-            Add Product
-        </a>
+        <button type="button"
+                class="btn-add-product"
+                data-bs-toggle="modal"
+                data-bs-target="#addProductModal">
+            + Add Product
+        </button>
     </div>
 
     @if (TempData["SuccessMessage"] != null)
     {
-        <div class="alert alert-success custom-alert">
+        <div class="alert alert-success">
             @TempData["SuccessMessage"]
         </div>
     }
 
-    <div class="products-table-card">
-        @if (!Model.Any())
-        {
-            <div class="empty-products-state">
-                <h3>No products yet</h3>
-                <p>You have not added any products to your shop yet.</p>
-
-                <a asp-controller="Seller" asp-action="CreateProduct" class="btn btn-primary">
-                    Add Your First Product
-                </a>
+    @if (!Model.Any())
+    {
+        <div class="empty-products-state">
+            <h3>No products yet</h3>
+            <p>You have not added any products yet.</p>
+        </div>
+    }
+    else
+    {
+        <div class="products-list-card">
+            <div class="products-list-header">
+                <strong>Product</strong>
+                <strong>Category</strong>
+                <strong>Variants</strong>
+                <strong>Sizes</strong>
+                <strong>Price</strong>
+                <strong>Stock</strong>
+                <strong>Date</strong>
+                <strong>Actions</strong>
             </div>
-        }
-        else
-        {
-            <div class="table-responsive">
-                <table class="table custom-products-table align-middle">
-                    <thead>
-                        <tr>
-                            <th>Product</th>
-                            <th>Category</th>
-                            <th>Colors / Variants</th>
-                            <th>Sizes</th>
-                            <th>Price</th>
-                            <th>Stock</th>
-                            <th>Date Added</th>
-                            <th class="text-center">Actions</th>
-                        </tr>
-                    </thead>
 
-                    <tbody>
-                        @foreach (var product in Model)
+            @foreach (var product in Model)
+            {
+                var img = product.Images?.FirstOrDefault()?.ImagePath ?? "/images/no-image.png";
+                var imagesJson = System.Text.Json.JsonSerializer.Serialize(
+                    product.Images?.Select(i => i.ImagePath).ToList() ?? new List<string>()
+                );
+
+                <div class="product-row">
+                    <div class="product-main-info">
+                        <img src="@Url.Content(img)"
+                             alt="@product.Name"
+                             class="product-list-img" />
+
+                        <div>
+                            <h3>@product.Name</h3>
+                            <p>@product.Description</p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <span class="category-pill">@product.Category</span>
+                    </div>
+
+                    <div class="tag-list">
+                        @if (!string.IsNullOrWhiteSpace(product.AvailableVariants))
                         {
-                            var firstImage = product.Images?.FirstOrDefault()?.ImagePath ?? "/images/no-image.png";
-
-                            <tr>
-                                <td>
-                                    <div class="product-table-info">
-                                        <img src="@Url.Content(firstImage)"
-                                             class="product-table-img"
-                                             alt="@product.Name" />
-
-                                        <div>
-                                            <div class="product-name">@product.Name</div>
-                                            <div class="product-description">@product.Description</div>
-                                        </div>
-                                    </div>
-                                </td>
-
-                                <td>
-                                    <span class="category-badge">@product.Category</span>
-                                </td>
-
-                                <td>
-                                    @if (!string.IsNullOrWhiteSpace(product.AvailableVariants))
-                                    {
-                                        <div class="variant-list">
-                                            @foreach (var variant in product.AvailableVariants.Split(',', StringSplitOptions.RemoveEmptyEntries))
-                                            {
-                                                <span class="variant-badge">@variant.Trim()</span>
-                                            }
-                                        </div>
-                                    }
-                                    else
-                                    {
-                                        <span class="text-muted small">No colors</span>
-                                    }
-                                </td>
-
-                                <td>
-                                    @if (!string.IsNullOrWhiteSpace(product.AvailableSizes))
-                                    {
-                                        <div class="variant-list">
-                                            @foreach (var size in product.AvailableSizes.Split(',', StringSplitOptions.RemoveEmptyEntries))
-                                            {
-                                                <span class="variant-badge">@size.Trim()</span>
-                                            }
-                                        </div>
-                                    }
-                                    else
-                                    {
-                                        <span class="text-muted small">No sizes</span>
-                                    }
-                                </td>
-
-                                <td class="price">
-                                    ₱@product.Price.ToString("N2")
-                                </td>
-
-                                <td>
-                                    @if (product.Stock <= 5)
-                                    {
-                                        <span class="stock-badge stock-low">@product.Stock in stock</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="stock-badge stock-ok">@product.Stock in stock</span>
-                                    }
-                                </td>
-
-                                <td>@product.CreatedAt.ToString("MMM dd, yyyy")</td>
-
-                                <td class="text-center">
-                                    <div class="action-buttons">
-                                        <a asp-controller="Seller"
-                                           asp-action="EditProduct"
-                                           asp-route-id="@product.Id"
-                                           class="btn btn-sm btn-outline-primary">
-                                            Edit
-                                        </a>
-
-                                        <form asp-controller="Seller"
-                                              asp-action="DeleteProduct"
-                                              asp-route-id="@product.Id"
-                                              method="post"
-                                              class="d-inline">
-                                            @Html.AntiForgeryToken()
-
-                                            <button type="submit"
-                                                    class="btn btn-sm btn-outline-danger"
-                                                    onclick="return confirm('Are you sure you want to delete this product?')">
-                                                Delete
-                                            </button>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
+                            foreach (var variant in product.AvailableVariants.Split(',', StringSplitOptions.RemoveEmptyEntries))
+                            {
+                                <span class="mini-tag">@variant.Trim()</span>
+                            }
                         }
-                    </tbody>
+                        else
+                        {
+                            <span class="muted">-</span>
+                        }
+                    </div>
 
-                </table>
+                    <div class="tag-list">
+                        @if (!string.IsNullOrWhiteSpace(product.AvailableSizes))
+                        {
+                            foreach (var size in product.AvailableSizes.Split(',', StringSplitOptions.RemoveEmptyEntries))
+                            {
+                                <span class="mini-tag">@size.Trim()</span>
+                            }
+                        }
+                        else
+                        {
+                            <span class="muted">-</span>
+                        }
+                    </div>
+
+                    <div class="price-text">
+                        ₱@product.Price.ToString("N2")
+                    </div>
+
+                    <div>
+                        <span class="stock-pill @(product.Stock <= 5 ? "low" : "ok")">
+                            @product.Stock
+                        </span>
+                    </div>
+
+                    <div class="date-text">
+                        @product.CreatedAt.ToString("MMM dd")
+                    </div>
+
+                    <div class="product-actions">
+                        <a asp-controller="Seller"
+                           asp-action="ViewProduct"
+                           asp-route-id="@product.Id"
+                           class="btn-view">
+                            View
+                        </a>
+
+                        <button type="button"
+                                class="btn-edit"
+                                data-bs-toggle="modal"
+                                data-bs-target="#editProductModal"
+                                data-id="@product.Id"
+                                data-name="@product.Name"
+                                data-description="@product.Description"
+                                data-category="@product.Category"
+                                data-price="@product.Price"
+                                data-stock="@product.Stock"
+                                data-variants="@product.AvailableVariants"
+                                data-sizes="@product.AvailableSizes"
+                                data-images='@Html.Raw(imagesJson)'>
+                            Edit
+                        </button>
+
+                        <button type="button"
+                                class="btn-delete"
+                                data-bs-toggle="modal"
+                                data-bs-target="#deleteProductModal"
+                                data-id="@product.Id"
+                                data-name="@product.Name">
+                            Delete
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<!-- ADD PRODUCT MODAL -->
+<div class="modal fade" id="addProductModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content edit-product-modal">
+            <div class="modal-header edit-modal-header">
+                <div>
+                    <span class="modal-badge">Seller</span>
+                    <h5 class="modal-title">Add Product</h5>
+                    <p>Create a new product listing for your shop.</p>
+                </div>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close"></button>
             </div>
-        }
+
+            <form asp-controller="Seller"
+                  asp-action="CreateProduct"
+                  method="post"
+                  enctype="multipart/form-data"
+                  novalidate>
+                @Html.AntiForgeryToken()
+
+                <div class="modal-body edit-modal-body">
+                    <div class="edit-section">
+                        <h3>Product Information</h3>
+                        <p>Fill in the product details, including available colors and sizes if applicable.</p>
+                    </div>
+
+                    <div class="edit-modal-grid">
+                        <div class="form-group full">
+                            <label>Product Name</label>
+                            <input name="Name"
+                                   class="form-control custom-input"
+                                   placeholder="e.g. Haylou Watch, Oversized Shirt, Running Shoes"
+                                   required />
+                        </div>
+
+                        <div class="form-group full">
+                            <label>Description</label>
+                            <textarea name="Description"
+                                      class="form-control custom-input custom-textarea"
+                                      rows="5"
+                                      placeholder="Describe your product, material, features, and important details"
+                                      required></textarea>
+                        </div>
+
+                        <div class="form-group full">
+                            <label>Category</label>
+                            <select name="Category"
+                                    class="form-control custom-input"
+                                    required>
+                                <option value="">-- Select Category --</option>
+                                <option value="Electronics">Electronics</option>
+                                <option value="Clothing">Clothing</option>
+                                <option value="Shoes">Shoes</option>
+                                <option value="Accessories">Accessories</option>
+                                <option value="Beauty & Personal Care">Beauty & Personal Care</option>
+                                <option value="Home & Living">Home & Living</option>
+                                <option value="Food & Beverages">Food & Beverages</option>
+                                <option value="Books & Stationery">Books & Stationery</option>
+                                <option value="Sports & Outdoors">Sports & Outdoors</option>
+                                <option value="Toys & Games">Toys & Games</option>
+                                <option value="Automotive">Automotive</option>
+                                <option value="Others">Others</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group full">
+                            <label>Available Colors / Variants</label>
+                            <input name="AvailableVariants"
+                                   class="form-control custom-input"
+                                   placeholder="e.g. Black, Beige, White, Army Green" />
+                            <small class="text-muted">
+                                Use this for colors or style variants. Separate each option with a comma.
+                            </small>
+                        </div>
+
+                        <div class="form-group full">
+                            <label>Available Sizes</label>
+
+                            <div class="size-options">
+                                @foreach (var size in new[] { "XS", "S", "M", "L", "XL", "XXL" })
+                                {
+                                    <button type="button"
+                                            class="size-btn"
+                                            onclick="toggleAddSize('@size')">
+                                        @size
+                                    </button>
+                                }
+                            </div>
+
+                            <div id="addSelectedSizes" class="selected-sizes"></div>
+
+                            <input type="hidden"
+                                   name="AvailableSizes"
+                                   id="addSizesInput" />
+
+                            <small class="text-muted">
+                                Click sizes to select. Click again or press × to remove.
+                            </small>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Price (₱)</label>
+                            <input name="Price"
+                                   class="form-control custom-input"
+                                   type="number"
+                                   step="0.01"
+                                   placeholder="0.00"
+                                   required />
+                        </div>
+
+                        <div class="form-group">
+                            <label>Total Stock</label>
+                            <input name="Stock"
+                                   class="form-control custom-input"
+                                   type="number"
+                                   placeholder="0"
+                                   required />
+                        </div>
+
+                        <div class="form-group full">
+                            <label>Product Images</label>
+                            <input name="ProductImages"
+                                   class="form-control custom-input"
+                                   type="file"
+                                   multiple
+                                   accept="image/*" />
+                            <small class="text-muted">
+                                You can upload multiple product images. Allowed: JPG, JPEG, PNG, WEBP.
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer edit-modal-footer">
+                    <button type="button"
+                            class="btn-cancel-modal"
+                            data-bs-dismiss="modal">
+                        Cancel
+                    </button>
+
+                    <button type="submit"
+                            class="btn-save-modal">
+                        Save Product
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
+
+<!-- EDIT PRODUCT MODAL -->
+<div class="modal fade" id="editProductModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content edit-product-modal">
+            <div class="modal-header edit-modal-header">
+                <div>
+                    <span class="modal-badge">Seller</span>
+                    <h5 class="modal-title">Edit Product</h5>
+                    <p>Update product details, images, colors, and sizes.</p>
+                </div>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+            </div>
+
+            <form asp-controller="Seller"
+                  asp-action="EditProduct"
+                  method="post"
+                  enctype="multipart/form-data"
+                  novalidate>
+                @Html.AntiForgeryToken()
+
+                <div class="modal-body edit-modal-body">
+                    <input type="hidden" name="Id" id="editProductId" />
+                    <input type="hidden" name="productId" id="editProductIdHidden" />
+
+                    <div class="edit-section">
+                        <h3>Product Information</h3>
+                        <p>Edit the details below and manage your product images, colors, and sizes.</p>
+                    </div>
+
+                    <div class="edit-modal-grid">
+                        <div class="form-group full">
+                            <label>Product Name</label>
+                            <input name="Name"
+                                   id="editName"
+                                   class="form-control custom-input"
+                                   required />
+                        </div>
+
+                        <div class="form-group full">
+                            <label>Description</label>
+                            <textarea name="Description"
+                                      id="editDescription"
+                                      class="form-control custom-input custom-textarea"
+                                      rows="5"
+                                      required></textarea>
+                        </div>
+
+                        <div class="form-group full">
+                            <label>Category</label>
+                            <select name="Category"
+                                    id="editCategory"
+                                    class="form-control custom-input"
+                                    required>
+                                <option value="">-- Select Category --</option>
+                                <option value="Electronics">Electronics</option>
+                                <option value="Clothing">Clothing</option>
+                                <option value="Shoes">Shoes</option>
+                                <option value="Accessories">Accessories</option>
+                                <option value="Beauty & Personal Care">Beauty & Personal Care</option>
+                                <option value="Home & Living">Home & Living</option>
+                                <option value="Food & Beverages">Food & Beverages</option>
+                                <option value="Books & Stationery">Books & Stationery</option>
+                                <option value="Sports & Outdoors">Sports & Outdoors</option>
+                                <option value="Toys & Games">Toys & Games</option>
+                                <option value="Automotive">Automotive</option>
+                                <option value="Others">Others</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group full">
+                            <label>Available Colors / Variants</label>
+                            <input name="AvailableVariants"
+                                   id="editVariants"
+                                   class="form-control custom-input" />
+                            <small class="text-muted">
+                                Use this for colors or style variants. Separate each option with a comma.
+                            </small>
+                        </div>
+
+                        <div class="form-group full">
+                            <label>Available Sizes</label>
+
+                            <div class="size-options">
+                                @foreach (var size in new[] { "XS", "S", "M", "L", "XL", "XXL" })
+                                {
+                                    <button type="button"
+                                            class="size-btn"
+                                            onclick="toggleEditSize('@size')">
+                                        @size
+                                    </button>
+                                }
+                            </div>
+
+                            <div id="editSelectedSizes" class="selected-sizes"></div>
+
+                            <input type="hidden"
+                                   name="AvailableSizes"
+                                   id="editSizesInput" />
+
+                            <small class="text-muted">
+                                Click sizes to select. Click again or press × to remove.
+                            </small>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Price (₱)</label>
+                            <input name="Price"
+                                   id="editPrice"
+                                   class="form-control custom-input"
+                                   type="number"
+                                   step="0.01"
+                                   required />
+                        </div>
+
+                        <div class="form-group">
+                            <label>Total Stock</label>
+                            <input name="Stock"
+                                   id="editStock"
+                                   class="form-control custom-input"
+                                   type="number"
+                                   required />
+                        </div>
+
+                        <div class="form-group full">
+                            <label>Current Images</label>
+                            <div id="editExistingImages" class="existing-images-grid"></div>
+                        </div>
+
+                        <div class="form-group full">
+                            <label>Add More Product Images</label>
+                            <input name="ProductImages"
+                                   class="form-control custom-input"
+                                   type="file"
+                                   multiple
+                                   accept="image/*" />
+                            <small class="text-muted">
+                                You can upload additional images. Allowed: JPG, JPEG, PNG, WEBP.
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer edit-modal-footer">
+                    <button type="button"
+                            class="btn-cancel-modal"
+                            data-bs-dismiss="modal">
+                        Cancel
+                    </button>
+
+                    <button type="submit"
+                            class="btn-save-modal">
+                        Update Product
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- DELETE PRODUCT MODAL -->
+<div class="modal fade" id="deleteProductModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content simple-delete-modal">
+            <form asp-controller="Seller" asp-action="DeleteProduct" method="post">
+                @Html.AntiForgeryToken()
+
+                <input type="hidden" name="id" id="deleteProductId" />
+
+                <div class="simple-delete-body">
+                    <h5>Delete Product?</h5>
+
+                    <p>
+                        Are you sure you want to delete
+                        <strong id="deleteProductName"></strong>?
+                    </p>
+
+                    <div class="simple-delete-actions">
+                        <button type="button"
+                                class="simple-cancel-btn"
+                                data-bs-dismiss="modal">
+                            Cancel
+                        </button>
+
+                        <button type="submit" class="simple-delete-btn">
+                            Delete
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const addSelectedSizes = new Set();
+
+        function renderAddSizes() {
+            const selectedSizesContainer = document.getElementById("addSelectedSizes");
+            const sizesInput = document.getElementById("addSizesInput");
+
+            selectedSizesContainer.innerHTML = "";
+
+            addSelectedSizes.forEach(size => {
+                const badge = document.createElement("span");
+                badge.className = "selected-size-badge";
+                badge.innerHTML = `${size} <button type="button" onclick="toggleAddSize('${size}')">×</button>`;
+                selectedSizesContainer.appendChild(badge);
+            });
+
+            sizesInput.value = Array.from(addSelectedSizes).join(", ");
+        }
+
+        function toggleAddSize(size) {
+            if (addSelectedSizes.has(size)) {
+                addSelectedSizes.delete(size);
+            } else {
+                addSelectedSizes.add(size);
+            }
+
+            renderAddSizes();
+        }
+
+        const addModal = document.getElementById("addProductModal");
+
+        addModal.addEventListener("hidden.bs.modal", function () {
+            addSelectedSizes.clear();
+            renderAddSizes();
+
+            const form = addModal.querySelector("form");
+            form.reset();
+        });
+
+        const editModal = document.getElementById("editProductModal");
+        const selectedSizes = new Set();
+
+        function renderEditSizes() {
+            const selectedSizesContainer = document.getElementById("editSelectedSizes");
+            const sizesInput = document.getElementById("editSizesInput");
+
+            selectedSizesContainer.innerHTML = "";
+
+            selectedSizes.forEach(size => {
+                const badge = document.createElement("span");
+                badge.className = "selected-size-badge";
+                badge.innerHTML = `${size} <button type="button" onclick="toggleEditSize('${size}')">×</button>`;
+                selectedSizesContainer.appendChild(badge);
+            });
+
+            sizesInput.value = Array.from(selectedSizes).join(", ");
+        }
+
+        function toggleEditSize(size) {
+            if (selectedSizes.has(size)) {
+                selectedSizes.delete(size);
+            } else {
+                selectedSizes.add(size);
+            }
+
+            renderEditSizes();
+        }
+
+        editModal.addEventListener("show.bs.modal", function (event) {
+            const button = event.relatedTarget;
+
+            document.getElementById("editProductId").value = button.dataset.id;
+            document.getElementById("editProductIdHidden").value = button.dataset.id;
+            document.getElementById("editName").value = button.dataset.name || "";
+            document.getElementById("editDescription").value = button.dataset.description || "";
+            document.getElementById("editCategory").value = button.dataset.category || "";
+            document.getElementById("editPrice").value = button.dataset.price || "";
+            document.getElementById("editStock").value = button.dataset.stock || "";
+            document.getElementById("editVariants").value = button.dataset.variants || "";
+
+            selectedSizes.clear();
+
+            const sizes = (button.dataset.sizes || "")
+                .split(",")
+                .map(x => x.trim())
+                .filter(x => x.length > 0);
+
+            sizes.forEach(size => selectedSizes.add(size));
+            renderEditSizes();
+
+            const imageContainer = document.getElementById("editExistingImages");
+            imageContainer.innerHTML = "";
+
+            let images = [];
+
+            try {
+                images = JSON.parse(button.dataset.images || "[]");
+            } catch {
+                images = [];
+            }
+
+            if (images.length === 0) {
+                imageContainer.innerHTML = `<p class="muted">No product images.</p>`;
+            } else {
+                images.forEach(image => {
+                    const wrapper = document.createElement("div");
+                    wrapper.className = "existing-image-item";
+
+                    wrapper.innerHTML = `
+                        <img src="${image}" class="existing-product-img" alt="Product image" />
+                        <button type="submit"
+                                formaction="/Seller/DeleteProductImage"
+                                formmethod="post"
+                                name="imagePath"
+                                value="${image}"
+                                class="delete-image-btn"
+                                onclick="return confirm('Delete this image?')">
+                            ×
+                        </button>
+                    `;
+
+                    imageContainer.appendChild(wrapper);
+                });
+            }
+        });
+
+        const deleteModal = document.getElementById("deleteProductModal");
+
+        deleteModal.addEventListener("show.bs.modal", function (event) {
+            const button = event.relatedTarget;
+
+            document.getElementById("deleteProductId").value = button.dataset.id;
+            document.getElementById("deleteProductName").textContent = button.dataset.name || "this product";
+        });
+    </script>
+}

@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Http;
 
 namespace BuyZaar.ViewModels
 {
@@ -23,5 +24,8 @@ namespace BuyZaar.ViewModels
         [Required]
         [Display(Name = "Business Description")]
         public string BusinessDescription { get; set; } = string.Empty;
+
+        
+        public List<IFormFile>? Documents { get; set; }
     }
 }
