@@ -1,0 +1,517 @@
+@model List<BuyZaar.Models.Order>
+
+@{
+    Layout = "_DashboardLayout";
+    ViewBag.ActiveRole = "Seller";
+    ViewData["Title"] = "Orders";
+
+    var currentStatus = Context.Request.Query["status"].ToString();
+    var search = Context.Request.Query["search"].ToString();
+
+    var allCount = Model.Count;
+    var toShipCount = Model.Count(o => o.Status == "To Ship");
+    var shippedCount = Model.Count(o => o.Status == "To Receive" || o.Status == "Shipped");
+    var completedCount = Model.Count(o => o.Status == "Completed" || o.Status == "To Review");
+}
+
+<link rel="stylesheet" href="~/css/sellerorders.css" asp-append-version="true" />
+
+<div class="seller-orders-page">
+
+    <div class="orders-header">
+        <div>
+            <span class="seller-label">Seller</span>
+            <h1>Orders</h1>
+            <p>Track buyer orders, view details, and print parcel receipts.</p>
+        </div>
+    </div>
+
+    <div class="orders-nav-tabs">
+        <a asp-controller="Seller"
+           asp-action="Orders"
+           class="order-tab @(string.IsNullOrWhiteSpace(currentStatus) ? "active" : "")">
+            All <span>@allCount</span>
+        </a>
+
+        <a asp-controller="Seller"
+           asp-action="Orders"
+           asp-route-status="To Ship"
+           class="order-tab @(currentStatus == "To Ship" ? "active" : "")">
+            To Ship <span>@toShipCount</span>
+        </a>
+
+        <a asp-controller="Seller"
+           asp-action="Orders"
+           asp-route-status="To Receive"
+           class="order-tab @(currentStatus == "To Receive" ? "active" : "")">
+            Shipped <span>@shippedCount</span>
+        </a>
+
+        <a asp-controller="Seller"
+           asp-action="Orders"
+           asp-route-status="Completed"
+           class="order-tab @(currentStatus == "Completed" ? "active" : "")">
+            Completed <span>@completedCount</span>
+        </a>
+    </div>
+
+    <form asp-controller="Seller"
+          asp-action="Orders"
+          method="get"
+          class="orders-filter-bar">
+
+        <input type="text"
+               name="search"
+               value="@search"
+               class="orders-search"
+               placeholder="Search reference no., order ID, buyer name, or contact number..." />
+
+        <select name="status" class="orders-status-filter">
+            <option value="">All Status</option>
+            <option value="To Ship" selected="@(currentStatus == "To Ship")">To Ship</option>
+            <option value="To Receive" selected="@(currentStatus == "To Receive")">To Receive</option>
+            <option value="Completed" selected="@(currentStatus == "Completed")">Completed</option>
+            <option value="Cancelled" selected="@(currentStatus == "Cancelled")">Cancelled</option>
+        </select>
+
+        <button type="submit" class="btn-filter-orders">
+            Filter
+        </button>
+
+        <a asp-controller="Seller"
+           asp-action="Orders"
+           class="btn-reset-orders">
+            Reset
+        </a>
+    </form>
+
+    @if (!Model.Any())
+    {
+        <div class="empty-orders">
+            <h3>No orders found</h3>
+            <p>No orders match your current filter.</p>
+        </div>
+    }
+    else
+    {
+        <div class="orders-table-card">
+            <div class="orders-table-header">
+                <strong>Reference No.</strong>
+                <strong>Order</strong>
+                <strong>Buyer</strong>
+                <strong>Items</strong>
+                <strong>Total</strong>
+                <strong>Status</strong>
+                <strong>Date</strong>
+                <strong>Actions</strong>
+            </div>
+
+            @foreach (var order in Model)
+            {
+                var firstItem = order.OrderItems.FirstOrDefault();
+                var firstProduct = firstItem?.Product;
+                var image = firstProduct?.Images?.FirstOrDefault()?.ImagePath ?? "/images/no-image.png";
+                var referenceNo = $"BZ-{order.Id}-{order.CreatedAt:yyMMddHHmm}";
+                var subtotal = order.OrderItems.Sum(i => i.Subtotal);
+                var shippingFeeText = order.ShippingFee == 0
+                    ? "Free Shipping"
+                    : $"₱{order.ShippingFee.ToString("N2")}";
+
+                <div class="orders-table-row">
+                    <div class="reference-cell">
+                        <strong>@referenceNo</strong>
+                        <span>Parcel Ref</span>
+                    </div>
+
+                    <div class="order-product-cell">
+                        <img src="@Url.Content(image)" alt="Order product" />
+
+                        <div>
+                            <strong>Order #@order.Id</strong>
+                            <span>@(firstProduct?.Name ?? "Product")</span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <strong>@order.ReceiverName</strong>
+                        <span>@order.ContactNumber</span>
+                    </div>
+
+                    <div>
+                        <strong>@order.OrderItems.Sum(i => i.Quantity)</strong>
+                        <span>item(s)</span>
+                    </div>
+
+                    <div class="order-total">
+                        ₱@order.TotalAmount.ToString("N2")
+                    </div>
+
+                    <div>
+                        <span class="order-status">@order.Status</span>
+                    </div>
+
+                    <div>
+                        <strong>@order.CreatedAt.ToString("MMM dd")</strong>
+                        <span>@order.CreatedAt.ToString("hh:mm tt")</span>
+                    </div>
+
+                    <div class="order-actions">
+                        <button type="button"
+                                class="btn-view-order"
+                                data-bs-toggle="modal"
+                                data-bs-target="#orderModal-@order.Id">
+                            View
+                        </button>
+
+                        <button type="button"
+                                class="btn-print-order"
+                                onclick="printReceipt('receipt-@order.Id')">
+                            Print
+                        </button>
+
+                        @if (order.Status == "To Ship")
+                        {
+                            <form asp-controller="Seller" asp-action="ShipOrder" method="post">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="orderId" value="@order.Id" />
+
+                                <button type="submit" class="btn-ship-order">
+                                    Ship
+                                </button>
+                            </form>
+                        }
+                    </div>
+                </div>
+
+                <div class="modal fade" id="orderModal-@order.Id" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-lg modal-dialog-centered">
+                        <div class="modal-content order-modal-content">
+
+                            <div class="modal-header">
+                                <div>
+                                    <h5 class="modal-title">Order #@order.Id</h5>
+                                    <small>@order.CreatedAt.ToString("MMM dd, yyyy hh:mm tt")</small>
+                                </div>
+
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+
+                            <div class="modal-body" id="receipt-@order.Id">
+                                <div class="parcel-receipt">
+
+                                    <div class="parcel-header">
+                                        <div>
+                                            <h2>BuyZaar</h2>
+                                            <p>Parcel / Order Receipt</p>
+                                        </div>
+
+                                        <div class="parcel-ref">
+                                            <span>Reference No.</span>
+                                            <strong>@referenceNo</strong>
+                                        </div>
+                                    </div>
+
+                                    <div class="parcel-meta">
+                                        <div>
+                                            <span>Order ID</span>
+                                            <strong>#@order.Id</strong>
+                                        </div>
+
+                                        <div>
+                                            <span>Payment Method</span>
+                                            <strong>Cash on Delivery</strong>
+                                        </div>
+
+                                        <div>
+                                            <span>Date Ordered</span>
+                                            <strong>@order.CreatedAt.ToString("MMM dd, yyyy hh:mm tt")</strong>
+                                        </div>
+
+                                        <div>
+                                            <span>Shipping Fee</span>
+                                            <strong>@shippingFeeText</strong>
+                                        </div>
+                                    </div>
+
+                                    <div class="parcel-section">
+                                        <h4>Ship To</h4>
+
+                                        <div class="shipping-box">
+                                            <strong>@order.ReceiverName</strong>
+                                            <p>@order.ContactNumber</p>
+                                            <p>@order.DeliveryAddress</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="parcel-section">
+                                        <h4>Order Items</h4>
+
+                                        <div class="parcel-items">
+                                            @foreach (var item in order.OrderItems)
+                                            {
+                                                var product = item.Product;
+                                                var itemImage = product?.Images?.FirstOrDefault()?.ImagePath ?? "/images/no-image.png";
+
+                                                <div class="parcel-item">
+                                                    <img src="@Url.Content(itemImage)" alt="@(product?.Name ?? "Product")" />
+
+                                                    <div class="parcel-item-info">
+                                                        <strong>@(product?.Name ?? "Product")</strong>
+                                                        <p>Variant: @(item.SelectedVariant ?? "Default")</p>
+                                                        <p>Size: @(item.SelectedSize ?? "N/A")</p>
+                                                        <p>Qty: @item.Quantity</p>
+                                                    </div>
+
+                                                    <div class="parcel-item-price">
+                                                        ₱@item.Subtotal.ToString("N2")
+                                                    </div>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+
+                                    <div class="parcel-summary">
+                                        <div>
+                                            <span>Subtotal</span>
+                                            <strong>₱@subtotal.ToString("N2")</strong>
+                                        </div>
+
+                                        <div>
+                                            <span>Shipping Fee</span>
+                                            <strong>@shippingFeeText</strong>
+                                        </div>
+
+                                        <div class="parcel-grand-total">
+                                            <span>Total Amount</span>
+                                            <strong>₱@order.TotalAmount.ToString("N2")</strong>
+                                        </div>
+                                    </div>
+
+                                    <div class="parcel-footer">
+                                        <p>Thank you for shopping with BuyZaar.</p>
+                                        <small>Please keep this receipt for order verification.</small>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            <div class="modal-footer">
+                                <button type="button"
+                                        class="btn-print-order"
+                                        onclick="printReceipt('receipt-@order.Id')">
+                                    Print Receipt
+                                </button>
+
+                                <button type="button"
+                                        class="btn btn-secondary"
+                                        data-bs-dismiss="modal">
+                                    Close
+                                </button>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        function printReceipt(receiptId) {
+            const receiptElement = document.getElementById(receiptId);
+            const printWindow = window.open("", "_blank", "width=900,height=750");
+
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>BuyZaar Receipt</title>
+
+                    <style>
+                        * {
+                            box-sizing: border-box;
+                        }
+
+                        body {
+                            margin: 0;
+                            padding: 30px;
+                            font-family: Arial, sans-serif;
+                            color: #111827;
+                            background: #ffffff;
+                        }
+
+                        .parcel-receipt {
+                            max-width: 760px;
+                            margin: 0 auto;
+                            border: 1px solid #d1d5db;
+                            border-radius: 14px;
+                            padding: 24px;
+                        }
+
+                        .parcel-header {
+                            display: flex;
+                            justify-content: space-between;
+                            gap: 20px;
+                            border-bottom: 2px solid #111827;
+                            padding-bottom: 16px;
+                            margin-bottom: 18px;
+                        }
+
+                        .parcel-header h2 {
+                            margin: 0;
+                            font-size: 30px;
+                            font-weight: 900;
+                        }
+
+                        .parcel-header p,
+                        .parcel-ref span,
+                        .parcel-meta span,
+                        .parcel-summary span {
+                            color: #64748b;
+                            font-size: 13px;
+                            margin: 4px 0;
+                        }
+
+                        .parcel-ref {
+                            text-align: right;
+                        }
+
+                        .parcel-ref strong,
+                        .parcel-meta strong {
+                            font-weight: 900;
+                        }
+
+                        .parcel-meta {
+                            display: grid;
+                            grid-template-columns: 1fr 1fr;
+                            gap: 10px;
+                            margin-bottom: 18px;
+                        }
+
+                        .parcel-meta div,
+                        .shipping-box,
+                        .parcel-item {
+                            border: 1px solid #e5e7eb;
+                            border-radius: 10px;
+                            padding: 12px;
+                        }
+
+                        .parcel-section {
+                            margin-bottom: 18px;
+                        }
+
+                        .parcel-section h4 {
+                            margin: 0 0 8px;
+                            font-size: 16px;
+                            font-weight: 900;
+                        }
+
+                        .shipping-box strong {
+                            display: block;
+                            margin-bottom: 4px;
+                        }
+
+                        .shipping-box p {
+                            margin: 4px 0;
+                            color: #374151;
+                        }
+
+                        .parcel-items {
+                            display: grid;
+                            gap: 10px;
+                        }
+
+                        .parcel-item {
+                            display: grid;
+                            grid-template-columns: 70px 1fr auto;
+                            gap: 12px;
+                            align-items: center;
+                        }
+
+                        .parcel-item img {
+                            width: 70px !important;
+                            height: 70px !important;
+                            max-width: 70px !important;
+                            max-height: 70px !important;
+                            object-fit: cover;
+                            border-radius: 8px;
+                            border: 1px solid #e5e7eb;
+                        }
+
+                        .parcel-item-info strong {
+                            display: block;
+                            font-weight: 900;
+                        }
+
+                        .parcel-item-info p {
+                            margin: 2px 0;
+                            color: #64748b;
+                            font-size: 13px;
+                        }
+
+                        .parcel-item-price {
+                            font-weight: 900;
+                            white-space: nowrap;
+                        }
+
+                        .parcel-summary {
+                            border-top: 2px dashed #d1d5db;
+                            padding-top: 14px;
+                            margin-top: 18px;
+                        }
+
+                        .parcel-summary div {
+                            display: flex;
+                            justify-content: space-between;
+                            margin-bottom: 8px;
+                        }
+
+                        .parcel-grand-total {
+                            border-top: 1px solid #e5e7eb;
+                            padding-top: 10px;
+                            font-size: 20px;
+                            font-weight: 900;
+                        }
+
+                        .parcel-footer {
+                            text-align: center;
+                            margin-top: 22px;
+                            color: #64748b;
+                        }
+
+                        .parcel-footer p {
+                            margin-bottom: 4px;
+                            font-weight: 700;
+                            color: #111827;
+                        }
+
+                        @@media print {
+                            body {
+                                padding: 20px;
+                            }
+
+                            .parcel-receipt {
+                                border-radius: 0;
+                                box-shadow: none;
+                            }
+                        }
+                    </style>
+                </head>
+
+                <body>
+                    ${receiptElement.innerHTML}
+                </body>
+                </html>
+            `);
+
+            printWindow.document.close();
+
+            setTimeout(() => {
+                printWindow.focus();
+                printWindow.print();
+            }, 500);
+        }
+    </script>
+}

@@ -35,5 +35,9 @@ namespace BuyZaar.ViewModels
         public string Landmark { get; set; } = string.Empty;
 
         public string DeliveryAddress { get; set; } = string.Empty;
+
+        public decimal ShippingFee { get; set; }
+
+public decimal GrandTotal => Subtotal + ShippingFee;
     }
 }

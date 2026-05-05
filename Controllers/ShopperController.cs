@@ -37,19 +37,14 @@ namespace BuyZaar.Controllers
                 .FirstOrDefaultAsync();
 
             if (await _userManager.IsInRoleAsync(user, "Seller"))
-            {
                 sellerStatus = "Approved";
-            }
             else if (latestApplication != null)
-            {
                 sellerStatus = latestApplication.Status;
-            }
 
             ViewBag.SellerApplicationStatus = sellerStatus;
             ViewBag.LatestSellerApplication = latestApplication;
 
-            ViewBag.TotalOrders = await _context.Orders
-                .CountAsync(o => o.ShopperId == user.Id);
+            ViewBag.TotalOrders = await _context.Orders.CountAsync(o => o.ShopperId == user.Id);
 
             ViewBag.CartItems = await _context.CartItems
                 .Where(c => c.ShopperId == user.Id)
@@ -161,9 +156,7 @@ namespace BuyZaar.Controllers
             if (quantity < 1)
                 quantity = 1;
 
-            var product = await _context.Products
-                .FirstOrDefaultAsync(p => p.Id == productId && p.Stock > 0);
-
+            var product = await _context.Products.FirstOrDefaultAsync(p => p.Id == productId && p.Stock > 0);
             if (product == null)
                 return NotFound();
 
@@ -332,6 +325,9 @@ namespace BuyZaar.Controllers
                 return RedirectToAction("ViewDetails", new { id = productId });
             }
 
+            var subtotal = product.Price * quantity;
+            var shippingFee = subtotal >= 2500m ? 0m : 60m;
+
             var model = new CheckoutViewModel
             {
                 ProductId = product.Id,
@@ -339,7 +335,8 @@ namespace BuyZaar.Controllers
                 ProductImage = product.Images.FirstOrDefault()?.ImagePath ?? "/images/no-image.png",
                 Price = product.Price,
                 Quantity = quantity,
-                Subtotal = product.Price * quantity,
+                Subtotal = subtotal,
+                ShippingFee = shippingFee,
                 SelectedVariant = string.IsNullOrWhiteSpace(selectedVariant) ? null : selectedVariant.Trim(),
                 SelectedSize = string.IsNullOrWhiteSpace(selectedSize) ? null : selectedSize.Trim(),
                 ReceiverName = user.FullName ?? user.UserName ?? "",
@@ -350,54 +347,55 @@ namespace BuyZaar.Controllers
             return View("Checkout", model);
         }
 
-
-
-
         [HttpPost]
-[ValidateAntiForgeryToken]
-public async Task<IActionResult> CheckoutSelectedCart(List<int> selectedCartItemIds)
-{
-    ViewBag.ActiveRole = "Shopper";
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CheckoutSelectedCart(List<int> selectedCartItemIds)
+        {
+            ViewBag.ActiveRole = "Shopper";
 
-    var user = await _userManager.GetUserAsync(User);
-    if (user == null)
-        return RedirectToAction("Login", "Account");
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+                return RedirectToAction("Login", "Account");
 
-    if (selectedCartItemIds == null || !selectedCartItemIds.Any())
-    {
-        TempData["ErrorMessage"] = "Please select at least one item to checkout.";
-        return RedirectToAction("MyCart");
-    }
+            if (selectedCartItemIds == null || !selectedCartItemIds.Any())
+            {
+                TempData["ErrorMessage"] = "Please select at least one item to checkout.";
+                return RedirectToAction("MyCart");
+            }
 
-    var cartItems = await _context.CartItems
-        .Include(c => c.Product)
-            .ThenInclude(p => p!.Images)
-        .Where(c => selectedCartItemIds.Contains(c.Id) && c.ShopperId == user.Id)
-        .ToListAsync();
+            var cartItems = await _context.CartItems
+                .Include(c => c.Product)
+                    .ThenInclude(p => p!.Images)
+                .Where(c => selectedCartItemIds.Contains(c.Id) && c.ShopperId == user.Id)
+                .ToListAsync();
 
-    if (!cartItems.Any())
-        return RedirectToAction("MyCart");
+            if (!cartItems.Any())
+                return RedirectToAction("MyCart");
 
-    var firstItem = cartItems.First();
-    var product = firstItem.Product!;
+            var firstItem = cartItems.First();
+            var product = firstItem.Product!;
+            var subtotal = cartItems.Sum(i => (i.Product?.Price ?? 0) * i.Quantity);
+            var shippingFee = subtotal >= 2500m ? 0m : 60m;
 
-    var model = new CheckoutViewModel
-    {
-        ProductId = product.Id,
-        ProductName = cartItems.Count == 1 ? product.Name : $"{cartItems.Count} selected items",
-        ProductImage = product.Images.FirstOrDefault()?.ImagePath ?? "/images/no-image.png",
-        Price = product.Price,
-        Quantity = firstItem.Quantity,
-        Subtotal = cartItems.Sum(i => (i.Product?.Price ?? 0) * i.Quantity),
-        SelectedVariant = firstItem.SelectedVariant,
-        SelectedSize = firstItem.SelectedSize,
-        ReceiverName = user.FullName ?? user.UserName ?? "",
-        ContactNumber = user.PhoneNumber ?? "",
-        DeliveryAddress = ""
-    };
+            var model = new CheckoutViewModel
+            {
+                ProductId = product.Id,
+                ProductName = cartItems.Count == 1 ? product.Name : $"{cartItems.Count} selected items",
+                ProductImage = product.Images.FirstOrDefault()?.ImagePath ?? "/images/no-image.png",
+                Price = product.Price,
+                Quantity = firstItem.Quantity,
+                Subtotal = subtotal,
+                ShippingFee = shippingFee,
+                SelectedVariant = firstItem.SelectedVariant,
+                SelectedSize = firstItem.SelectedSize,
+                ReceiverName = user.FullName ?? user.UserName ?? "",
+                ContactNumber = user.PhoneNumber ?? "",
+                DeliveryAddress = ""
+            };
 
-    return View("Checkout", model);
-}
+            return View("Checkout", model);
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> PlaceOrder(CheckoutViewModel model)
@@ -444,13 +442,17 @@ public async Task<IActionResult> CheckoutSelectedCart(List<int> selectedCartItem
                     return RedirectToAction("ViewDetails", new { id = model.ProductId });
                 }
 
+                var subtotal = product.Price * model.Quantity;
+                var shippingFee = subtotal >= 2500m ? 0m : 60m;
+
                 var order = new Order
                 {
                     ShopperId = user.Id,
                     ReceiverName = model.ReceiverName.Trim(),
                     ContactNumber = model.ContactNumber.Trim(),
                     DeliveryAddress = model.DeliveryAddress.Trim(),
-                    TotalAmount = product.Price * model.Quantity,
+                    ShippingFee = shippingFee,
+                    TotalAmount = subtotal + shippingFee,
                     Status = "To Ship",
                     CreatedAt = DateTime.Now
                 };
@@ -460,7 +462,7 @@ public async Task<IActionResult> CheckoutSelectedCart(List<int> selectedCartItem
                     ProductId = product.Id,
                     Quantity = model.Quantity,
                     Price = product.Price,
-                    Subtotal = product.Price * model.Quantity,
+                    Subtotal = subtotal,
                     SelectedVariant = string.IsNullOrWhiteSpace(model.SelectedVariant) ? null : model.SelectedVariant.Trim(),
                     SelectedSize = string.IsNullOrWhiteSpace(model.SelectedSize) ? null : model.SelectedSize.Trim()
                 });
@@ -525,18 +527,12 @@ public async Task<IActionResult> CheckoutSelectedCart(List<int> selectedCartItem
             if (!string.IsNullOrWhiteSpace(status))
             {
                 if (status == "To Pay")
-                {
                     query = query.Where(o => o.Status == "To Pay" || o.Status == "Pending Payment");
-                }
                 else
-                {
                     query = query.Where(o => o.Status == status);
-                }
             }
 
-            var orders = await query
-                .OrderByDescending(o => o.CreatedAt)
-                .ToListAsync();
+            var orders = await query.OrderByDescending(o => o.CreatedAt).ToListAsync();
 
             return View(orders);
         }

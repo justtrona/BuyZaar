@@ -134,9 +134,16 @@
                 </div>
 
                 <div class="summary-row">
-                    <span>Shipping Fee</span>
-                    <strong>To be confirmed</strong>
-                </div>
+    <span>Shipping Fee</span>
+    <strong>
+        @(Model.ShippingFee == 0 ? "Free Shipping" : $"₱{Model.ShippingFee.ToString("N2")}")
+    </strong>
+</div>
+
+<div class="summary-row total">
+    <span>Total</span>
+    <strong>₱@((Model.Subtotal + Model.ShippingFee).ToString("N2"))</strong>
+</div>
 
                 <div class="summary-row total">
                     <span>Total</span>

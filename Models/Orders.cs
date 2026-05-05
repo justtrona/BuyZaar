@@ -22,5 +22,6 @@ namespace BuyZaar.Models
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
         public List<OrderItem> OrderItems { get; set; } = new();
+        public decimal ShippingFee { get; set; }
     }
 }

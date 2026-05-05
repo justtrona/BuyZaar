@@ -1,0 +1,155 @@
+@model List<BuyZaar.Models.Order>
+
+@{
+    Layout = "_DashboardLayout";
+    ViewBag.ActiveRole = "Seller";
+    ViewData["Title"] = "Sales Records";
+
+    decimal totalSales = ViewBag.TotalSales ?? 0;
+    decimal pendingSales = ViewBag.PendingSales ?? 0;
+    int totalOrders = ViewBag.TotalOrders ?? 0;
+    int totalItemsSold = ViewBag.TotalItemsSold ?? 0;
+
+    string currentStatus = ViewBag.Status ?? "";
+    string search = ViewBag.Search ?? "";
+    string fromDate = ViewBag.FromDate ?? "";
+    string toDate = ViewBag.ToDate ?? "";
+}
+
+<link rel="stylesheet" href="~/css/salesrecords.css" asp-append-version="true" />
+
+<div class="sales-records-page">
+
+    <div class="sales-header">
+        <div>
+            <span class="seller-label">Seller</span>
+            <h1>Sales Records</h1>
+            <p>Track sales performance based on customer orders.</p>
+        </div>
+    </div>
+
+    <div class="sales-stats-grid">
+        <div class="sales-stat-card">
+            <span>Total Sales</span>
+            <strong>₱@totalSales.ToString("N2")</strong>
+        </div>
+
+        <div class="sales-stat-card">
+            <span>Pending Sales</span>
+            <strong>₱@pendingSales.ToString("N2")</strong>
+        </div>
+
+        <div class="sales-stat-card">
+            <span>Total Orders</span>
+            <strong>@totalOrders</strong>
+        </div>
+
+        <div class="sales-stat-card">
+            <span>Items Sold</span>
+            <strong>@totalItemsSold</strong>
+        </div>
+    </div>
+
+    <form asp-controller="Seller"
+          asp-action="SalesRecords"
+          method="get"
+          class="sales-filter-card">
+
+        <input type="text"
+               name="search"
+               value="@search"
+               placeholder="Search order ID, buyer name, or contact..."
+               class="sales-search" />
+
+        <select name="status" class="sales-select">
+            <option value="">All Status</option>
+            <option value="To Ship" selected="@(currentStatus == "To Ship")">To Ship</option>
+            <option value="To Receive" selected="@(currentStatus == "To Receive")">To Receive</option>
+            <option value="To Review" selected="@(currentStatus == "To Review")">To Review</option>
+            <option value="Completed" selected="@(currentStatus == "Completed")">Completed</option>
+            <option value="Cancelled" selected="@(currentStatus == "Cancelled")">Cancelled</option>
+        </select>
+
+        <input type="date" name="fromDate" value="@fromDate" class="sales-date" />
+        <input type="date" name="toDate" value="@toDate" class="sales-date" />
+
+        <button type="submit" class="btn-sales-filter">Filter</button>
+
+        <a asp-controller="Seller"
+           asp-action="SalesRecords"
+           class="btn-sales-reset">
+            Reset
+        </a>
+    </form>
+
+    @if (!Model.Any())
+    {
+        <div class="empty-sales">
+            <h3>No sales records found</h3>
+            <p>Sales records will appear once buyers place orders.</p>
+        </div>
+    }
+    else
+    {
+        <div class="sales-table-card">
+            <div class="sales-table-header">
+                <strong>Order</strong>
+                <strong>Buyer</strong>
+                <strong>Products</strong>
+                <strong>Items</strong>
+                <strong>Sales</strong>
+                <strong>Status</strong>
+                <strong>Date</strong>
+            </div>
+
+            @foreach (var order in Model)
+            {
+                var sellerItems = order.OrderItems.ToList();
+                var firstItem = sellerItems.FirstOrDefault();
+                var firstProduct = firstItem?.Product;
+                var image = firstProduct?.Images?.FirstOrDefault()?.ImagePath ?? "/images/no-image.png";
+                var sellerSubtotal = sellerItems.Sum(i => i.Subtotal);
+                var itemCount = sellerItems.Sum(i => i.Quantity);
+
+                <div class="sales-table-row">
+                    <div class="sales-order-cell">
+                        <img src="@Url.Content(image)" alt="Product" />
+
+                        <div>
+                            <strong>Order #@order.Id</strong>
+                            <span>BZ-@order.Id-@order.CreatedAt.ToString("yyMMddHHmm")</span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <strong>@order.ReceiverName</strong>
+                        <span>@order.ContactNumber</span>
+                    </div>
+
+                    <div>
+                        <strong>@(firstProduct?.Name ?? "Product")</strong>
+                        <span>@sellerItems.Count product line(s)</span>
+                    </div>
+
+                    <div>
+                        <strong>@itemCount</strong>
+                        <span>item(s)</span>
+                    </div>
+
+                    <div class="sales-amount">
+                        ₱@sellerSubtotal.ToString("N2")
+                    </div>
+
+                    <div>
+                        <span class="sales-status">@order.Status</span>
+                    </div>
+
+                    <div>
+                        <strong>@order.CreatedAt.ToString("MMM dd, yyyy")</strong>
+                        <span>@order.CreatedAt.ToString("hh:mm tt")</span>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

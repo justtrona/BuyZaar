@@ -29,15 +29,14 @@
 
                 <nav class="sidebar-nav">
                     @if (activeRole == "Seller")
-                    {
-                        <a asp-controller="Seller" asp-action="Index">Dashboard</a>
-                        <a asp-controller="Seller" asp-action="Products">Manage Products</a>
-                        <a asp-controller="Seller" asp-action="CreateProduct">Add Product</a>
-                        <a href="#">Orders</a>
-                        <a href="#">Inventory</a>
-                        <a href="#">Sales Records</a>
-                        <a href="#">Shop Profile</a>
-                    }
+{
+    <a asp-controller="Seller" asp-action="Index">Dashboard</a>
+    <a asp-controller="Seller" asp-action="Products">Manage Products</a>
+    <a asp-controller="Seller" asp-action="CreateProduct">Add Product</a>
+    <a asp-controller="Seller" asp-action="Orders">Orders</a>
+    <a asp-controller="Seller" asp-action="SalesRecords">Sales Records</a>
+    <a href="#">Shop Profile</a>
+}
                     else if (activeRole == "Shopper")
                     {
                         <a asp-controller="Shopper" asp-action="BrowseProducts">Home</a>

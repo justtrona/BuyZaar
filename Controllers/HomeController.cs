@@ -16,9 +16,7 @@ namespace BuyZaar.Controllers
         //  Landing Page as the Index
         public IActionResult Index()
         {
-               return View("~/Views/LandingPage/Landing.cshtml");  // Correct path to the view
-  // This will render LandingPage.cshtml
-        }
+return View();     }
 
         public IActionResult Privacy()
         {
