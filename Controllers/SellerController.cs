@@ -51,7 +51,7 @@ namespace BuyZaar.Controllers
                     o.OrderItems.Any(oi => oi.Product != null && oi.Product.SellerId == user.Id) &&
                     o.CreatedAt.Month == DateTime.Now.Month &&
                     o.CreatedAt.Year == DateTime.Now.Year &&
-                    (o.Status == "Completed" || o.Status == "To Review"))
+                    o.Status == "Completed")
                 .SumAsync(o => (decimal?)o.OrderItems
                     .Where(oi => oi.Product != null && oi.Product.SellerId == user.Id)
                     .Sum(oi => oi.Subtotal)) ?? 0;
@@ -76,62 +76,75 @@ namespace BuyZaar.Controllers
             return View(products);
         }
 
-        public async Task<IActionResult> Orders(string? status, string? search)
+      public async Task<IActionResult> Orders(string? status, string? search)
+{
+    ViewBag.ActiveRole = "Seller";
+
+    var user = await _userManager.GetUserAsync(User);
+    if (user == null)
+        return RedirectToAction("Login", "Account");
+
+    var baseQuery = _context.Orders
+        .Include(o => o.OrderItems)
+            .ThenInclude(oi => oi.Product)
+                .ThenInclude(p => p!.Images)
+        .Include(o => o.OrderItems)
+            .ThenInclude(oi => oi.Product)
+                .ThenInclude(p => p!.Seller)
+        .Where(o => o.OrderItems.Any(oi =>
+            oi.Product != null &&
+            oi.Product.SellerId == user.Id))
+        .AsQueryable();
+
+    ViewBag.AllCount = await baseQuery.CountAsync();
+
+    ViewBag.ToShipCount = await baseQuery
+        .CountAsync(o => o.Status == "To Ship");
+
+    ViewBag.ShippedCount = await baseQuery
+        .CountAsync(o => o.Status == "To Receive" || o.Status == "Shipped");
+
+    ViewBag.CompletedCount = await baseQuery
+        .CountAsync(o => o.Status == "Completed" || o.Status == "To Review");
+
+    var query = baseQuery;
+
+    if (!string.IsNullOrWhiteSpace(status))
+    {
+        if (status == "Completed")
         {
-            ViewBag.ActiveRole = "Seller";
-
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null)
-                return RedirectToAction("Login", "Account");
-
-            var query = _context.Orders
-                .Include(o => o.OrderItems)
-                    .ThenInclude(oi => oi.Product)
-                        .ThenInclude(p => p!.Images)
-                .Include(o => o.OrderItems)
-                    .ThenInclude(oi => oi.Product)
-                        .ThenInclude(p => p!.Seller)
-                .Where(o => o.OrderItems.Any(oi =>
-                    oi.Product != null &&
-                    oi.Product.SellerId == user.Id))
-                .AsQueryable();
-
-            if (!string.IsNullOrWhiteSpace(status))
-            {
-                if (status == "Completed")
-                {
-                    query = query.Where(o =>
-                        o.Status == "Completed" ||
-                        o.Status == "To Review");
-                }
-                else if (status == "To Receive")
-                {
-                    query = query.Where(o =>
-                        o.Status == "To Receive" ||
-                        o.Status == "Shipped");
-                }
-                else
-                {
-                    query = query.Where(o => o.Status == status);
-                }
-            }
-
-            if (!string.IsNullOrWhiteSpace(search))
-            {
-                search = search.Trim();
-
-                query = query.Where(o =>
-                    o.Id.ToString().Contains(search) ||
-                    o.ReceiverName.Contains(search) ||
-                    o.ContactNumber.Contains(search));
-            }
-
-            var orders = await query
-                .OrderByDescending(o => o.CreatedAt)
-                .ToListAsync();
-
-            return View(orders);
+            query = query.Where(o =>
+                o.Status == "Completed" ||
+                o.Status == "To Review");
         }
+        else if (status == "To Receive")
+        {
+            query = query.Where(o =>
+                o.Status == "To Receive" ||
+                o.Status == "Shipped");
+        }
+        else
+        {
+            query = query.Where(o => o.Status == status);
+        }
+    }
+
+    if (!string.IsNullOrWhiteSpace(search))
+    {
+        search = search.Trim();
+
+        query = query.Where(o =>
+            o.Id.ToString().Contains(search) ||
+            o.ReceiverName.Contains(search) ||
+            o.ContactNumber.Contains(search));
+    }
+
+    var orders = await query
+        .OrderByDescending(o => o.CreatedAt)
+        .ToListAsync();
+
+    return View(orders);
+}
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -331,75 +344,82 @@ namespace BuyZaar.Controllers
         }
 
         public async Task<IActionResult> SalesRecords(string? status, string? search, DateTime? fromDate, DateTime? toDate)
-{
-    ViewBag.ActiveRole = "Seller";
+        {
+            ViewBag.ActiveRole = "Seller";
 
-    var user = await _userManager.GetUserAsync(User);
-    if (user == null)
-        return RedirectToAction("Login", "Account");
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+                return RedirectToAction("Login", "Account");
 
-    var query = _context.Orders
-        .Include(o => o.OrderItems)
-            .ThenInclude(oi => oi.Product)
-                .ThenInclude(p => p!.Images)
-        .Where(o => o.OrderItems.Any(oi =>
-            oi.Product != null &&
-            oi.Product.SellerId == user.Id))
-        .AsQueryable();
+            var query = _context.Orders
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Product)
+                        .ThenInclude(p => p!.Images)
+                .Where(o => o.OrderItems.Any(oi =>
+                    oi.Product != null &&
+                    oi.Product.SellerId == user.Id))
+                .AsQueryable();
 
-    if (!string.IsNullOrWhiteSpace(status))
-    {
-        query = query.Where(o => o.Status == status);
-    }
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                query = query.Where(o => o.Status == status);
+            }
 
-    if (!string.IsNullOrWhiteSpace(search))
-    {
-        query = query.Where(o =>
-            o.Id.ToString().Contains(search) ||
-            o.ReceiverName.Contains(search) ||
-            o.ContactNumber.Contains(search));
-    }
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                search = search.Trim();
 
-    if (fromDate.HasValue)
-    {
-        query = query.Where(o => o.CreatedAt.Date >= fromDate.Value.Date);
-    }
+                query = query.Where(o =>
+                    o.Id.ToString().Contains(search) ||
+                    o.ReceiverName.Contains(search) ||
+                    o.ContactNumber.Contains(search));
+            }
 
-    if (toDate.HasValue)
-    {
-        query = query.Where(o => o.CreatedAt.Date <= toDate.Value.Date);
-    }
+            if (fromDate.HasValue)
+            {
+                query = query.Where(o => o.CreatedAt.Date >= fromDate.Value.Date);
+            }
 
-    var orders = await query
-        .OrderByDescending(o => o.CreatedAt)
-        .ToListAsync();
+            if (toDate.HasValue)
+            {
+                query = query.Where(o => o.CreatedAt.Date <= toDate.Value.Date);
+            }
 
-    ViewBag.TotalSales = orders
-        .Where(o => o.Status == "Completed" || o.Status == "To Review" || o.Status == "To Receive")
-        .Sum(o => o.OrderItems
-            .Where(oi => oi.Product != null && oi.Product.SellerId == user.Id)
-            .Sum(oi => oi.Subtotal));
+            var orders = await query
+                .OrderByDescending(o => o.CreatedAt)
+                .ToListAsync();
 
-    ViewBag.TotalOrders = orders.Count;
+            ViewBag.TotalSales = orders
+                .Where(o => o.Status == "Completed")
+                .Sum(o => o.OrderItems
+                    .Where(oi => oi.Product != null && oi.Product.SellerId == user.Id)
+                    .Sum(oi => oi.Subtotal));
 
-    ViewBag.TotalItemsSold = orders
-        .Sum(o => o.OrderItems
-            .Where(oi => oi.Product != null && oi.Product.SellerId == user.Id)
-            .Sum(oi => oi.Quantity));
+            ViewBag.PendingSales = orders
+                .Where(o =>
+                    o.Status == "To Ship" ||
+                    o.Status == "To Receive" ||
+                    o.Status == "To Review" ||
+                    o.Status == "Shipped")
+                .Sum(o => o.OrderItems
+                    .Where(oi => oi.Product != null && oi.Product.SellerId == user.Id)
+                    .Sum(oi => oi.Subtotal));
 
-    ViewBag.PendingSales = orders
-        .Where(o => o.Status == "To Ship")
-        .Sum(o => o.OrderItems
-            .Where(oi => oi.Product != null && oi.Product.SellerId == user.Id)
-            .Sum(oi => oi.Subtotal));
+            ViewBag.TotalOrders = orders.Count;
 
-    ViewBag.Status = status;
-    ViewBag.Search = search;
-    ViewBag.FromDate = fromDate?.ToString("yyyy-MM-dd");
-    ViewBag.ToDate = toDate?.ToString("yyyy-MM-dd");
+            ViewBag.TotalItemsSold = orders
+                .Where(o => o.Status == "Completed")
+                .Sum(o => o.OrderItems
+                    .Where(oi => oi.Product != null && oi.Product.SellerId == user.Id)
+                    .Sum(oi => oi.Quantity));
 
-    return View(orders);
-}
+            ViewBag.Status = status;
+            ViewBag.Search = search;
+            ViewBag.FromDate = fromDate?.ToString("yyyy-MM-dd");
+            ViewBag.ToDate = toDate?.ToString("yyyy-MM-dd");
+
+            return View(orders);
+        }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -483,5 +503,93 @@ namespace BuyZaar.Controllers
             if (System.IO.File.Exists(physicalPath))
                 System.IO.File.Delete(physicalPath);
         }
+
+        [HttpGet]
+public async Task<IActionResult> ShopProfile()
+{
+    ViewBag.ActiveRole = "Seller";
+
+    var user = await _userManager.GetUserAsync(User);
+    if (user == null)
+        return RedirectToAction("Login", "Account");
+
+    var profile = await _context.ShopProfiles
+        .FirstOrDefaultAsync(s => s.SellerId == user.Id);
+
+    if (profile == null)
+    {
+        profile = new ShopProfile
+        {
+            SellerId = user.Id,
+            ShopName = $"{user.UserName}'s Shop",
+            CreatedAt = DateTime.Now
+        };
+
+        _context.ShopProfiles.Add(profile);
+        await _context.SaveChangesAsync();
+    }
+
+    return View(profile);
+}
+
+[HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> ShopProfile(ShopProfile model, IFormFile? shopLogo)
+{
+    ViewBag.ActiveRole = "Seller";
+
+    var user = await _userManager.GetUserAsync(User);
+    if (user == null)
+        return RedirectToAction("Login", "Account");
+
+    var profile = await _context.ShopProfiles
+        .FirstOrDefaultAsync(s => s.SellerId == user.Id);
+
+    if (profile == null)
+        return NotFound();
+
+    profile.ShopName = model.ShopName;
+profile.ShopDescription = model.ShopDescription;
+profile.BusinessEmail = model.BusinessEmail;
+profile.BusinessPhone = model.BusinessPhone;
+profile.ShopAddress = model.ShopAddress;
+profile.City = model.City;
+profile.Province = model.Province;
+profile.Barangay = model.Barangay;
+profile.PostalCode = model.PostalCode;
+profile.BusinessHours = model.BusinessHours;
+profile.ReturnPolicy = model.ReturnPolicy;
+profile.UpdatedAt = DateTime.Now;
+
+    if (shopLogo != null && shopLogo.Length > 0)
+    {
+        var uploadFolder = Path.Combine(_environment.WebRootPath, "uploads", "shops");
+
+        if (!Directory.Exists(uploadFolder))
+            Directory.CreateDirectory(uploadFolder);
+
+        var extension = Path.GetExtension(shopLogo.FileName).ToLowerInvariant();
+        var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp" };
+
+        if (!allowedExtensions.Contains(extension))
+        {
+            ModelState.AddModelError("LogoPath", "Only JPG, JPEG, PNG, and WEBP files are allowed.");
+            return View(profile);
+        }
+
+        var fileName = $"{Guid.NewGuid()}{extension}";
+        var filePath = Path.Combine(uploadFolder, fileName);
+
+        using var stream = new FileStream(filePath, FileMode.Create);
+        await shopLogo.CopyToAsync(stream);
+
+        profile.LogoPath = $"/uploads/shops/{fileName}";
+    }
+
+    await _context.SaveChangesAsync();
+
+    TempData["SuccessMessage"] = "Shop profile updated successfully.";
+    return RedirectToAction("ShopProfile");
+}
     }
 }

@@ -4,7 +4,7 @@
 }
 
 .sales-header {
-    margin-bottom: 24px;
+    margin-bottom: 14px;
 }
 
 .seller-label {
@@ -27,6 +27,37 @@
 .sales-header p {
     color: #64748b;
     margin: 6px 0 0;
+}
+
+.sales-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin: 0 0 22px;
+}
+
+.btn-print-sales {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    border: none;
+    background: #111827;
+    color: #ffffff;
+    padding: 12px 18px;
+    border-radius: 14px;
+    font-size: 14px;
+    font-weight: 900;
+    cursor: pointer;
+    box-shadow: 0 12px 24px rgba(15, 23, 42, 0.18);
+    transition: 0.2s ease;
+}
+
+.btn-print-sales:hover {
+    background: #1e293b;
+    transform: translateY(-1px);
+}
+
+.btn-print-sales i {
+    font-size: 14px;
 }
 
 .sales-stats-grid {
@@ -107,9 +138,17 @@
     color: #ffffff;
 }
 
+.btn-sales-filter:hover {
+    background: #1d4ed8;
+}
+
 .btn-sales-reset {
     background: #f1f5f9;
     color: #475569;
+}
+
+.btn-sales-reset:hover {
+    background: #e2e8f0;
 }
 
 .empty-sales {
@@ -194,7 +233,14 @@
 
 .sales-amount {
     font-weight: 900;
+}
+
+.sales-amount.earned {
     color: #16a34a;
+}
+
+.sales-amount.pending {
+    color: #d97706;
 }
 
 .sales-status {
@@ -208,6 +254,10 @@
     font-size: 13px !important;
 }
 
+.print-sales-report {
+    display: none;
+}
+
 @media (max-width: 1100px) {
     .sales-stats-grid {
         grid-template-columns: repeat(2, 1fr);
@@ -215,6 +265,10 @@
 
     .sales-filter-card {
         grid-template-columns: 1fr 1fr;
+    }
+
+    .sales-actions {
+        justify-content: flex-start;
     }
 
     .sales-table-card {
@@ -231,5 +285,18 @@
     .sales-stats-grid,
     .sales-filter-card {
         grid-template-columns: 1fr;
+    }
+
+    .sales-header h1 {
+        font-size: 32px;
+    }
+
+    .sales-actions {
+        justify-content: stretch;
+    }
+
+    .btn-print-sales {
+        width: 100%;
+        justify-content: center;
     }
 }

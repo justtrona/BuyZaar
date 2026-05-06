@@ -19,153 +19,157 @@ build_property.TargetFrameworkIdentifier = .NETCoreApp
 build_property.TargetFrameworkVersion = v10.0
 build_property.RootNamespace = BuyZaar
 build_property.RootNamespace = BuyZaar
-build_property.ProjectDir = C:\Users\janep\Downloads\BuyZaar\BuyZaar\
+build_property.ProjectDir = D:\It15 - BuyZaar\BuyZaar\
 build_property.EnableComHosting = 
 build_property.EnableGeneratedComInterfaceComImportInterop = 
 build_property.RazorLangVersion = 9.0
 build_property.SupportLocalizedComponentNames = 
 build_property.GenerateRazorMetadataSourceChecksumAttributes = 
-build_property.MSBuildProjectDirectory = C:\Users\janep\Downloads\BuyZaar\BuyZaar
+build_property.MSBuildProjectDirectory = D:\It15 - BuyZaar\BuyZaar
 build_property._RazorSourceGeneratorDebug = 
 build_property.EffectiveAnalysisLevelStyle = 10.0
 build_property.EnableCodeStyleSeverity = 
 
-[C:/Users/janep/Downloads/BuyZaar/BuyZaar/Views/Account/Login.cshtml]
+[D:/It15 - BuyZaar/BuyZaar/Views/Account/Login.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNjb3VudFxMb2dpbi5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/janep/Downloads/BuyZaar/BuyZaar/Views/Account/Register.cshtml]
+[D:/It15 - BuyZaar/BuyZaar/Views/Account/Register.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNjb3VudFxSZWdpc3Rlci5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/janep/Downloads/BuyZaar/BuyZaar/Views/Admin/index.cshtml]
+[D:/It15 - BuyZaar/BuyZaar/Views/Admin/index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5caW5kZXguY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/janep/Downloads/BuyZaar/BuyZaar/Views/Admin/SellerApplications.cshtml]
+[D:/It15 - BuyZaar/BuyZaar/Views/Admin/SellerApplications.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cU2VsbGVyQXBwbGljYXRpb25zLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/janep/Downloads/BuyZaar/BuyZaar/Views/Email/EmailVerifiedSuccess.cshtml]
+[D:/It15 - BuyZaar/BuyZaar/Views/Email/EmailVerifiedSuccess.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRW1haWxcRW1haWxWZXJpZmllZFN1Y2Nlc3MuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/janep/Downloads/BuyZaar/BuyZaar/Views/Email/VerifyEmailNotice.cshtml]
+[D:/It15 - BuyZaar/BuyZaar/Views/Email/VerifyEmailNotice.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRW1haWxcVmVyaWZ5RW1haWxOb3RpY2UuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/janep/Downloads/BuyZaar/BuyZaar/Views/Home/Index.cshtml]
+[D:/It15 - BuyZaar/BuyZaar/Views/Home/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/janep/Downloads/BuyZaar/BuyZaar/Views/Home/Privacy.cshtml]
+[D:/It15 - BuyZaar/BuyZaar/Views/Home/Privacy.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxQcml2YWN5LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/janep/Downloads/BuyZaar/BuyZaar/Views/LandingPage/Landing.cshtml]
+[D:/It15 - BuyZaar/BuyZaar/Views/LandingPage/Landing.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTGFuZGluZ1BhZ2VcTGFuZGluZy5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/janep/Downloads/BuyZaar/BuyZaar/Views/Seller/create-product.cshtml]
+[D:/It15 - BuyZaar/BuyZaar/Views/Seller/create-product.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2VsbGVyXGNyZWF0ZS1wcm9kdWN0LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/janep/Downloads/BuyZaar/BuyZaar/Views/Seller/edit-product.cshtml]
+[D:/It15 - BuyZaar/BuyZaar/Views/Seller/edit-product.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2VsbGVyXGVkaXQtcHJvZHVjdC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/janep/Downloads/BuyZaar/BuyZaar/Views/Seller/index.cshtml]
+[D:/It15 - BuyZaar/BuyZaar/Views/Seller/index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2VsbGVyXGluZGV4LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/janep/Downloads/BuyZaar/BuyZaar/Views/Seller/Orders.cshtml]
+[D:/It15 - BuyZaar/BuyZaar/Views/Seller/Orders.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2VsbGVyXE9yZGVycy5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/janep/Downloads/BuyZaar/BuyZaar/Views/Seller/products.cshtml]
+[D:/It15 - BuyZaar/BuyZaar/Views/Seller/products.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2VsbGVyXHByb2R1Y3RzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/janep/Downloads/BuyZaar/BuyZaar/Views/Seller/SalesRecords.cshtml]
+[D:/It15 - BuyZaar/BuyZaar/Views/Seller/SalesRecords.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2VsbGVyXFNhbGVzUmVjb3Jkcy5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/janep/Downloads/BuyZaar/BuyZaar/Views/Seller/ViewProduct.cshtml]
+[D:/It15 - BuyZaar/BuyZaar/Views/Seller/ShopProfile.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2VsbGVyXFNob3BQcm9maWxlLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/It15 - BuyZaar/BuyZaar/Views/Seller/ViewProduct.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2VsbGVyXFZpZXdQcm9kdWN0LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/janep/Downloads/BuyZaar/BuyZaar/Views/Shared/Error.cshtml]
+[D:/It15 - BuyZaar/BuyZaar/Views/Shared/Error.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXEVycm9yLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/janep/Downloads/BuyZaar/BuyZaar/Views/Shared/_DashboardLayout.cshtml]
+[D:/It15 - BuyZaar/BuyZaar/Views/Shared/_DashboardLayout.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9EYXNoYm9hcmRMYXlvdXQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/janep/Downloads/BuyZaar/BuyZaar/Views/Shared/_sidebar.cshtml]
+[D:/It15 - BuyZaar/BuyZaar/Views/Shared/_sidebar.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9zaWRlYmFyLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/janep/Downloads/BuyZaar/BuyZaar/Views/Shared/_ValidationScriptsPartial.cshtml]
+[D:/It15 - BuyZaar/BuyZaar/Views/Shared/_ValidationScriptsPartial.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9WYWxpZGF0aW9uU2NyaXB0c1BhcnRpYWwuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/janep/Downloads/BuyZaar/BuyZaar/Views/Shopper/ApplySeller.cshtml]
+[D:/It15 - BuyZaar/BuyZaar/Views/Shopper/ApplySeller.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hvcHBlclxBcHBseVNlbGxlci5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/janep/Downloads/BuyZaar/BuyZaar/Views/Shopper/BrowseProducts.cshtml]
+[D:/It15 - BuyZaar/BuyZaar/Views/Shopper/BrowseProducts.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hvcHBlclxCcm93c2VQcm9kdWN0cy5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/janep/Downloads/BuyZaar/BuyZaar/Views/Shopper/Checkout.cshtml]
+[D:/It15 - BuyZaar/BuyZaar/Views/Shopper/Checkout.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hvcHBlclxDaGVja291dC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/janep/Downloads/BuyZaar/BuyZaar/Views/Shopper/index.cshtml]
+[D:/It15 - BuyZaar/BuyZaar/Views/Shopper/index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hvcHBlclxpbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/janep/Downloads/BuyZaar/BuyZaar/Views/Shopper/MyCart.cshtml]
+[D:/It15 - BuyZaar/BuyZaar/Views/Shopper/MyCart.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hvcHBlclxNeUNhcnQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/janep/Downloads/BuyZaar/BuyZaar/Views/Shopper/MyOrders.cshtml]
+[D:/It15 - BuyZaar/BuyZaar/Views/Shopper/MyOrders.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hvcHBlclxNeU9yZGVycy5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/janep/Downloads/BuyZaar/BuyZaar/Views/Shopper/OrderDetails.cshtml]
+[D:/It15 - BuyZaar/BuyZaar/Views/Shopper/OrderDetails.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hvcHBlclxPcmRlckRldGFpbHMuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/janep/Downloads/BuyZaar/BuyZaar/Views/Shopper/OrderSuccess.cshtml]
+[D:/It15 - BuyZaar/BuyZaar/Views/Shopper/OrderSuccess.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hvcHBlclxPcmRlclN1Y2Nlc3MuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/janep/Downloads/BuyZaar/BuyZaar/Views/Shopper/SellerApplicationDetails.cshtml]
+[D:/It15 - BuyZaar/BuyZaar/Views/Shopper/SellerApplicationDetails.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hvcHBlclxTZWxsZXJBcHBsaWNhdGlvbkRldGFpbHMuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/janep/Downloads/BuyZaar/BuyZaar/Views/Shopper/ViewDetails.cshtml]
+[D:/It15 - BuyZaar/BuyZaar/Views/Shopper/ViewDetails.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hvcHBlclxWaWV3RGV0YWlscy5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/janep/Downloads/BuyZaar/BuyZaar/Views/Superadmin/CreateAdmin.cshtml]
+[D:/It15 - BuyZaar/BuyZaar/Views/Superadmin/CreateAdmin.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3VwZXJhZG1pblxDcmVhdGVBZG1pbi5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/janep/Downloads/BuyZaar/BuyZaar/Views/Superadmin/index.cshtml]
+[D:/It15 - BuyZaar/BuyZaar/Views/Superadmin/index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3VwZXJhZG1pblxpbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/janep/Downloads/BuyZaar/BuyZaar/Views/_ViewImports.cshtml]
+[D:/It15 - BuyZaar/BuyZaar/Views/_ViewImports.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcX1ZpZXdJbXBvcnRzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/janep/Downloads/BuyZaar/BuyZaar/Views/_ViewStart.cshtml]
+[D:/It15 - BuyZaar/BuyZaar/Views/_ViewStart.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcX1ZpZXdTdGFydC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/janep/Downloads/BuyZaar/BuyZaar/Views/Shared/_Layout.cshtml]
+[D:/It15 - BuyZaar/BuyZaar/Views/Shared/_Layout.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9MYXlvdXQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = b-fm4wjf10va

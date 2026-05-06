@@ -1,0 +1,410 @@
+@model BuyZaar.Models.ShopProfile
+
+@{
+    Layout = "_DashboardLayout";
+    ViewBag.ActiveRole = "Seller";
+    ViewData["Title"] = "Shop Profile";
+}
+
+<link rel="stylesheet" href="~/css/shopprofile.css" asp-append-version="true" />
+
+<div class="shop-profile-page">
+
+    <div class="shop-profile-header">
+        <div>
+            <span class="seller-label">Seller</span>
+            <h1>Shop Profile</h1>
+            <p>Manage your business information, branding, and customer-facing shop details.</p>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="shop-alert-success">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+
+    <form asp-controller="Seller"
+          asp-action="ShopProfile"
+          method="post"
+          enctype="multipart/form-data"
+          class="shop-profile-grid"
+          id="shopProfileForm">
+
+        @Html.AntiForgeryToken()
+
+        <div class="shop-profile-left">
+
+            <div class="shop-card">
+
+                <div class="shop-logo-section">
+
+                    <div class="shop-logo-preview">
+                        <img src="@(string.IsNullOrWhiteSpace(Model.LogoPath) ? "/images/no-image.png" : Url.Content(Model.LogoPath))"
+                             alt="Shop Logo" />
+                    </div>
+
+                    <div class="shop-logo-info">
+                        <h3>@Model.ShopName</h3>
+                        <p>Upload a professional logo to represent your shop.</p>
+
+                        <input type="file"
+                               name="shopLogo"
+                               class="shop-file-input"
+                               accept=".jpg,.jpeg,.png,.webp" />
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="shop-card">
+
+                <div class="shop-card-header">
+                    <h3>Business Information</h3>
+                </div>
+
+                <div class="shop-form-grid">
+
+                    <div class="shop-form-group full-width">
+                        <label>Shop Name</label>
+
+                        <input asp-for="ShopName"
+                               class="shop-input"
+                               placeholder="Enter your shop name" />
+                    </div>
+
+                    <div class="shop-form-group full-width">
+                        <label>Shop Description</label>
+
+                        <textarea asp-for="ShopDescription"
+                                  class="shop-textarea"
+                                  rows="5"
+                                  placeholder="Tell customers about your shop, products, and services."></textarea>
+                    </div>
+
+                    <div class="shop-form-group">
+                        <label>Business Email</label>
+
+                        <input asp-for="BusinessEmail"
+                               class="shop-input"
+                               placeholder="business@email.com" />
+                    </div>
+
+                    <div class="shop-form-group">
+                        <label>Business Phone</label>
+
+                        <input asp-for="BusinessPhone"
+                               class="shop-input"
+                               placeholder="09XXXXXXXXX" />
+                    </div>
+
+                    <div class="shop-form-group full-width">
+                        <label>Street / Building / House No.</label>
+
+                        <input id="streetAddress"
+                               class="shop-input"
+                               placeholder="Street, building, house no., or landmark" />
+                    </div>
+
+                    <div class="shop-form-group">
+                        <label>Province</label>
+
+                        <select id="provinceSelect" class="shop-input">
+                            <option value="">Select Province</option>
+                        </select>
+                    </div>
+
+                    <div class="shop-form-group">
+                        <label>City / Municipality</label>
+
+                        <select id="citySelect"
+                                class="shop-input"
+                                disabled>
+                            <option value="">Select City / Municipality</option>
+                        </select>
+                    </div>
+
+                    <div class="shop-form-group">
+                        <label>Barangay</label>
+
+                        <select id="barangaySelect"
+                                class="shop-input"
+                                disabled>
+                            <option value="">Select Barangay</option>
+                        </select>
+                    </div>
+
+                    <div class="shop-form-group">
+                        <label>Postal Code</label>
+
+                        <input asp-for="PostalCode"
+                               class="shop-input"
+                               placeholder="Postal Code" />
+                    </div>
+
+                    <input type="hidden" asp-for="ShopAddress" id="ShopAddress" />
+                    <input type="hidden" asp-for="City" id="City" />
+                    <input type="hidden" asp-for="Province" id="Province" />
+                    <input type="hidden" asp-for="Barangay" id="Barangay" />
+
+                    <div class="shop-form-group">
+                        <label>Business Hours</label>
+
+                        <input asp-for="BusinessHours"
+                               class="shop-input"
+                               placeholder="Mon - Sat | 8:00 AM - 6:00 PM" />
+                    </div>
+
+                    <div class="shop-form-group full-width">
+                        <label>Return Policy</label>
+
+                        <textarea asp-for="ReturnPolicy"
+                                  class="shop-textarea"
+                                  rows="4"
+                                  placeholder="State your return/refund policy."></textarea>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="shop-profile-right">
+
+            <div class="shop-card">
+
+                <div class="shop-side-header">
+                    <h3>Shop Overview</h3>
+                </div>
+
+                <div class="shop-overview-list">
+
+                    <div class="shop-overview-item">
+                        <span>Created</span>
+                        <strong>@Model.CreatedAt.ToString("MMMM dd, yyyy")</strong>
+                    </div>
+
+                    <div class="shop-overview-item">
+                        <span>Last Updated</span>
+                        <strong>
+                            @(Model.UpdatedAt?.ToString("MMMM dd, yyyy hh:mm tt") ?? "Not updated yet")
+                        </strong>
+                    </div>
+
+                    <div class="shop-overview-item">
+                        <span>Seller Account</span>
+                        <strong>@User.Identity?.Name</strong>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="shop-card">
+
+                <div class="shop-side-header">
+                    <h3>Save Changes</h3>
+                </div>
+
+                <p class="shop-side-text">
+                    Make sure your business information is accurate and updated for customer trust.
+                </p>
+
+                <button type="submit" class="btn-save-shop">
+                    Save Shop Profile
+                </button>
+
+            </div>
+
+        </div>
+
+    </form>
+
+</div>
+
+@section Scripts {
+
+    <script>
+        const shopProfileForm = document.getElementById("shopProfileForm");
+
+        const provinceSelect = document.getElementById("provinceSelect");
+        const citySelect = document.getElementById("citySelect");
+        const barangaySelect = document.getElementById("barangaySelect");
+        const streetAddress = document.getElementById("streetAddress");
+
+        const shopAddressInput = document.getElementById("ShopAddress");
+        const cityInput = document.getElementById("City");
+        const provinceInput = document.getElementById("Province");
+        const barangayInput = document.getElementById("Barangay");
+
+        const savedProvince = "@Model.Province";
+        const savedCity = "@Model.City";
+        const savedBarangay = "@Model.Barangay";
+
+        const apiBase = "https://psgc.gitlab.io/api";
+
+        function getStreetOnly() {
+            const fullAddress = "@Model.ShopAddress";
+
+            if (!fullAddress) {
+                return "";
+            }
+
+            const parts = fullAddress.split(",");
+
+            return parts[0]?.trim() || "";
+        }
+
+        async function loadProvinces() {
+            const response = await fetch(`${apiBase}/provinces.json`);
+            const provinces = await response.json();
+
+            provinces
+                .sort((a, b) => a.name.localeCompare(b.name))
+                .forEach(province => {
+                    const option = document.createElement("option");
+
+                    option.value = province.code;
+                    option.textContent = province.name;
+                    option.dataset.name = province.name;
+
+                    if (province.name === savedProvince) {
+                        option.selected = true;
+                    }
+
+                    provinceSelect.appendChild(option);
+                });
+        }
+
+        async function loadCitiesAndMunicipalities(provinceCode) {
+            citySelect.innerHTML = `<option value="">Select City / Municipality</option>`;
+            barangaySelect.innerHTML = `<option value="">Select Barangay</option>`;
+
+            citySelect.disabled = true;
+            barangaySelect.disabled = true;
+
+            if (!provinceCode) {
+                updateFullAddress();
+                return;
+            }
+
+            const response = await fetch(`${apiBase}/provinces/${provinceCode}/cities-municipalities.json`);
+            const cities = await response.json();
+
+            cities
+                .sort((a, b) => a.name.localeCompare(b.name))
+                .forEach(city => {
+                    const option = document.createElement("option");
+
+                    option.value = city.code;
+                    option.textContent = city.name;
+                    option.dataset.name = city.name;
+
+                    if (city.name === savedCity) {
+                        option.selected = true;
+                    }
+
+                    citySelect.appendChild(option);
+                });
+
+            citySelect.disabled = false;
+        }
+
+        async function loadBarangays(cityCode) {
+            barangaySelect.innerHTML = `<option value="">Select Barangay</option>`;
+            barangaySelect.disabled = true;
+
+            if (!cityCode) {
+                updateFullAddress();
+                return;
+            }
+
+            const response = await fetch(`${apiBase}/cities-municipalities/${cityCode}/barangays.json`);
+            const barangays = await response.json();
+
+            barangays
+                .sort((a, b) => a.name.localeCompare(b.name))
+                .forEach(barangay => {
+                    const option = document.createElement("option");
+
+                    option.value = barangay.code;
+                    option.textContent = barangay.name;
+                    option.dataset.name = barangay.name;
+
+                    if (barangay.name === savedBarangay) {
+                        option.selected = true;
+                    }
+
+                    barangaySelect.appendChild(option);
+                });
+
+            barangaySelect.disabled = false;
+        }
+
+        function updateFullAddress() {
+            const street = streetAddress.value.trim();
+
+            const provinceName =
+                provinceSelect.selectedOptions[0]?.dataset.name || "";
+
+            const cityName =
+                citySelect.selectedOptions[0]?.dataset.name || "";
+
+            const barangayName =
+                barangaySelect.selectedOptions[0]?.dataset.name || "";
+
+            provinceInput.value = provinceName;
+            cityInput.value = cityName;
+            barangayInput.value = barangayName;
+
+            const fullAddress = [
+                street,
+                barangayName ? `Brgy. ${barangayName}` : "",
+                cityName,
+                provinceName
+            ]
+            .filter(Boolean)
+            .join(", ");
+
+            shopAddressInput.value = fullAddress;
+        }
+
+        provinceSelect.addEventListener("change", async function () {
+            await loadCitiesAndMunicipalities(this.value);
+            updateFullAddress();
+        });
+
+        citySelect.addEventListener("change", async function () {
+            await loadBarangays(this.value);
+            updateFullAddress();
+        });
+
+        barangaySelect.addEventListener("change", updateFullAddress);
+        streetAddress.addEventListener("input", updateFullAddress);
+
+        shopProfileForm.addEventListener("submit", function () {
+            updateFullAddress();
+        });
+
+        async function initializeAddress() {
+            streetAddress.value = getStreetOnly();
+
+            await loadProvinces();
+
+            if (provinceSelect.value) {
+                await loadCitiesAndMunicipalities(provinceSelect.value);
+            }
+
+            if (citySelect.value) {
+                await loadBarangays(citySelect.value);
+            }
+
+            updateFullAddress();
+        }
+
+        initializeAddress();
+    </script>
+}

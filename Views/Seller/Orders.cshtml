@@ -8,10 +8,10 @@
     var currentStatus = Context.Request.Query["status"].ToString();
     var search = Context.Request.Query["search"].ToString();
 
-    var allCount = Model.Count;
-    var toShipCount = Model.Count(o => o.Status == "To Ship");
-    var shippedCount = Model.Count(o => o.Status == "To Receive" || o.Status == "Shipped");
-    var completedCount = Model.Count(o => o.Status == "Completed" || o.Status == "To Review");
+    var allCount = ViewBag.AllCount ?? 0;
+    var toShipCount = ViewBag.ToShipCount ?? 0;
+    var shippedCount = ViewBag.ShippedCount ?? 0;
+    var completedCount = ViewBag.CompletedCount ?? 0;
 }
 
 <link rel="stylesheet" href="~/css/sellerorders.css" asp-append-version="true" />

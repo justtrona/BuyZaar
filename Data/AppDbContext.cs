@@ -18,6 +18,7 @@ namespace BuyZaar.Data
         public DbSet<CartItem> CartItems { get; set; }
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderItem> OrderItems { get; set; }    
+        public DbSet<ShopProfile> ShopProfiles { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
