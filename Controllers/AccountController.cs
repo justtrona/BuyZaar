@@ -22,7 +22,6 @@ namespace BuyZaar.Controllers
             _emailService = emailService;
         }
 
-        // Register method 
         [HttpGet]
         public IActionResult Register()
         {
@@ -35,6 +34,20 @@ namespace BuyZaar.Controllers
         {
             if (!ModelState.IsValid)
                 return View(model);
+
+            var existingEmail = await _userManager.FindByEmailAsync(model.Email);
+            if (existingEmail != null)
+            {
+                ModelState.AddModelError(nameof(model.Email), "Email is already registered.");
+                return View(model);
+            }
+
+            var existingUsername = await _userManager.FindByNameAsync(model.UserName);
+            if (existingUsername != null)
+            {
+                ModelState.AddModelError(nameof(model.UserName), "Username is already taken.");
+                return View(model);
+            }
 
             var user = new ApplicationUser
             {
@@ -83,7 +96,6 @@ namespace BuyZaar.Controllers
             return View(model);
         }
 
-        // Email verification methods 
         [HttpGet]
         public IActionResult VerifyEmailNotice(string email)
         {
@@ -98,6 +110,7 @@ namespace BuyZaar.Controllers
                 return Content("Invalid email confirmation link.");
 
             var user = await _userManager.FindByIdAsync(userId);
+
             if (user == null)
                 return Content("User not found.");
 
@@ -107,6 +120,7 @@ namespace BuyZaar.Controllers
             {
                 user.IsVerified = true;
                 user.VerifiedAt = DateTime.UtcNow;
+
                 await _userManager.UpdateAsync(user);
 
                 return RedirectToAction("EmailVerifiedSuccess");
@@ -121,75 +135,70 @@ namespace BuyZaar.Controllers
             return View("~/Views/Email/EmailVerifiedSuccess.cshtml");
         }
 
-        // Login method with redirection based on role
         [HttpGet]
         public IActionResult Login()
         {
             return View();
         }
 
-    [HttpPost]
-[ValidateAntiForgeryToken]
-public async Task<IActionResult> Login(LoginViewModel model)
-{
-    if (!ModelState.IsValid)
-        return View(model);
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Login(LoginViewModel model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
 
-    var user = await _userManager.FindByEmailAsync(model.Email);
-    if (user == null)
-    {
-        ModelState.AddModelError(string.Empty, "Invalid login attempt.");
-        return View(model);
-    }
+            var user = await _userManager.FindByEmailAsync(model.Email);
 
-    var isSuperAdmin = await _userManager.IsInRoleAsync(user, "SuperAdmin");
-    var isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
+            if (user == null)
+            {
+                ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+                return View(model);
+            }
 
-    // Require email verification only for non-admin accounts
-    if (!isSuperAdmin && !isAdmin && !await _userManager.IsEmailConfirmedAsync(user))
-    {
-        ModelState.AddModelError(string.Empty, "Please verify your email before logging in.");
-        return View(model);
-    }
+            var isSuperAdmin = await _userManager.IsInRoleAsync(user, "SuperAdmin");
+            var isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
 
-    var result = await _signInManager.PasswordSignInAsync(
-        user.UserName!,
-        model.Password,
-        model.RememberMe,
-        lockoutOnFailure: false
-    );
+            if (!isSuperAdmin && !isAdmin && !await _userManager.IsEmailConfirmedAsync(user))
+            {
+                ModelState.AddModelError(string.Empty, "Please verify your email before logging in.");
+                return View(model);
+            }
 
-   if (result.Succeeded)
-{
-    // Redirect to the appropriate dashboard based on the role
-    if (isSuperAdmin)
-        return RedirectToAction("Index", "SuperAdmin");
+            var result = await _signInManager.PasswordSignInAsync(
+                user.UserName!,
+                model.Password,
+                model.RememberMe,
+                lockoutOnFailure: false
+            );
 
-    if (isAdmin)
-        return RedirectToAction("Index", "Admin");
+            if (result.Succeeded)
+            {
+                if (isSuperAdmin)
+                    return RedirectToAction("Index", "SuperAdmin");
 
-    if (await _userManager.IsInRoleAsync(user, "Seller"))
-        return RedirectToAction("Index", "Seller");  // Redirect to Seller Dashboard
+                if (isAdmin)
+                    return RedirectToAction("Index", "Admin");
 
-    // if (await _userManager.IsInRoleAsync(user, "Shopper"))
-    //     return RedirectToAction("Index", "Shopper");  // Redirect to Shopper Dashboard
+                if (await _userManager.IsInRoleAsync(user, "Seller"))
+                    return RedirectToAction("Index", "Seller");
 
-    if (await _userManager.IsInRoleAsync(user, "Shopper"))
-    return RedirectToAction("BrowseProducts", "Shopper");
+                if (await _userManager.IsInRoleAsync(user, "Shopper"))
+                    return RedirectToAction("BrowseProducts", "Shopper");
 
-    return RedirectToAction("Index", "Home");  // Default redirect for other roles
-}
+                return RedirectToAction("Index", "Home");
+            }
 
-    ModelState.AddModelError(string.Empty, "Invalid login attempt.");
-    return View(model);
-}
-       // Logout method
-[HttpPost]
-[ValidateAntiForgeryToken]
-public async Task<IActionResult> Logout()
-{
-    await _signInManager.SignOutAsync();  // Sign out the user
-    return RedirectToAction("Login", "Account");  // Redirect to the login page after logout
-}
+            ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Logout()
+        {
+            await _signInManager.SignOutAsync();
+            return RedirectToAction("Login", "Account");
+        }
     }
 }

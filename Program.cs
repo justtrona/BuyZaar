@@ -76,6 +76,11 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+builder.Services.Configure<IdentityOptions>(options =>
+{
+    options.User.RequireUniqueEmail = true;
+});
+
 app.UseHttpsRedirection();
 app.UseRouting();
 
