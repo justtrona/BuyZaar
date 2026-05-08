@@ -19,8 +19,7 @@ namespace BuyZaar.Models
         public long FileSize { get; set; }
 
         [Required]
-        public byte[] FileData { get; set; } = Array.Empty<byte>();
-
+public string FilePath { get; set; } = string.Empty;
         public DateTime UploadedAt { get; set; } = DateTime.Now;
     }
 }

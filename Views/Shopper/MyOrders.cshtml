@@ -83,6 +83,29 @@
                 var orders = group.ToList();
                 var firstOrder = orders.First();
                 var totalAmount = orders.Sum(o => o.TotalAmount);
+                var referenceNo = $"BZ-{firstOrder.Id}-{firstOrder.CreatedAt:yyMMddHHmm}";
+
+                var displayStatus = !string.IsNullOrWhiteSpace(firstOrder.DeliveryStatus) &&
+                                    firstOrder.DeliveryStatus != "Pending Assignment"
+                    ? firstOrder.DeliveryStatus
+                    : group.Key.Status;
+
+                var canInstantCancel =
+                    group.Key.Status == "To Pay" ||
+                    group.Key.Status == "Pending Payment" ||
+                    group.Key.Status == "To Ship" ||
+                    group.Key.Status == "Ready for Pickup" ||
+                    displayStatus == "Ready for Pickup";
+
+                var needsApprovalCancel =
+                    displayStatus == "Assigned" ||
+                    displayStatus == "Accepted" ||
+                    displayStatus == "Rider Accepted" ||
+                    displayStatus == "Picked Up" ||
+                    displayStatus == "Out for Delivery" ||
+                    displayStatus == "Failed Delivery";
+
+                var canConfirmReceived = displayStatus == "Delivered";
 
                 <div class="order-card order-card-link"
                      onclick="window.location.href='@Url.Action("OrderDetails", "Shopper", new { id = firstOrder.Id })'">
@@ -96,11 +119,13 @@
                         </div>
 
                         <span class="order-status">
-                            @group.Key.Status
+                            @displayStatus
                         </span>
                     </div>
 
                     <div class="order-id-list">
+                        <span>Reference No: @referenceNo</span>
+
                         @foreach (var order in orders)
                         {
                             <span>Order #@order.Id</span>
@@ -142,6 +167,43 @@
                         <p>@group.Key.Address</p>
                     </div>
 
+                    @if (!string.IsNullOrWhiteSpace(firstOrder.CancellationRequestStatus))
+                    {
+                        <div class="order-address">
+                            <strong>Cancellation</strong>
+                            <p>
+                                Status: @firstOrder.CancellationRequestStatus
+
+                                @if (!string.IsNullOrWhiteSpace(firstOrder.CancellationReason))
+                                {
+                                    <span> · Reason: @firstOrder.CancellationReason</span>
+                                }
+
+                                @if (!string.IsNullOrWhiteSpace(firstOrder.CancellationAdminNote))
+                                {
+                                    <span> · Note: @firstOrder.CancellationAdminNote</span>
+                                }
+                            </p>
+                        </div>
+                    }
+
+                    @if (displayStatus == "Failed Delivery")
+                    {
+                        <div class="order-address">
+                            <strong>Failed Delivery Notice</strong>
+                            <p>
+                                Delivery attempt failed.
+                                @if (firstOrder.ReturnToSellerAt != null)
+                                {
+                                    <span>
+                                        Parcel may be retried until
+                                        @firstOrder.ReturnToSellerAt?.ToString("MMM dd, yyyy hh:mm tt").
+                                    </span>
+                                }
+                            </p>
+                        </div>
+                    }
+
                     <div class="order-footer">
                         <div class="order-total">
                             <span>Order Total</span>
@@ -149,19 +211,35 @@
                         </div>
 
                         <div class="order-actions" onclick="event.stopPropagation();">
-                            @if (group.Key.Status == "To Pay" || group.Key.Status == "Pending Payment")
+                            @if (displayStatus == "To Pay" || displayStatus == "Pending Payment")
                             {
                                 <button type="button" class="btn-primary-order">
                                     Pay Now
                                 </button>
                             }
-                            else if (group.Key.Status == "To Ship")
+                            else if (displayStatus == "To Ship")
                             {
                                 <button type="button" class="btn-disabled">
                                     Waiting for Seller
                                 </button>
                             }
-                            else if (group.Key.Status == "To Receive")
+                            else if (displayStatus == "Assigned" ||
+                                     displayStatus == "Accepted" ||
+                                     displayStatus == "Rider Accepted" ||
+                                     displayStatus == "Picked Up" ||
+                                     displayStatus == "Out for Delivery")
+                            {
+                                <button type="button" class="btn-disabled">
+                                    Delivery in Progress
+                                </button>
+                            }
+                            else if (displayStatus == "Failed Delivery")
+                            {
+                                <button type="button" class="btn-disabled">
+                                    Delivery Failed
+                                </button>
+                            }
+                            else if (canConfirmReceived)
                             {
                                 @foreach (var order in orders)
                                 {
@@ -169,19 +247,97 @@
                                           asp-action="MarkOrderReceived"
                                           method="post">
                                         @Html.AntiForgeryToken()
-                                        <input type="hidden" name="orderId" value="@order.Id" />
 
-                                        <button type="submit" class="btn-primary-order">
+                                        <input type="hidden"
+                                               name="orderId"
+                                               value="@order.Id" />
+
+                                        <button type="submit"
+                                                class="btn-primary-order"
+                                                onclick="return confirm('Confirm that you received this order?');">
                                             Order Received
                                         </button>
                                     </form>
                                 }
                             }
-                            else if (group.Key.Status == "To Review")
+                            else if (displayStatus == "To Review")
                             {
                                 <button type="button" class="btn-primary-order">
                                     Write Review
                                 </button>
+                            }
+                            else if (displayStatus == "Returned to Seller" ||
+                                     displayStatus == "Return Pending" ||
+                                     displayStatus == "Returns" ||
+                                     displayStatus == "Cancelled")
+                            {
+                                <button type="button" class="btn-disabled">
+                                    Return / Cancellation Processing
+                                </button>
+                            }
+
+                            @foreach (var order in orders)
+                            {
+                                if (order.CancellationRequestStatus == "Pending")
+                                {
+                                    <button type="button" class="btn-disabled">
+                                        Cancellation Pending
+                                    </button>
+                                }
+                                else if (order.CancellationRequestStatus == "Approved")
+                                {
+                                    <button type="button" class="btn-disabled">
+                                        Cancellation Approved
+                                    </button>
+                                }
+                                else if (order.Status == "Cancelled" || order.DeliveryStatus == "Cancelled")
+                                {
+                                    <button type="button" class="btn-disabled">
+                                        Cancelled
+                                    </button>
+                                }
+                                else if (canInstantCancel)
+                                {
+                                    <form asp-controller="Shopper"
+                                          asp-action="CancelOrder"
+                                          method="post"
+                                          onsubmit="return confirm('Cancel this order now?');">
+
+                                        @Html.AntiForgeryToken()
+
+                                        <input type="hidden"
+                                               name="orderId"
+                                               value="@order.Id" />
+
+                                        <button type="submit"
+                                                class="btn-outline-order">
+                                            Cancel Order
+                                        </button>
+                                    </form>
+                                }
+                                else if (needsApprovalCancel)
+                                {
+                                    <form asp-controller="Shopper"
+                                          asp-action="RequestCancelDelivery"
+                                          method="post"
+                                          onsubmit="return confirm('Request cancellation for this order? Admin will review it.');">
+
+                                        @Html.AntiForgeryToken()
+
+                                        <input type="hidden"
+                                               name="orderId"
+                                               value="@order.Id" />
+
+                                        <input type="hidden"
+                                               name="reason"
+                                               value="Buyer requested cancellation while order is already in delivery process." />
+
+                                        <button type="submit"
+                                                class="btn-outline-order">
+                                            Request Cancellation
+                                        </button>
+                                    </form>
+                                }
                             }
 
                             <a asp-controller="Shopper"

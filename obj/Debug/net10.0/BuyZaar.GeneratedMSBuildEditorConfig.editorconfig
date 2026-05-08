@@ -38,8 +38,28 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNjb3VudFxSZWdpc3Rlci5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
+[D:/It15 - BuyZaar/BuyZaar/Views/Account/SetupPassword.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNjb3VudFxTZXR1cFBhc3N3b3JkLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/It15 - BuyZaar/BuyZaar/Views/Admin/CancellationRequests.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cQ2FuY2VsbGF0aW9uUmVxdWVzdHMuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/It15 - BuyZaar/BuyZaar/Views/Admin/CreateRider.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cQ3JlYXRlUmlkZXIuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
 [D:/It15 - BuyZaar/BuyZaar/Views/Admin/index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5caW5kZXguY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/It15 - BuyZaar/BuyZaar/Views/Admin/Orders.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cT3JkZXJzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/It15 - BuyZaar/BuyZaar/Views/Admin/Riders.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cUmlkZXJzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
 [D:/It15 - BuyZaar/BuyZaar/Views/Admin/SellerApplications.cshtml]
@@ -64,6 +84,18 @@ build_metadata.AdditionalFiles.CssScope =
 
 [D:/It15 - BuyZaar/BuyZaar/Views/LandingPage/Landing.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTGFuZGluZ1BhZ2VcTGFuZGluZy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/It15 - BuyZaar/BuyZaar/Views/Rider/ActiveDeliveries.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUmlkZXJcQWN0aXZlRGVsaXZlcmllcy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/It15 - BuyZaar/BuyZaar/Views/Rider/AssignedOrders.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUmlkZXJcQXNzaWduZWRPcmRlcnMuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/It15 - BuyZaar/BuyZaar/Views/Rider/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUmlkZXJcSW5kZXguY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
 [D:/It15 - BuyZaar/BuyZaar/Views/Seller/create-product.cshtml]
@@ -102,8 +134,16 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXEVycm9yLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
+[D:/It15 - BuyZaar/BuyZaar/Views/Shared/_AdminLayout.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9BZG1pbkxheW91dC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
 [D:/It15 - BuyZaar/BuyZaar/Views/Shared/_DashboardLayout.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9EYXNoYm9hcmRMYXlvdXQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/It15 - BuyZaar/BuyZaar/Views/Shared/_RiderLayout.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9SaWRlckxheW91dC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
 [D:/It15 - BuyZaar/BuyZaar/Views/Shared/_sidebar.cshtml]

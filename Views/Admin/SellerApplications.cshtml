@@ -1,76 +1,290 @@
 @model IEnumerable<BuyZaar.Models.SellerApplication>
 
 @{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
     ViewData["Title"] = "Seller Applications";
 }
 
-<h2>Seller Applications</h2>
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin-sellerapplication.css" asp-append-version="true" />
+}
 
-@if (TempData["Message"] != null)
-{
-    <div class="alert alert-info">
-        @TempData["Message"]
+<div class="seller-application-page">
+
+    <div class="seller-application-header">
+        <div>
+            <h2>Seller Applications</h2>
+            <p>Review, approve, or reject seller account requests.</p>
+        </div>
+
+        <a asp-controller="Admin" asp-action="Index" class="btn btn-outline-secondary">
+            Back to Dashboard
+        </a>
     </div>
-}
 
-@if (!Model.Any())
-{
-    <div class="alert alert-info">
-        No seller applications found.
-    </div>
-}
-else
-{
-    <table class="table table-bordered table-striped">
-        <thead>
-            <tr>
-                <th>Full Name</th>
-                <th>Shop Name</th>
-                <th>Email</th>
-                <th>Phone Number</th>
-                <th>Address</th>
-                <th>Status</th>
-                <th>Date Applied</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var app in Model)
-            {
-                <tr>
-                    <td>@app.FullName</td>
-                    <td>@app.ShopName</td>
-                    <td>@app.User?.Email</td>
-                    <td>@app.PhoneNumber</td>
-                    <td>@app.Address</td>
-                    <td>@app.Status</td>
-                    <td>@app.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
-                    <td>
-                        @if (app.Status == "Pending")
+    @if (TempData["Message"] != null)
+    {
+        <div class="alert alert-info seller-application-alert">
+            @TempData["Message"]
+        </div>
+    }
+
+    @if (!Model.Any())
+    {
+        <div class="seller-empty-state">
+            <h5>No seller applications found</h5>
+            <p>There are currently no seller applications to review.</p>
+        </div>
+    }
+    else
+    {
+        <div class="seller-table-card">
+            <div class="table-responsive">
+                <table class="table seller-table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Full Name</th>
+                            <th>Shop Name</th>
+                            <th>Email</th>
+                            <th>Phone Number</th>
+                            <th>Address</th>
+                            <th>Description</th>
+                            <th>Status</th>
+                            <th>Date Applied</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @foreach (var app in Model)
                         {
-                            <form asp-action="ApproveSeller" method="post" style="display:inline;">
-                                <input type="hidden" name="id" value="@app.Id" />
-                                @Html.AntiForgeryToken()
-                                <button type="submit" class="btn btn-success btn-sm">Approve</button>
-                            </form>
+                            var statusClass = app.Status switch
+                            {
+                                "Pending" => "status-pending",
+                                "Approved" => "status-approved",
+                                "Rejected" => "status-rejected",
+                                "Cancelled" => "status-cancelled",
+                                _ => "status-default"
+                            };
 
-                            <form asp-action="RejectSeller" method="post" style="display:inline; margin-left:5px;">
-                                <input type="hidden" name="id" value="@app.Id" />
-                                @Html.AntiForgeryToken()
-                                <button type="submit" class="btn btn-danger btn-sm">Reject</button>
-                            </form>
-                        }
-                        else
-                        {
-                            <span>No actions available</span>
-                        }
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
+                            var modalId = $"sellerApplicationModal_{app.Id}";
 
-<p>
-    <a asp-action="Index" class="btn btn-secondary">Back</a>
-</p>
+                            <tr>
+                                <td class="fw-semibold">@app.FullName</td>
+                                <td>@app.ShopName</td>
+                                <td>@app.User?.Email</td>
+                                <td>@app.PhoneNumber</td>
+                                <td>@app.Address</td>
+                                <td>
+                                    @if (!string.IsNullOrWhiteSpace(app.BusinessDescription))
+                                    {
+                                        @(app.BusinessDescription.Length > 40
+                                            ? app.BusinessDescription.Substring(0, 40) + "..."
+                                            : app.BusinessDescription)
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">No description</span>
+                                    }
+                                </td>
+
+                                <td>
+                                    <span class="status-badge @statusClass">
+                                        @app.Status
+                                    </span>
+                                </td>
+
+                                <td>@app.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+
+                                <td class="text-end">
+                                    <button type="button"
+                                            class="btn btn-info btn-sm text-white"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#@modalId">
+                                        View
+                                    </button>
+
+                                    @if (app.Status == "Pending")
+                                    {
+                                        <form asp-action="ApproveSeller" method="post" class="d-inline ms-1">
+                                            <input type="hidden" name="id" value="@app.Id" />
+                                            @Html.AntiForgeryToken()
+
+                                            <button type="submit" class="btn btn-success btn-sm">
+                                                Approve
+                                            </button>
+                                        </form>
+
+                                        <form asp-action="RejectSeller" method="post" class="d-inline ms-1">
+                                            <input type="hidden" name="id" value="@app.Id" />
+                                            @Html.AntiForgeryToken()
+
+                                            <button type="submit" class="btn btn-danger btn-sm">
+                                                Reject
+                                            </button>
+                                        </form>
+                                    }
+                                </td>
+                            </tr>
+
+                            <div class="modal fade"
+                                 id="@modalId"
+                                 tabindex="-1"
+                                 aria-labelledby="@($"{modalId}_Label")"
+                                 aria-hidden="true">
+
+                                <div class="modal-dialog modal-dialog-centered modal-lg">
+                                    <div class="modal-content seller-modal-content">
+
+                                        <div class="modal-header">
+                                            <div>
+                                                <h5 class="modal-title" id="@($"{modalId}_Label")">
+                                                    Seller Application Details
+                                                </h5>
+                                                <small class="text-muted">
+                                                    Application submitted by @app.FullName
+                                                </small>
+                                            </div>
+
+                                            <button type="button"
+                                                    class="btn-close"
+                                                    data-bs-dismiss="modal"
+                                                    aria-label="Close">
+                                            </button>
+                                        </div>
+
+                                        <div class="modal-body">
+
+                                            <div class="seller-detail-grid">
+
+                                                <div class="seller-detail-item">
+                                                    <span>Full Name</span>
+                                                    <strong>@app.FullName</strong>
+                                                </div>
+
+                                                <div class="seller-detail-item">
+                                                    <span>Shop Name</span>
+                                                    <strong>@app.ShopName</strong>
+                                                </div>
+
+                                                <div class="seller-detail-item">
+                                                    <span>Email</span>
+                                                    <strong>@app.User?.Email</strong>
+                                                </div>
+
+                                                <div class="seller-detail-item">
+                                                    <span>Phone Number</span>
+                                                    <strong>@app.PhoneNumber</strong>
+                                                </div>
+
+                                                <div class="seller-detail-item full-width">
+                                                    <span>Address</span>
+                                                    <strong>@app.Address</strong>
+                                                </div>
+
+                                                <div class="seller-detail-item full-width">
+                                                    <span>Business Description</span>
+                                                    <strong>
+                                                        @if (!string.IsNullOrWhiteSpace(app.BusinessDescription))
+                                                        {
+                                                            @app.BusinessDescription
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="text-muted">No business description provided.</span>
+                                                        }
+                                                    </strong>
+                                                </div>
+
+                                                <div class="seller-detail-item">
+                                                    <span>Status</span>
+                                                    <strong>
+                                                        <span class="status-badge @statusClass">
+                                                            @app.Status
+                                                        </span>
+                                                    </strong>
+                                                </div>
+
+                                                <div class="seller-detail-item">
+                                                    <span>Date Applied</span>
+                                                    <strong>@app.CreatedAt.ToString("yyyy-MM-dd HH:mm")</strong>
+                                                </div>
+
+                                            </div>
+
+                                            <div class="admin-uploaded-documents">
+                                                <h6>Uploaded Documents</h6>
+
+                                                @if (app.Documents != null && app.Documents.Any())
+                                                {
+                                                    <div class="admin-document-list">
+                                                        @foreach (var doc in app.Documents)
+                                                        {
+                                                            <a href="@doc.FilePath"
+                                                               target="_blank"
+                                                               class="admin-document-item">
+
+                                                                <div>
+                                                                    <strong>@doc.FileName</strong>
+                                                                    <span>
+                                                                        @doc.ContentType · @(Math.Round((double)doc.FileSize / 1024, 0)) KB
+                                                                    </span>
+                                                                </div>
+
+                                                                <span class="admin-document-view">
+                                                                    View
+                                                                </span>
+                                                            </a>
+                                                        }
+                                                    </div>
+                                                }
+                                                else
+                                                {
+                                                    <div class="admin-no-documents">
+                                                        No uploaded documents found.
+                                                    </div>
+                                                }
+                                            </div>
+
+                                        </div>
+
+                                        <div class="modal-footer">
+                                            <button type="button"
+                                                    class="btn btn-outline-secondary"
+                                                    data-bs-dismiss="modal">
+                                                Close
+                                            </button>
+
+                                            @if (app.Status == "Pending")
+                                            {
+                                                <form asp-action="ApproveSeller" method="post" class="d-inline">
+                                                    <input type="hidden" name="id" value="@app.Id" />
+                                                    @Html.AntiForgeryToken()
+
+                                                    <button type="submit" class="btn btn-success">
+                                                        Approve Application
+                                                    </button>
+                                                </form>
+
+                                                <form asp-action="RejectSeller" method="post" class="d-inline">
+                                                    <input type="hidden" name="id" value="@app.Id" />
+                                                    @Html.AntiForgeryToken()
+
+                                                    <button type="submit" class="btn btn-danger">
+                                                        Reject Application
+                                                    </button>
+                                                </form>
+                                            }
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+
+</div>

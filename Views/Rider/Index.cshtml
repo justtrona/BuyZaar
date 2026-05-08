@@ -1,0 +1,226 @@
+@model BuyZaar.Models.RiderProfile
+
+@{
+    Layout = "~/Views/Shared/_RiderLayout.cshtml";
+
+    ViewData["Title"] = "Rider Dashboard";
+
+    ViewBag.ActiveRole = "Rider";
+}
+
+@section Styles {
+    <link rel="stylesheet"
+          href="~/css/rider-index.css"
+          asp-append-version="true" />
+}
+
+<div class="rider-dashboard-page">
+
+    <!-- HERO -->
+    <div class="rider-dashboard-hero">
+
+        <div>
+
+            <span class="dashboard-badge">
+                Rider Account
+            </span>
+
+            <h1>
+                Welcome back, @Model.FullName
+            </h1>
+
+            <p>
+                Manage your assigned deliveries, track delivery progress,
+                and update parcel statuses from your rider dashboard.
+            </p>
+
+        </div>
+
+        <div class="rider-status-box">
+
+            <span class="status-label">
+                Current Status
+            </span>
+
+            <div class="status-pill">
+                @Model.Status
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- STATS -->
+    <div class="rider-stats-grid">
+
+        <div class="rider-stat-card">
+
+            <div class="stat-icon blue">
+                <i class="fa-solid fa-box"></i>
+            </div>
+
+            <div>
+                <span>Total Assigned Orders</span>
+                <h3>0</h3>
+            </div>
+
+        </div>
+
+        <div class="rider-stat-card">
+
+            <div class="stat-icon orange">
+                <i class="fa-solid fa-truck-fast"></i>
+            </div>
+
+            <div>
+                <span>Active Deliveries</span>
+                <h3>0</h3>
+            </div>
+
+        </div>
+
+        <div class="rider-stat-card">
+
+            <div class="stat-icon green">
+                <i class="fa-solid fa-circle-check"></i>
+            </div>
+
+            <div>
+                <span>Completed Deliveries</span>
+                <h3>0</h3>
+            </div>
+
+        </div>
+
+        <div class="rider-stat-card">
+
+            <div class="stat-icon red">
+                <i class="fa-solid fa-clock"></i>
+            </div>
+
+            <div>
+                <span>Pending Tasks</span>
+                <h3>0</h3>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="rider-dashboard-grid">
+
+        <!-- RIDER INFO -->
+        <div class="rider-dashboard-card">
+
+            <div class="card-header-custom">
+
+                <h3>
+                    Rider Information
+                </h3>
+
+                <i class="fa-solid fa-user"></i>
+
+            </div>
+
+            <div class="rider-info-grid">
+
+                <div class="rider-info-item">
+                    <span>Email Address</span>
+                    <strong>@Model.User?.Email</strong>
+                </div>
+
+                <div class="rider-info-item">
+                    <span>Phone Number</span>
+                    <strong>@Model.PhoneNumber</strong>
+                </div>
+
+                <div class="rider-info-item">
+                    <span>Assigned Location</span>
+                    <strong>@Model.AssignedLocation</strong>
+                </div>
+
+                <div class="rider-info-item">
+                    <span>Vehicle Type</span>
+                    <strong>@(Model.VehicleType ?? "N/A")</strong>
+                </div>
+
+                <div class="rider-info-item">
+                    <span>Rider Status</span>
+                    <strong>@Model.Status</strong>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- QUICK ACTIONS -->
+        <div class="rider-dashboard-card">
+
+            <div class="card-header-custom">
+
+                <h3>
+                    Quick Actions
+                </h3>
+
+                <i class="fa-solid fa-bolt"></i>
+
+            </div>
+
+            <div class="quick-actions-grid">
+
+                <a asp-controller="Rider"
+                   asp-action="AssignedOrders"
+                   class="quick-action-card">
+
+                    <i class="fa-solid fa-box"></i>
+
+                    <span>
+                        Assigned Orders
+                    </span>
+
+                </a>
+
+                <a asp-controller="Rider"
+                   asp-action="AvailableTasks"
+                   class="quick-action-card">
+
+                    <i class="fa-solid fa-hand"></i>
+
+                    <span>
+                        Accept Tasks
+                    </span>
+
+                </a>
+
+                <a asp-controller="Rider"
+                   asp-action="ActiveDeliveries"
+                   class="quick-action-card">
+
+                    <i class="fa-solid fa-truck-fast"></i>
+
+                    <span>
+                        Active Deliveries
+                    </span>
+
+                </a>
+
+                <a asp-controller="Rider"
+                   asp-action="DeliveryHistory"
+                   class="quick-action-card">
+
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+
+                    <span>
+                        Delivery History
+                    </span>
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

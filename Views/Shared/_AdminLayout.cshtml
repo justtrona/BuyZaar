@@ -1,0 +1,223 @@
+@{
+    var activeRole = ViewBag.ActiveRole as string ?? "Admin";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>@ViewData["Title"] - BuyZaar Admin</title>
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet"
+          href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+    <!-- Global Admin CSS -->
+    <link rel="stylesheet"
+          href="~/css/admin-dashboard.css"
+          asp-append-version="true" />
+
+    <!-- Page Specific CSS -->
+    @await RenderSectionAsync("Styles", required: false)
+
+</head>
+
+<body>
+
+    <div class="dashboard-layout">
+
+        <!-- SIDEBAR -->
+        <aside class="dashboard-sidebar">
+
+            <div class="sidebar-main">
+
+                <!-- LOGO -->
+                <div class="sidebar-logo">
+
+                    <img src="~/images/icon_logo.png"
+                         alt="BuyZaar Logo" />
+
+                    <h5>BuyZaar</h5>
+
+                    <span>Admin Panel</span>
+
+                </div>
+
+                <!-- NAVIGATION -->
+                <nav class="sidebar-nav">
+
+                    <!-- Dashboard -->
+                    <a asp-controller="Admin"
+                       asp-action="Dashboard">
+                        Dashboard
+                    </a>
+
+                    <!-- Manage Users -->
+                    <a asp-controller="Admin"
+                       asp-action="Users">
+                        Manage Users
+                    </a>
+
+                    <!-- Manage Products -->
+                    <a asp-controller="Admin"
+                       asp-action="Products">
+                        Manage Products
+                    </a>
+
+                    <!-- Manage Inventory -->
+                    <a asp-controller="Admin"
+                       asp-action="Inventory">
+                        Manage Inventory
+                    </a>
+
+                    <!-- Manage Orders -->
+                    <a asp-controller="Admin"
+                       asp-action="Orders">
+                        Manage Orders
+                    </a>
+
+                    <a asp-controller="Admin" 
+                    asp-action="CancellationRequests">
+                    Cancellation Requests
+                    </a>
+
+                    <!-- Manage Payments -->
+                    <a asp-controller="Admin"
+                       asp-action="Payments">
+                        Manage Payments
+                    </a>
+
+                    <!-- Reports -->
+                    <a asp-controller="Admin"
+                       asp-action="Reports">
+                        Reports & Analytics
+                    </a>
+
+                    <!-- Audit Logs -->
+                    <a asp-controller="Admin"
+                       asp-action="AuditLogs">
+                        Audit Logs
+                    </a>
+
+                    <!-- Seller Applications -->
+                    <a asp-controller="Admin"
+                       asp-action="SellerApplications">
+                        Seller Applications
+                    </a>
+
+                    <!-- Seller Activities -->
+                    <a asp-controller="Admin"
+                       asp-action="SellerActivities">
+                        Seller Activities
+                    </a>
+
+                    <!-- Rider Management -->
+                    <a asp-controller="Admin"
+                       asp-action="Riders">
+                        Rider Activities
+                    </a>
+
+                    
+
+                </nav>
+
+            </div>
+
+            <!-- SIDEBAR ACCOUNT -->
+            <div class="sidebar-account">
+
+                <div class="sidebar-user">
+
+                    <!-- AVATAR -->
+                    <div class="sidebar-avatar">
+                        @((User.Identity?.Name ?? "A")
+                            .Substring(0, 1)
+                            .ToUpper())
+                    </div>
+
+                    <!-- USER INFO -->
+                    <div class="sidebar-user-info">
+
+                        <div class="sidebar-user-name">
+                            @User.Identity?.Name
+                        </div>
+
+                        <div class="sidebar-user-role">
+                            @activeRole
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- LOGOUT -->
+                <form asp-controller="Account"
+                      asp-action="Logout"
+                      method="post">
+
+                    @Html.AntiForgeryToken()
+
+                    <button type="submit"
+                            class="sidebar-logout-btn">
+                        Sign out
+                    </button>
+
+                </form>
+
+            </div>
+
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="dashboard-main">
+
+            <!-- TOPBAR -->
+            <div class="dashboard-topbar">
+
+                <div>
+                    <h4>@ViewData["Title"]</h4>
+
+                    <p>
+                        Manage BuyZaar system operations
+                    </p>
+                </div>
+
+                <!-- TOPBAR ACTIONS -->
+                <div class="dashboard-topbar-actions">
+
+                    <!-- Notifications -->
+                    <button class="notification-btn">
+
+                        🔔
+
+                        <span class="notification-badge">
+                            3
+                        </span>
+
+                    </button>
+
+                </div>
+
+            </div>
+
+            <!-- PAGE CONTENT -->
+            <div class="dashboard-content">
+
+                @RenderBody()
+
+            </div>
+
+        </main>
+
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Page Specific Scripts -->
+    @await RenderSectionAsync("Scripts", required: false)
+
+</body>
+</html>

@@ -1,8 +1,10 @@
-﻿using BuyZaar.Models;
+﻿using BuyZaar.Data;
+using BuyZaar.Models;
 using BuyZaar.Services;
 using BuyZaar.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace BuyZaar.Controllers
 {
@@ -11,15 +13,18 @@ namespace BuyZaar.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly EmailService _emailService;
+        private readonly AppDbContext _context;
 
         public AccountController(
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
-            EmailService emailService)
+            EmailService emailService,
+            AppDbContext context)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _emailService = emailService;
+            _context = context;
         }
 
         [HttpGet]
@@ -136,6 +141,74 @@ namespace BuyZaar.Controllers
         }
 
         [HttpGet]
+        public IActionResult SetupPassword(string userId, string token)
+        {
+            if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(token))
+            {
+                return Content("Invalid password setup link.");
+            }
+
+            var model = new SetupPasswordViewModel
+            {
+                UserId = userId,
+                Token = token
+            };
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SetupPassword(SetupPasswordViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            var user = await _userManager.FindByIdAsync(model.UserId);
+
+            if (user == null)
+            {
+                return Content("User not found.");
+            }
+
+            var result = await _userManager.ResetPasswordAsync(
+                user,
+                model.Token,
+                model.Password
+            );
+
+            if (result.Succeeded)
+            {
+                user.EmailConfirmed = true;
+                user.IsVerified = true;
+                user.VerifiedAt = DateTime.UtcNow;
+
+                await _userManager.UpdateAsync(user);
+
+                var riderProfile = await _context.RiderProfiles
+                    .FirstOrDefaultAsync(r => r.UserId == user.Id);
+
+                if (riderProfile != null)
+                {
+                    riderProfile.Status = "Active";
+                    await _context.SaveChangesAsync();
+                }
+
+                TempData["LoginMessage"] = "Password setup successful. You can now log in.";
+                return RedirectToAction("Login", "Account");
+            }
+
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError(string.Empty, error.Description);
+            }
+
+            return View(model);
+        }
+
+        [HttpGet]
         public IActionResult Login()
         {
             return View();
@@ -158,8 +231,12 @@ namespace BuyZaar.Controllers
 
             var isSuperAdmin = await _userManager.IsInRoleAsync(user, "SuperAdmin");
             var isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
+            var isRider = await _userManager.IsInRoleAsync(user, "Rider");
 
-            if (!isSuperAdmin && !isAdmin && !await _userManager.IsEmailConfirmedAsync(user))
+            if (!isSuperAdmin &&
+                !isAdmin &&
+                !isRider &&
+                !await _userManager.IsEmailConfirmedAsync(user))
             {
                 ModelState.AddModelError(string.Empty, "Please verify your email before logging in.");
                 return View(model);
@@ -179,6 +256,9 @@ namespace BuyZaar.Controllers
 
                 if (isAdmin)
                     return RedirectToAction("Index", "Admin");
+
+                if (isRider)
+                    return RedirectToAction("Index", "Rider");
 
                 if (await _userManager.IsInRoleAsync(user, "Seller"))
                     return RedirectToAction("Index", "Seller");

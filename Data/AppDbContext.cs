@@ -19,6 +19,7 @@ namespace BuyZaar.Data
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderItem> OrderItems { get; set; }    
         public DbSet<ShopProfile> ShopProfiles { get; set; }
+        public DbSet<RiderProfile> RiderProfiles { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

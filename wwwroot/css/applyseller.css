@@ -207,28 +207,7 @@ textarea.form-control {
     color: #0f172a;
 }
 
-@media (max-width: 900px) {
-    .seller-apply-header {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .seller-apply-grid,
-    .form-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .form-actions {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .submit-application-btn,
-    .cancel-application-btn {
-        width: 100%;
-    }
-}
-
+/* Application Details */
 .application-details-card {
     max-width: 100%;
     padding: 32px;
@@ -277,33 +256,82 @@ textarea.form-control {
     line-height: 1.6;
 }
 
-.documents-box {
-    margin-top: 24px;
+/* Uploaded Documents - List Style */
+.uploaded-documents-section {
+    margin-top: 34px;
+    padding: 22px;
     background: #f8fafc;
+    border-radius: 20px;
     border: 1px solid #e5e7eb;
-    border-radius: 18px;
-    padding: 20px;
 }
 
-.documents-box h3 {
+.documents-title {
     font-size: 20px;
     font-weight: 900;
     color: #0f172a;
     margin-bottom: 14px;
 }
 
-.document-item {
-    background: white;
-    border-radius: 14px;
-    padding: 14px 16px;
-    margin-bottom: 10px;
+.document-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
-.document-item p {
+.document-list-item {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 16px 18px;
+    text-decoration: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    transition: 0.2s ease;
+}
+
+.document-list-item:hover {
+    border-color: #2563eb;
+    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.12);
+    transform: translateY(-2px);
+}
+
+.document-list-item strong {
+    display: block;
+    color: #0f172a;
+    font-size: 15px;
+    font-weight: 900;
+    margin-bottom: 5px;
+    word-break: break-word;
+}
+
+.document-list-item span {
     color: #64748b;
-    margin: 4px 0 0;
+    font-size: 14px;
+    font-weight: 700;
 }
 
+.document-view-text {
+    background: #2563eb;
+    color: #ffffff !important;
+    padding: 8px 14px;
+    border-radius: 12px;
+    font-size: 13px !important;
+    font-weight: 900 !important;
+    white-space: nowrap;
+}
+
+.documents-box {
+    background: #ffffff;
+    border: 1px dashed #cbd5e1;
+    border-radius: 16px;
+    padding: 18px;
+    color: #64748b;
+    font-weight: 700;
+}
+
+/* Action Buttons */
 .application-details-card .form-actions {
     margin-top: 26px;
 }
@@ -319,6 +347,29 @@ textarea.form-control {
     color: #b91c1c;
 }
 
+/* Responsive */
+@media (max-width: 900px) {
+    .seller-apply-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .seller-apply-grid,
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .form-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .submit-application-btn,
+    .cancel-application-btn {
+        width: 100%;
+    }
+}
+
 @media (max-width: 768px) {
     .info-list {
         grid-template-columns: 1fr;
@@ -326,5 +377,14 @@ textarea.form-control {
 
     .info-list div {
         grid-column: 1 / -1;
+    }
+
+    .document-list-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .document-view-text {
+        align-self: flex-start;
     }
 }

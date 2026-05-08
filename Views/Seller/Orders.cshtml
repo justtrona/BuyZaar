@@ -10,8 +10,12 @@
 
     var allCount = ViewBag.AllCount ?? 0;
     var toShipCount = ViewBag.ToShipCount ?? 0;
-    var shippedCount = ViewBag.ShippedCount ?? 0;
+    var preparingCount = ViewBag.PreparingCount ?? 0;
+    var readyForPickupCount = ViewBag.ReadyForPickupCount ?? 0;
+    var inDeliveryCount = ViewBag.InDeliveryCount ?? 0;
     var completedCount = ViewBag.CompletedCount ?? 0;
+    var cancelRequestCount = ViewBag.CancelRequestCount ?? 0;
+    var returnCount = ViewBag.ReturnCount ?? 0;
 }
 
 <link rel="stylesheet" href="~/css/sellerorders.css" asp-append-version="true" />
@@ -22,7 +26,7 @@
         <div>
             <span class="seller-label">Seller</span>
             <h1>Orders</h1>
-            <p>Track buyer orders, view details, and print parcel receipts.</p>
+            <p>Manage order preparation, pickup readiness, cancellations, and returns.</p>
         </div>
     </div>
 
@@ -42,9 +46,37 @@
 
         <a asp-controller="Seller"
            asp-action="Orders"
+           asp-route-status="Preparing Order"
+           class="order-tab @(currentStatus == "Preparing Order" ? "active" : "")">
+            Preparing <span>@preparingCount</span>
+        </a>
+
+        <a asp-controller="Seller"
+           asp-action="Orders"
+           asp-route-status="Ready for Pickup"
+           class="order-tab @(currentStatus == "Ready for Pickup" ? "active" : "")">
+            Ready Pickup <span>@readyForPickupCount</span>
+        </a>
+
+        <a asp-controller="Seller"
+           asp-action="Orders"
            asp-route-status="To Receive"
            class="order-tab @(currentStatus == "To Receive" ? "active" : "")">
-            Shipped <span>@shippedCount</span>
+            In Delivery <span>@inDeliveryCount</span>
+        </a>
+
+        <a asp-controller="Seller"
+           asp-action="Orders"
+           asp-route-status="Cancel Requests"
+           class="order-tab @(currentStatus == "Cancel Requests" ? "active" : "")">
+            Cancel Requests <span>@cancelRequestCount</span>
+        </a>
+
+        <a asp-controller="Seller"
+           asp-action="Orders"
+           asp-route-status="Returns"
+           class="order-tab @(currentStatus == "Returns" ? "active" : "")">
+            Returns <span>@returnCount</span>
         </a>
 
         <a asp-controller="Seller"
@@ -64,12 +96,16 @@
                name="search"
                value="@search"
                class="orders-search"
-               placeholder="Search reference no., order ID, buyer name, or contact number..." />
+               placeholder="Search order ID, buyer name, or contact number..." />
 
         <select name="status" class="orders-status-filter">
             <option value="">All Status</option>
             <option value="To Ship" selected="@(currentStatus == "To Ship")">To Ship</option>
-            <option value="To Receive" selected="@(currentStatus == "To Receive")">To Receive</option>
+            <option value="Preparing Order" selected="@(currentStatus == "Preparing Order")">Preparing Order</option>
+            <option value="Ready for Pickup" selected="@(currentStatus == "Ready for Pickup")">Ready for Pickup</option>
+            <option value="To Receive" selected="@(currentStatus == "To Receive")">In Delivery</option>
+            <option value="Cancel Requests" selected="@(currentStatus == "Cancel Requests")">Cancel Requests</option>
+            <option value="Returns" selected="@(currentStatus == "Returns")">Returns</option>
             <option value="Completed" selected="@(currentStatus == "Completed")">Completed</option>
             <option value="Cancelled" selected="@(currentStatus == "Cancelled")">Cancelled</option>
         </select>
@@ -84,6 +120,20 @@
             Reset
         </a>
     </form>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["ErrorMessage"]
+        </div>
+    }
 
     @if (!Model.Any())
     {
@@ -117,6 +167,11 @@
                     ? "Free Shipping"
                     : $"₱{order.ShippingFee.ToString("N2")}";
 
+                var displayStatus = !string.IsNullOrWhiteSpace(order.DeliveryStatus) &&
+                                    order.DeliveryStatus != "Pending Assignment"
+                    ? order.DeliveryStatus
+                    : order.Status;
+
                 <div class="orders-table-row">
                     <div class="reference-cell">
                         <strong>@referenceNo</strong>
@@ -147,7 +202,14 @@
                     </div>
 
                     <div>
-                        <span class="order-status">@order.Status</span>
+                        <span class="order-status">@displayStatus</span>
+
+                        @if (order.CancellationRequestStatus == "Pending")
+                        {
+                            <small class="d-block text-danger fw-bold mt-1">
+                                Cancel Requested
+                            </small>
+                        }
                     </div>
 
                     <div>
@@ -169,16 +231,71 @@
                             Print
                         </button>
 
-                        @if (order.Status == "To Ship")
+                        @if (order.CancellationRequestStatus == "Pending" &&
+                             (order.Status == "To Pay" ||
+                              order.Status == "Pending Payment" ||
+                              order.Status == "To Ship" ||
+                              order.Status == "Preparing Order"))
                         {
-                            <form asp-controller="Seller" asp-action="ShipOrder" method="post">
+                            <form asp-controller="Seller"
+                                  asp-action="ApproveCancellation"
+                                  method="post"
+                                  onsubmit="return confirm('Approve cancellation for Order #@order.Id?');">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="orderId" value="@order.Id" />
+                                <input type="hidden" name="sellerNote" value="Cancellation approved by seller." />
+
+                                <button type="submit" class="btn btn-success btn-sm">
+                                    Approve Cancel
+                                </button>
+                            </form>
+
+                            <form asp-controller="Seller"
+                                  asp-action="RejectCancellation"
+                                  method="post"
+                                  onsubmit="return confirm('Reject cancellation for Order #@order.Id?');">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="orderId" value="@order.Id" />
+                                <input type="hidden" name="sellerNote" value="Cancellation rejected by seller." />
+
+                                <button type="submit" class="btn btn-danger btn-sm">
+                                    Reject Cancel
+                                </button>
+                            </form>
+                        }
+                        else if (order.Status == "To Ship")
+                        {
+                            <form asp-controller="Seller"
+                                  asp-action="MarkPreparing"
+                                  method="post"
+                                  onsubmit="return confirm('Start preparing Order #@order.Id?');">
                                 @Html.AntiForgeryToken()
                                 <input type="hidden" name="orderId" value="@order.Id" />
 
                                 <button type="submit" class="btn-ship-order">
-                                    Ship
+                                    Prepare
                                 </button>
                             </form>
+                        }
+                        else if (order.Status == "Preparing Order")
+                        {
+                            <form asp-controller="Seller"
+                                  asp-action="MarkReadyForPickup"
+                                  method="post"
+                                  onsubmit="return confirm('Mark Order #@order.Id as ready for pickup?');">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="orderId" value="@order.Id" />
+
+                                <button type="submit" class="btn-ship-order">
+                                    Ready Pickup
+                                </button>
+                            </form>
+                        }
+                        else if (order.Status == "Ready for Pickup")
+                        {
+                            <button type="button" class="btn btn-secondary btn-sm" disabled>
+                                Waiting Rider
+                            </button>
                         }
                     </div>
                 </div>
@@ -231,7 +348,54 @@
                                             <span>Shipping Fee</span>
                                             <strong>@shippingFeeText</strong>
                                         </div>
+
+                                        <div>
+                                            <span>Order Status</span>
+                                            <strong>@order.Status</strong>
+                                        </div>
+
+                                        <div>
+                                            <span>Delivery Status</span>
+                                            <strong>@(order.DeliveryStatus ?? "Pending Assignment")</strong>
+                                        </div>
+
+                                        @if (order.PreparingAt != null)
+                                        {
+                                            <div>
+                                                <span>Preparing At</span>
+                                                <strong>@order.PreparingAt?.ToString("MMM dd, yyyy hh:mm tt")</strong>
+                                            </div>
+                                        }
+
+                                        @if (order.ReadyForPickupAt != null)
+                                        {
+                                            <div>
+                                                <span>Ready Pickup At</span>
+                                                <strong>@order.ReadyForPickupAt?.ToString("MMM dd, yyyy hh:mm tt")</strong>
+                                            </div>
+                                        }
                                     </div>
+
+                                    @if (!string.IsNullOrWhiteSpace(order.CancellationRequestStatus))
+                                    {
+                                        <div class="parcel-section">
+                                            <h4>Cancellation Request</h4>
+
+                                            <div class="shipping-box">
+                                                <strong>Status: @order.CancellationRequestStatus</strong>
+
+                                                @if (!string.IsNullOrWhiteSpace(order.CancellationReason))
+                                                {
+                                                    <p>Reason: @order.CancellationReason</p>
+                                                }
+
+                                                @if (!string.IsNullOrWhiteSpace(order.CancellationAdminNote))
+                                                {
+                                                    <p>Note: @order.CancellationAdminNote</p>
+                                                }
+                                            </div>
+                                        </div>
+                                    }
 
                                     <div class="parcel-section">
                                         <h4>Ship To</h4>

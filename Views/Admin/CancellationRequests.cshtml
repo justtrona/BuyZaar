@@ -1,0 +1,160 @@
+@model IEnumerable<BuyZaar.Models.Order>
+
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "Cancellation Requests";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin-orders.css" asp-append-version="true" />
+}
+
+<div class="admin-orders-page">
+
+    <div class="admin-orders-header">
+        <div>
+            <h2>Cancellation Requests</h2>
+            <p>Review buyer cancellation requests before approving returns or continuing delivery.</p>
+        </div>
+
+        <a asp-controller="Admin"
+           asp-action="Orders"
+           class="btn btn-outline-secondary">
+            Back to Orders
+        </a>
+    </div>
+
+    @if (TempData["Message"] != null)
+    {
+        <div class="alert alert-info admin-orders-alert">
+            @TempData["Message"]
+        </div>
+    }
+
+    @if (!Model.Any())
+    {
+        <div class="orders-empty-state">
+            <h5>No cancellation requests</h5>
+            <p>Buyer cancellation requests will appear here.</p>
+        </div>
+    }
+    else
+    {
+        <div class="orders-table-card">
+            <div class="table-responsive">
+                <table class="table orders-table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Receiver</th>
+                            <th>Contact</th>
+                            <th>Address</th>
+                            <th>Total</th>
+                            <th>Order Status</th>
+                            <th>Delivery Status</th>
+                            <th>Reason</th>
+                            <th>Requested At</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @foreach (var order in Model)
+                        {
+                            var deliveryStatus = string.IsNullOrWhiteSpace(order.DeliveryStatus)
+                                ? "Pending Assignment"
+                                : order.DeliveryStatus;
+
+                            <tr>
+                                <td class="fw-bold">#@order.Id</td>
+
+                                <td>@order.ReceiverName</td>
+
+                                <td>@order.ContactNumber</td>
+
+                                <td class="order-address">
+                                    @order.DeliveryAddress
+                                </td>
+
+                                <td>
+                                    ₱@order.TotalAmount.ToString("N2")
+                                </td>
+
+                                <td>
+                                    <span class="order-status-badge">
+                                        @order.Status
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <span class="delivery-status-badge">
+                                        @deliveryStatus
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <div class="cancellation-reason-box">
+                                        @(string.IsNullOrWhiteSpace(order.CancellationReason)
+                                            ? "No reason provided"
+                                            : order.CancellationReason)
+                                    </div>
+                                </td>
+
+                                <td>
+                                    @(order.CancellationRequestedAt?.ToString("MMM dd, yyyy hh:mm tt") ?? "N/A")
+                                </td>
+
+                                <td class="text-end">
+                                    <div class="admin-cancel-actions">
+                                        <form asp-controller="Admin"
+                                              asp-action="ApproveCancellation"
+                                              method="post"
+                                              class="d-inline"
+                                              onsubmit="return confirm('Approve cancellation for Order #@order.Id?');">
+                                            @Html.AntiForgeryToken()
+
+                                            <input type="hidden"
+                                                   name="orderId"
+                                                   value="@order.Id" />
+
+                                            <input type="hidden"
+                                                   name="adminNote"
+                                                   value="Cancellation approved. Order will be returned to seller." />
+
+                                            <button type="submit"
+                                                    class="btn btn-success btn-sm">
+                                                Approve
+                                            </button>
+                                        </form>
+
+                                        <form asp-controller="Admin"
+                                              asp-action="RejectCancellation"
+                                              method="post"
+                                              class="d-inline"
+                                              onsubmit="return confirm('Reject cancellation for Order #@order.Id?');">
+                                            @Html.AntiForgeryToken()
+
+                                            <input type="hidden"
+                                                   name="orderId"
+                                                   value="@order.Id" />
+
+                                            <input type="hidden"
+                                                   name="adminNote"
+                                                   value="Cancellation rejected. Delivery will continue." />
+
+                                            <button type="submit"
+                                                    class="btn btn-danger btn-sm">
+                                                Reject
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+
+</div>

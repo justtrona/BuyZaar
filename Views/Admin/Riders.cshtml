@@ -1,0 +1,113 @@
+@model IEnumerable<BuyZaar.Models.RiderProfile>
+
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "Riders";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin-riders.css" asp-append-version="true" />
+}
+
+<div class="rider-page">
+
+    <div class="rider-header">
+
+        <div>
+            <h2>Rider Management</h2>
+            <p>Manage BuyZaar rider accounts and delivery personnel.</p>
+        </div>
+
+        <a asp-controller="Admin"
+           asp-action="CreateRider"
+           class="btn btn-primary add-rider-btn">
+            + Create Rider
+        </a>
+
+    </div>
+
+    @if (TempData["Message"] != null)
+    {
+        <div class="alert alert-success rider-alert">
+            @TempData["Message"]
+        </div>
+    }
+
+    @if (!Model.Any())
+    {
+        <div class="empty-riders">
+            <h4>No Riders Found</h4>
+            <p>No rider accounts have been created yet.</p>
+        </div>
+    }
+    else
+    {
+        <div class="rider-table-card">
+
+            <div class="table-responsive">
+
+                <table class="table rider-table align-middle">
+
+                    <thead>
+                        <tr>
+                            <th>Full Name</th>
+                            <th>Email</th>
+                            <th>Phone Number</th>
+                            <th>Assigned Location</th>
+                            <th>Vehicle Type</th>
+                            <th>Status</th>
+                            <th>Date Created</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        @foreach (var rider in Model)
+                        {
+                            <tr>
+
+                                <td class="fw-bold">
+                                    @rider.FullName
+                                </td>
+
+                                <td>
+                                    @rider.User?.Email
+                                </td>
+
+                                <td>
+                                    @rider.PhoneNumber
+                                </td>
+
+                                <td>
+                                    @rider.AssignedLocation
+                                </td>
+
+                                <td>
+                                    @(string.IsNullOrWhiteSpace(rider.VehicleType)
+                                        ? "N/A"
+                                        : rider.VehicleType)
+                                </td>
+
+                                <td>
+                                    <span class="rider-status">
+                                        @rider.Status
+                                    </span>
+                                </td>
+
+                                <td>
+                                    @rider.CreatedAt.ToString("yyyy-MM-dd")
+                                </td>
+
+                            </tr>
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+    }
+
+</div>

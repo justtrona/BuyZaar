@@ -1,0 +1,200 @@
+@{
+    var activeRole = ViewBag.ActiveRole as string ?? "Rider";
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>@ViewData["Title"] - BuyZaar Rider</title>
+
+    <link rel="stylesheet"
+          href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+    <link rel="stylesheet"
+          href="~/css/rider-dashboard.css"
+          asp-append-version="true" />
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+
+<body>
+
+    <div class="rider-layout">
+
+        <!-- SIDEBAR -->
+        <aside class="rider-sidebar">
+
+            <div class="rider-sidebar-main">
+
+                <!-- LOGO -->
+                <div class="rider-logo">
+                    <img src="~/images/icon_logo.png"
+                         alt="BuyZaar Logo" />
+
+                    <h5>BuyZaar</h5>
+
+                    <span>Rider Panel</span>
+                </div>
+
+                <!-- NAVIGATION -->
+                <nav class="rider-nav">
+
+                    <a asp-controller="Rider"
+                       asp-action="Index"
+                       class="@(currentAction == "Index" ? "active" : "")">
+
+                        <i class="fa-solid fa-house"></i>
+                        <span>Dashboard</span>
+                    </a>
+
+                    <a asp-controller="Rider"
+                       asp-action="AssignedOrders"
+                       class="@(currentAction == "AssignedOrders" ? "active" : "")">
+
+                        <i class="fa-solid fa-box"></i>
+                        <span>Assigned Orders</span>
+                    </a>
+
+                    <a asp-controller="Rider"
+                       asp-action="AvailableTasks"
+                       class="@(currentAction == "AvailableTasks" ? "active" : "")">
+
+                        <i class="fa-solid fa-hand"></i>
+                        <span>Accept Tasks</span>
+                    </a>
+
+                    <a asp-controller="Rider"
+                       asp-action="ActiveDeliveries"
+                       class="@(currentAction == "ActiveDeliveries" ? "active" : "")">
+
+                        <i class="fa-solid fa-truck-fast"></i>
+                        <span>Active Deliveries</span>
+                    </a>
+
+                    <a asp-controller="Rider"
+                       asp-action="UpdateStatus"
+                       class="@(currentAction == "UpdateStatus" ? "active" : "")">
+
+                        <i class="fa-solid fa-rotate"></i>
+                        <span>Update Status</span>
+                    </a>
+
+                    <a asp-controller="Rider"
+                       asp-action="DeliveryScope"
+                       class="@(currentAction == "DeliveryScope" ? "active" : "")">
+
+                        <i class="fa-solid fa-location-dot"></i>
+                        <span>Delivery Scope</span>
+                    </a>
+
+                    <a asp-controller="Rider"
+                       asp-action="DeliveryHistory"
+                       class="@(currentAction == "DeliveryHistory" ? "active" : "")">
+
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                        <span>Delivery History</span>
+                    </a>
+
+                    <a asp-controller="Rider"
+                       asp-action="Profile"
+                       class="@(currentAction == "Profile" ? "active" : "")">
+
+                        <i class="fa-solid fa-user"></i>
+                        <span>Profile</span>
+                    </a>
+
+                </nav>
+
+            </div>
+
+            <!-- ACCOUNT -->
+            <div class="rider-account">
+
+                <div class="rider-user">
+
+                    <div class="rider-avatar">
+                        @((User.Identity?.Name ?? "R").Substring(0, 1).ToUpper())
+                    </div>
+
+                    <div>
+                        <div class="rider-name">
+                            @User.Identity?.Name
+                        </div>
+
+                        <div class="rider-role">
+                            @activeRole
+                        </div>
+                    </div>
+
+                </div>
+
+                <form asp-controller="Account"
+                      asp-action="Logout"
+                      method="post">
+
+                    @Html.AntiForgeryToken()
+
+                    <button type="submit"
+                            class="rider-logout-btn">
+
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                        Sign out
+                    </button>
+
+                </form>
+
+            </div>
+
+        </aside>
+
+        <!-- MAIN -->
+        <main class="rider-main">
+
+            <!-- TOPBAR -->
+            <div class="rider-topbar">
+
+                <div>
+                    <h4>@ViewData["Title"]</h4>
+
+                    <p>
+                        Manage assigned deliveries and rider activities
+                    </p>
+                </div>
+
+                <div class="rider-topbar-actions">
+
+                    <button class="rider-notification-btn">
+
+                        <i class="fa-solid fa-bell"></i>
+
+                        <span>0</span>
+
+                    </button>
+
+                </div>
+
+            </div>
+
+            <!-- CONTENT -->
+            <div class="rider-content">
+                @RenderBody()
+            </div>
+
+        </main>
+
+    </div>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+
+</body>
+</html>

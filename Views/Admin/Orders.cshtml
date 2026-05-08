@@ -1,0 +1,234 @@
+@model IEnumerable<BuyZaar.Models.Order>
+
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "Manage Orders";
+
+    var recommendedRiders =
+        ViewBag.RecommendedRiders as Dictionary<int, List<BuyZaar.Models.RiderProfile>>
+        ?? new Dictionary<int, List<BuyZaar.Models.RiderProfile>>();
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin-orders.css" asp-append-version="true" />
+}
+
+<div class="admin-orders-page">
+
+    <div class="admin-orders-header">
+        <div>
+            <h2>Manage Orders</h2>
+            <p>Assign riders, monitor delivery, and complete return-to-seller orders.</p>
+        </div>
+    </div>
+
+    @if (TempData["Message"] != null)
+    {
+        <div class="alert alert-info admin-orders-alert">
+            @TempData["Message"]
+        </div>
+    }
+
+    @if (!Model.Any())
+    {
+        <div class="orders-empty-state">
+            <h5>No orders found</h5>
+            <p>Orders will appear here once shoppers place orders.</p>
+        </div>
+    }
+    else
+    {
+        <div class="orders-table-card">
+            <div class="table-responsive">
+                <table class="table orders-table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Receiver</th>
+                            <th>Contact</th>
+                            <th>Address</th>
+                            <th>Total</th>
+                            <th>Order Status</th>
+                            <th>Delivery Status</th>
+                            <th>Assigned Rider</th>
+                            <th>Date</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @foreach (var order in Model)
+                        {
+                            var recommendedForOrder =
+                                recommendedRiders.ContainsKey(order.Id)
+                                    ? recommendedRiders[order.Id]
+                                    : new List<BuyZaar.Models.RiderProfile>();
+
+                            var deliveryStatus = string.IsNullOrWhiteSpace(order.DeliveryStatus)
+                                ? "Pending Assignment"
+                                : order.DeliveryStatus;
+
+                            <tr>
+                                <td class="fw-bold">#@order.Id</td>
+
+                                <td>@order.ReceiverName</td>
+
+                                <td>@order.ContactNumber</td>
+
+                                <td class="order-address">
+                                    @order.DeliveryAddress
+                                </td>
+
+                                <td>
+                                    ₱@order.TotalAmount.ToString("N2")
+                                </td>
+
+                                <td>
+                                    <span class="order-status-badge">
+                                        @order.Status
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <span class="delivery-status-badge">
+                                        @deliveryStatus
+                                    </span>
+                                </td>
+
+                                <td>
+                                    @if (order.Rider != null)
+                                    {
+                                        <div class="assigned-rider-box">
+                                            <strong>@order.Rider.FullName</strong>
+                                            <small>@order.Rider.Email</small>
+
+                                            <form asp-controller="Admin"
+                                                  asp-action="UnassignRider"
+                                                  method="post"
+                                                  class="mt-2"
+                                                  onsubmit="return confirm('Remove this rider from Order #@order.Id?');">
+
+                                                @Html.AntiForgeryToken()
+
+                                                <input type="hidden"
+                                                       name="orderId"
+                                                       value="@order.Id" />
+
+                                                <button type="submit"
+                                                        class="btn btn-sm btn-danger unassign-btn">
+                                                    Remove Rider
+                                                </button>
+                                            </form>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span class="not-assigned-text">
+                                            Not assigned
+                                        </span>
+                                    }
+                                </td>
+
+                                <td>
+                                    @order.CreatedAt.ToString("yyyy-MM-dd")
+                                </td>
+
+                                <td>
+                                    @if (deliveryStatus == "Return Pending")
+                                    {
+                                        <form asp-controller="Admin"
+                                              asp-action="MarkReturnedToSeller"
+                                              method="post"
+                                              onsubmit="return confirm('Mark Order #@order.Id as returned to seller?');">
+
+                                            @Html.AntiForgeryToken()
+
+                                            <input type="hidden"
+                                                   name="orderId"
+                                                   value="@order.Id" />
+
+                                            <button type="submit"
+                                                    class="btn btn-success btn-sm">
+                                                Mark Returned
+                                            </button>
+                                        </form>
+                                    }
+                                    else if (deliveryStatus == "Returned to Seller")
+                                    {
+                                        <span class="already-assigned-note">
+                                            Returned to seller.
+                                        </span>
+                                    }
+                                    else if (order.Rider != null)
+                                    {
+                                        <span class="already-assigned-note">
+                                            Rider already assigned.
+                                        </span>
+                                    }
+                                    else if (order.Status != "Ready for Pickup")
+                                    {
+                                        <div class="waiting-pickup-box">
+                                            <strong>Waiting for Seller</strong>
+                                            <small>
+                                                Assignment opens when order is <b>Ready for Pickup</b>.
+                                            </small>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        if (recommendedForOrder.Any())
+                                        {
+                                            <form asp-controller="Admin"
+                                                  asp-action="AssignRider"
+                                                  method="post"
+                                                  class="assign-rider-form">
+
+                                                @Html.AntiForgeryToken()
+
+                                                <input type="hidden"
+                                                       name="orderId"
+                                                       value="@order.Id" />
+
+                                                <select name="riderId"
+                                                        class="form-select form-select-sm"
+                                                        required>
+                                                    <option value="">Select nearby rider</option>
+
+                                                    @foreach (var rider in recommendedForOrder)
+                                                    {
+                                                        <option value="@rider.UserId">
+                                                            @rider.FullName - @rider.AssignedLocation
+                                                        </option>
+                                                    }
+                                                </select>
+
+                                                <small class="recommended-note">
+                                                    Only nearby riders can be assigned.
+                                                </small>
+
+                                                <button type="submit"
+                                                        class="btn btn-primary btn-sm mt-2">
+                                                    Assign Rider
+                                                </button>
+                                            </form>
+                                        }
+                                        else
+                                        {
+                                            <div class="no-rider-box">
+                                                <strong>No nearby rider available</strong>
+                                                <small>
+                                                    Create or activate a rider assigned near this buyer address.
+                                                </small>
+                                            </div>
+                                        }
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+
+</div>

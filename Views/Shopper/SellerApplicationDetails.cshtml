@@ -21,8 +21,8 @@
         </a>
     </div>
 
-<div class="seller-form-card application-details-card">
-    <h2>Submitted Information</h2>
+    <div class="seller-form-card application-details-card">
+        <h2>Submitted Information</h2>
 
         <div class="info-list">
             <div><span>Status</span><strong>@Model.Status</strong></div>
@@ -33,6 +33,38 @@
             <div><span>Business Description</span><strong>@Model.BusinessDescription</strong></div>
             <div><span>Date Submitted</span><strong>@Model.CreatedAt.ToString("MMM dd, yyyy hh:mm tt")</strong></div>
         </div>
+
+      <div class="uploaded-documents-section">
+    <h3 class="documents-title">Uploaded Documents</h3>
+
+    @if (Model.Documents != null && Model.Documents.Any())
+    {
+        <div class="document-list">
+            @foreach (var doc in Model.Documents)
+            {
+                <a href="@doc.FilePath"
+                   target="_blank"
+                   class="document-list-item">
+
+                    <div>
+                        <strong>@doc.FileName</strong>
+                        <span>
+                            @doc.ContentType · @(Math.Round((double)doc.FileSize / 1024, 0)) KB
+                        </span>
+                    </div>
+
+                    <span class="document-view-text">View</span>
+                </a>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="documents-box">
+            No uploaded documents found for this application.
+        </div>
+    }
+</div>
 
         <div class="form-actions">
             @if (Model.Status == "Pending")

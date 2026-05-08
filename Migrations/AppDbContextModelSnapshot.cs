@@ -159,6 +159,27 @@ namespace BuyZaar.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTime?>("AcceptedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime?>("AssignedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("CancellationAdminNote")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("CancellationReason")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("CancellationRequestStatus")
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime?>("CancellationRequestedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime?>("CancellationReviewedAt")
+                        .HasColumnType("datetime(6)");
+
                     b.Property<string>("ContactNumber")
                         .IsRequired()
                         .HasColumnType("longtext");
@@ -166,13 +187,47 @@ namespace BuyZaar.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime(6)");
 
+                    b.Property<DateTime?>("DeliveredAt")
+                        .HasColumnType("datetime(6)");
+
                     b.Property<string>("DeliveryAddress")
                         .IsRequired()
                         .HasColumnType("longtext");
 
+                    b.Property<string>("DeliveryStatus")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime?>("FailedDeliveryAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("FailedDeliveryReason")
+                        .HasColumnType("longtext");
+
+                    b.Property<bool>("IsPreparing")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("IsReadyForPickup")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<DateTime?>("PickedUpAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime?>("PreparingAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime?>("ReadyForPickupAt")
+                        .HasColumnType("datetime(6)");
+
                     b.Property<string>("ReceiverName")
                         .IsRequired()
                         .HasColumnType("longtext");
+
+                    b.Property<DateTime?>("ReturnToSellerAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("RiderId")
+                        .HasColumnType("varchar(255)");
 
                     b.Property<decimal>("ShippingFee")
                         .HasColumnType("decimal(65,30)");
@@ -189,6 +244,8 @@ namespace BuyZaar.Migrations
                         .HasColumnType("decimal(65,30)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("RiderId");
 
                     b.ToTable("Orders");
                 });
@@ -307,6 +364,47 @@ namespace BuyZaar.Migrations
                     b.ToTable("ProductImages");
                 });
 
+            modelBuilder.Entity("BuyZaar.Models.RiderProfile", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AssignedLocation")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<string>("VehicleType")
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("RiderProfiles");
+                });
+
             modelBuilder.Entity("BuyZaar.Models.SellerApplication", b =>
                 {
                     b.Property<int>("Id")
@@ -369,11 +467,11 @@ namespace BuyZaar.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<byte[]>("FileData")
-                        .IsRequired()
-                        .HasColumnType("longblob");
-
                     b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("FilePath")
                         .IsRequired()
                         .HasColumnType("longtext");
 
@@ -621,6 +719,15 @@ namespace BuyZaar.Migrations
                     b.Navigation("Shopper");
                 });
 
+            modelBuilder.Entity("BuyZaar.Models.Order", b =>
+                {
+                    b.HasOne("BuyZaar.Models.ApplicationUser", "Rider")
+                        .WithMany()
+                        .HasForeignKey("RiderId");
+
+                    b.Navigation("Rider");
+                });
+
             modelBuilder.Entity("BuyZaar.Models.OrderItem", b =>
                 {
                     b.HasOne("BuyZaar.Models.Order", "Order")
@@ -660,6 +767,17 @@ namespace BuyZaar.Migrations
                         .IsRequired();
 
                     b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("BuyZaar.Models.RiderProfile", b =>
+                {
+                    b.HasOne("BuyZaar.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("BuyZaar.Models.SellerApplication", b =>

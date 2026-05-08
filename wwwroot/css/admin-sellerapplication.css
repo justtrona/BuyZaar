@@ -167,6 +167,73 @@
     grid-column: 1 / -1;
 }
 
+.admin-uploaded-documents {
+    margin-top: 22px;
+    padding: 18px;
+    background: #f8fafc;
+    border-radius: 18px;
+    border: 1px solid #e5e7eb;
+}
+
+.admin-uploaded-documents h6 {
+    font-weight: 900;
+    color: #0f172a;
+    margin-bottom: 14px;
+}
+
+.admin-document-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.admin-document-item {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 14px 16px;
+    text-decoration: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 14px;
+}
+
+.admin-document-item:hover {
+    border-color: #2563eb;
+    box-shadow: 0 8px 18px rgba(37, 99, 235, 0.12);
+}
+
+.admin-document-item strong {
+    display: block;
+    color: #111827;
+    font-weight: 900;
+    word-break: break-word;
+}
+
+.admin-document-item span {
+    color: #64748b;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.admin-document-view {
+    background: #2563eb;
+    color: #ffffff !important;
+    padding: 7px 13px;
+    border-radius: 10px;
+    white-space: nowrap;
+}
+
+.admin-no-documents {
+    background: #ffffff;
+    border: 1px dashed #cbd5e1;
+    border-radius: 14px;
+    padding: 14px;
+    color: #64748b;
+    font-weight: 700;
+}
+
 @media (max-width: 768px) {
     .seller-detail-grid {
         grid-template-columns: 1fr;

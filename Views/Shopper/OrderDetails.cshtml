@@ -10,9 +10,62 @@
                    ?? firstItem?.Product?.Seller?.UserName
                    ?? "Unknown Shop";
 
-    var steps = new List<string> { "To Ship", "To Receive", "To Review", "Completed" };
-    var currentIndex = steps.IndexOf(Model.Status);
-    if (currentIndex < 0) currentIndex = 0;
+    var referenceNo = $"BZ-{Model.Id}-{Model.CreatedAt:yyMMddHHmm}";
+
+    var displayStatus = !string.IsNullOrWhiteSpace(Model.DeliveryStatus) &&
+                        Model.DeliveryStatus != "Pending Assignment"
+        ? Model.DeliveryStatus
+        : Model.Status;
+
+    var steps = new List<string>
+    {
+        "To Ship",
+        "Preparing Order",
+        "Ready for Pickup",
+        "Assigned",
+        "Accepted",
+        "Picked Up",
+        "Out for Delivery",
+        "Delivered",
+        "To Review",
+        "Completed"
+    };
+
+    var currentIndex = steps.IndexOf(displayStatus);
+
+    if (displayStatus == "Rider Accepted")
+    {
+        currentIndex = steps.IndexOf("Accepted");
+    }
+
+    if (currentIndex < 0)
+    {
+        if (Model.Status == "To Receive")
+        {
+            currentIndex = steps.IndexOf("Ready for Pickup");
+        }
+        else
+        {
+            currentIndex = 0;
+        }
+    }
+
+    var canInstantCancel =
+        Model.Status == "To Pay" ||
+        Model.Status == "Pending Payment" ||
+        Model.Status == "To Ship" ||
+        Model.Status == "Ready for Pickup" ||
+        displayStatus == "Ready for Pickup";
+
+    var needsApprovalCancel =
+        displayStatus == "Assigned" ||
+        displayStatus == "Accepted" ||
+        displayStatus == "Rider Accepted" ||
+        displayStatus == "Picked Up" ||
+        displayStatus == "Out for Delivery" ||
+        displayStatus == "Failed Delivery";
+
+    var canConfirmReceived = displayStatus == "Delivered";
 }
 
 <link rel="stylesheet" href="~/css/orderdetails.css" asp-append-version="true" />
@@ -25,50 +78,107 @@
     <div class="details-header">
         <div>
             <h1>Order #@Model.Id</h1>
+            <p>Reference No: @referenceNo</p>
             <p>Placed on @Model.CreatedAt.ToString("MMM dd, yyyy hh:mm tt")</p>
         </div>
 
-        <span class="details-status">@Model.Status</span>
+        <span class="details-status">@displayStatus</span>
     </div>
 
-    <div class="tracking-card">
-        <h2>Track Parcel</h2>
+    @if (!string.IsNullOrWhiteSpace(Model.CancellationRequestStatus))
+    {
+        <div class="tracking-card">
+            <h2>Cancellation Status</h2>
 
-        <div class="tracking-steps">
-            @for (int i = 0; i < steps.Count; i++)
-            {
-                var active = i <= currentIndex ? "active" : "";
+            <p class="tracking-note">
+                Status: <strong>@Model.CancellationRequestStatus</strong>
 
-                <div class="tracking-step @active">
-                    <div class="step-circle">@(i + 1)</div>
-                    <span>@steps[i]</span>
-                </div>
-            }
+                @if (!string.IsNullOrWhiteSpace(Model.CancellationReason))
+                {
+                    <span> · Reason: @Model.CancellationReason</span>
+                }
+
+                @if (!string.IsNullOrWhiteSpace(Model.CancellationAdminNote))
+                {
+                    <span> · Note: @Model.CancellationAdminNote</span>
+                }
+            </p>
         </div>
+    }
 
-        <p class="tracking-note">
-            @if (Model.Status == "To Ship")
-            {
-                @:Your order is waiting for the seller to prepare and ship the parcel.
-            }
-            else if (Model.Status == "To Receive")
-            {
-                @:Your parcel is on the way. Please prepare your Cash on Delivery payment.
-            }
-            else if (Model.Status == "To Review")
-            {
-                @:Your order has been received. You may now review the product.
-            }
-            else if (Model.Status == "Completed")
-            {
-                @:This order has been completed.
-            }
-            else
-            {
-                @:Your order tracking details will appear here.
-            }
-        </p>
+   <div class="tracking-card">
+    <h2>Track Parcel</h2>
+
+    <div class="clean-tracking-timeline">
+        @for (int i = 0; i < steps.Count; i++)
+        {
+            var active = i <= currentIndex ? "active" : "";
+            var current = i == currentIndex ? "current" : "";
+
+            <div class="clean-tracking-step @active @current">
+                <div class="clean-step-marker">
+                    @(i + 1)
+                </div>
+
+                <div class="clean-step-content">
+                    <strong>@steps[i]</strong>
+
+                    @if (i == currentIndex)
+                    {
+                        <span>Current status</span>
+                    }
+                </div>
+            </div>
+        }
     </div>
+
+    <p class="tracking-note">
+        @if (displayStatus == "To Ship")
+        {
+            @:Your order is waiting for the seller to prepare the parcel.
+        }
+        else if (displayStatus == "Preparing Order")
+        {
+            @:The seller is preparing your order.
+        }
+        else if (displayStatus == "Ready for Pickup")
+        {
+            @:Your parcel is ready and waiting for rider assignment.
+        }
+        else if (displayStatus == "Assigned")
+        {
+            @:A rider has been assigned to your parcel.
+        }
+        else if (displayStatus == "Accepted" || displayStatus == "Rider Accepted")
+        {
+            @:The rider accepted your delivery task.
+        }
+        else if (displayStatus == "Picked Up")
+        {
+            @:Your parcel has been picked up by the rider.
+        }
+        else if (displayStatus == "Out for Delivery")
+        {
+            @:Your parcel is out for delivery. Please prepare your Cash on Delivery payment.
+        }
+        else if (displayStatus == "Delivered")
+        {
+            @:Your parcel has been marked as delivered. Please confirm once received.
+        }
+        else if (displayStatus == "To Review")
+        {
+            @:Your order has been received. You may now review the product.
+        }
+        else if (displayStatus == "Completed")
+        {
+            @:This order has been completed.
+        }
+        else
+        {
+            @:Your order tracking details will appear here.
+        }
+    </p>
+</div>
 
     <div class="details-grid">
         <div class="details-card">
@@ -86,6 +196,30 @@
             </div>
         </div>
     </div>
+
+    @if (displayStatus == "Failed Delivery")
+    {
+        <div class="details-card">
+            <h2>Failed Delivery Notice</h2>
+
+            <p>
+                Delivery attempt failed.
+
+                @if (!string.IsNullOrWhiteSpace(Model.FailedDeliveryReason))
+                {
+                    <span>Reason: @Model.FailedDeliveryReason</span>
+                }
+            </p>
+
+            @if (Model.ReturnToSellerAt != null)
+            {
+                <p>
+                    Parcel may be retried until
+                    <strong>@Model.ReturnToSellerAt?.ToString("MMM dd, yyyy hh:mm tt")</strong>.
+                </p>
+            }
+        </div>
+    }
 
     <div class="details-card">
         <h2>Order Items</h2>
@@ -117,14 +251,80 @@
     </div>
 
     <div class="details-actions">
-        @if (Model.Status == "To Receive")
+        @if (canConfirmReceived)
         {
-            <form asp-controller="Shopper" asp-action="MarkOrderReceived" method="post">
+            <form asp-controller="Shopper"
+                  asp-action="MarkOrderReceived"
+                  method="post"
+                  onsubmit="return confirm('Confirm that you received this order?');">
+
                 @Html.AntiForgeryToken()
-                <input type="hidden" name="orderId" value="@Model.Id" />
+
+                <input type="hidden"
+                       name="orderId"
+                       value="@Model.Id" />
 
                 <button type="submit" class="btn-primary-details">
                     Order Received
+                </button>
+            </form>
+        }
+
+        @if (Model.CancellationRequestStatus == "Pending")
+        {
+            <button type="button" class="btn-outline-details" disabled>
+                Cancellation Pending
+            </button>
+        }
+        else if (Model.CancellationRequestStatus == "Approved")
+        {
+            <button type="button" class="btn-outline-details" disabled>
+                Cancellation Approved
+            </button>
+        }
+        else if (Model.Status == "Cancelled" || Model.DeliveryStatus == "Cancelled")
+        {
+            <button type="button" class="btn-outline-details" disabled>
+                Cancelled
+            </button>
+        }
+        else if (canInstantCancel)
+        {
+            <form asp-controller="Shopper"
+                  asp-action="CancelOrder"
+                  method="post"
+                  onsubmit="return confirm('Cancel this order now?');">
+
+                @Html.AntiForgeryToken()
+
+                <input type="hidden"
+                       name="orderId"
+                       value="@Model.Id" />
+
+                <button type="submit" class="btn-outline-details">
+                    Cancel Order
+                </button>
+            </form>
+        }
+        else if (needsApprovalCancel)
+        {
+            <form asp-controller="Shopper"
+                  asp-action="RequestCancelDelivery"
+                  method="post"
+                  onsubmit="return confirm('Request cancellation for this order? Admin will review it.');">
+
+                @Html.AntiForgeryToken()
+
+                <input type="hidden"
+                       name="orderId"
+                       value="@Model.Id" />
+
+                <input type="hidden"
+                       name="reason"
+                       value="Buyer requested cancellation while order is already in delivery process." />
+
+                <button type="submit" class="btn-outline-details">
+                    Request Cancellation
                 </button>
             </form>
         }

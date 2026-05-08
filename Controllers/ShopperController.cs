@@ -505,213 +505,256 @@ namespace BuyZaar.Controllers
 
             return View(order);
         }
+public async Task<IActionResult> MyOrders(string? status)
+{
+    ViewBag.ActiveRole = "Shopper";
 
-        public async Task<IActionResult> MyOrders(string? status)
+    var user = await _userManager.GetUserAsync(User);
+    if (user == null)
+        return RedirectToAction("Login", "Account");
+
+    var query = _context.Orders
+        .Include(o => o.OrderItems)
+            .ThenInclude(oi => oi.Product)
+                .ThenInclude(p => p!.Images)
+        .Include(o => o.OrderItems)
+            .ThenInclude(oi => oi.Product)
+                .ThenInclude(p => p!.Seller)
+        .Where(o => o.ShopperId == user.Id)
+        .AsQueryable();
+
+    if (!string.IsNullOrWhiteSpace(status))
+    {
+        if (status == "To Pay")
         {
-            ViewBag.ActiveRole = "Shopper";
-
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null)
-                return RedirectToAction("Login", "Account");
-
-            var query = _context.Orders
-                .Include(o => o.OrderItems)
-                    .ThenInclude(oi => oi.Product)
-                        .ThenInclude(p => p!.Images)
-                .Include(o => o.OrderItems)
-                    .ThenInclude(oi => oi.Product)
-                        .ThenInclude(p => p!.Seller)
-                .Where(o => o.ShopperId == user.Id)
-                .AsQueryable();
-
-            if (!string.IsNullOrWhiteSpace(status))
-            {
-                if (status == "To Pay")
-                    query = query.Where(o => o.Status == "To Pay" || o.Status == "Pending Payment");
-                else
-                    query = query.Where(o => o.Status == status);
-            }
-
-            var orders = await query.OrderByDescending(o => o.CreatedAt).ToListAsync();
-
-            return View(orders);
+            query = query.Where(o =>
+                o.Status == "To Pay" ||
+                o.Status == "Pending Payment");
         }
+        else if (status == "To Receive")
+        {
+            query = query.Where(o =>
+                o.Status == "To Receive" ||
+                o.Status == "Assigned to Rider" ||
+                o.Status == "Rider Accepted" ||
+                o.Status == "Picked Up" ||
+                o.Status == "Out for Delivery" ||
+                o.Status == "Delivered" ||
+
+                o.DeliveryStatus == "Assigned" ||
+                o.DeliveryStatus == "Accepted" ||
+                o.DeliveryStatus == "Picked Up" ||
+                o.DeliveryStatus == "Out for Delivery" ||
+                o.DeliveryStatus == "Delivered" ||
+                o.DeliveryStatus == "Failed Delivery");
+        }
+        else if (status == "Returns")
+        {
+            query = query.Where(o =>
+                o.Status == "Returns" ||
+                o.Status == "Failed Delivery" ||
+                o.Status == "Return Pending" ||
+                o.Status == "Returned to Seller" ||
+
+                o.DeliveryStatus == "Failed Delivery" ||
+                o.DeliveryStatus == "Return Pending" ||
+                o.DeliveryStatus == "Returned to Seller" ||
+                o.CancellationRequestStatus == "Pending" ||
+                o.CancellationRequestStatus == "Approved" ||
+                o.CancellationRequestStatus == "Rejected");
+        }
+        else
+        {
+            query = query.Where(o => o.Status == status);
+        }
+    }
+
+    var orders = await query
+        .OrderByDescending(o => o.CreatedAt)
+        .ToListAsync();
+
+    return View(orders);
+}
+
 
         public async Task<IActionResult> OrderDetails(int id)
+{
+    ViewBag.ActiveRole = "Shopper";
+
+    var user = await _userManager.GetUserAsync(User);
+    if (user == null)
+        return RedirectToAction("Login", "Account");
+
+    var order = await _context.Orders
+        .Include(o => o.OrderItems)
+            .ThenInclude(oi => oi.Product)
+                .ThenInclude(p => p!.Images)
+        .Include(o => o.OrderItems)
+            .ThenInclude(oi => oi.Product)
+                .ThenInclude(p => p!.Seller)
+        .FirstOrDefaultAsync(o => o.Id == id && o.ShopperId == user.Id);
+
+    if (order == null)
+        return NotFound();
+
+    return View(order);
+}
+
+       [HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> MarkOrderReceived(int orderId)
+{
+    var user = await _userManager.GetUserAsync(User);
+    if (user == null)
+        return RedirectToAction("Login", "Account");
+
+    var order = await _context.Orders
+        .FirstOrDefaultAsync(o => o.Id == orderId && o.ShopperId == user.Id);
+
+    if (order == null)
+        return NotFound();
+
+    if (order.DeliveryStatus != "Delivered")
+    {
+        TempData["ErrorMessage"] = "You can only confirm received orders after the rider marks them as delivered.";
+        return RedirectToAction("MyOrders", new { status = "To Receive" });
+    }
+
+    order.Status = "To Review";
+    await _context.SaveChangesAsync();
+
+    return RedirectToAction("MyOrders", new { status = "To Review" });
+}
+
+     [HttpGet]
+public async Task<IActionResult> ApplySeller()
+{
+    ViewBag.ActiveRole = "Shopper";
+
+    var user = await _userManager.GetUserAsync(User);
+    if (user == null)
+        return RedirectToAction("Login", "Account");
+
+    if (await _userManager.IsInRoleAsync(user, "Seller"))
+    {
+        TempData["ApplicationMessage"] = "Your seller account is already approved.";
+        return RedirectToAction("Index");
+    }
+
+    var latestApplication = await _context.SellerApplications
+        .Where(sa => sa.UserId == user.Id)
+        .OrderByDescending(sa => sa.CreatedAt)
+        .FirstOrDefaultAsync();
+
+    if (latestApplication != null &&
+        latestApplication.Status != "Cancelled" &&
+        latestApplication.Status != "Rejected")
+    {
+        return RedirectToAction("SellerApplicationDetails", new { id = latestApplication.Id });
+    }
+
+    return View(new SellerApplicationViewModel
+    {
+        FullName = user.FullName ?? ""
+    });
+}
+
+[HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> ApplySeller(SellerApplicationViewModel model)
+{
+    ViewBag.ActiveRole = "Shopper";
+
+    if (!ModelState.IsValid)
+        return View(model);
+
+    var user = await _userManager.GetUserAsync(User);
+    if (user == null)
+        return RedirectToAction("Login", "Account");
+
+    var application = new SellerApplication
+    {
+        UserId = user.Id,
+        FullName = model.FullName.Trim(),
+        ShopName = model.ShopName.Trim(),
+        PhoneNumber = model.PhoneNumber.Trim(),
+        Address = model.Address.Trim(),
+        BusinessDescription = model.BusinessDescription.Trim(),
+        Status = "Pending",
+        CreatedAt = DateTime.Now
+    };
+
+    if (model.Documents != null && model.Documents.Any())
+    {
+        var allowedExtensions = new[] { ".pdf", ".doc", ".docx", ".png", ".jpg", ".jpeg" };
+
+        var uploadsFolder = Path.Combine(
+            Directory.GetCurrentDirectory(),
+            "wwwroot",
+            "uploads",
+            "seller-documents"
+        );
+
+        if (!Directory.Exists(uploadsFolder))
+            Directory.CreateDirectory(uploadsFolder);
+
+        foreach (var file in model.Documents)
         {
-            ViewBag.ActiveRole = "Shopper";
+            if (file.Length <= 0)
+                continue;
 
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null)
-                return RedirectToAction("Login", "Account");
+            var extension = Path.GetExtension(file.FileName).ToLower();
 
-            var order = await _context.Orders
-                .Include(o => o.OrderItems)
-                    .ThenInclude(oi => oi.Product)
-                        .ThenInclude(p => p!.Images)
-                .Include(o => o.OrderItems)
-                    .ThenInclude(oi => oi.Product)
-                        .ThenInclude(p => p!.Seller)
-                .FirstOrDefaultAsync(o => o.Id == id && o.ShopperId == user.Id);
-
-            if (order == null)
-                return NotFound();
-
-            return View(order);
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> MarkOrderReceived(int orderId)
-        {
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null)
-                return RedirectToAction("Login", "Account");
-
-            var order = await _context.Orders
-                .FirstOrDefaultAsync(o => o.Id == orderId && o.ShopperId == user.Id);
-
-            if (order == null)
-                return NotFound();
-
-            order.Status = "To Review";
-            await _context.SaveChangesAsync();
-
-            return RedirectToAction("MyOrders", new { status = "To Review" });
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> ApplySeller()
-        {
-            ViewBag.ActiveRole = "Shopper";
-
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null)
-                return RedirectToAction("Login", "Account");
-
-            if (await _userManager.IsInRoleAsync(user, "Seller"))
+            if (!allowedExtensions.Contains(extension))
             {
-                TempData["ApplicationMessage"] = "Your seller account is already approved.";
-                return RedirectToAction("Index");
+                ModelState.AddModelError("Documents", "Only PDF, DOC, DOCX, PNG, JPG, and JPEG files are allowed.");
+                return View(model);
             }
 
-            var latestApplication = await _context.SellerApplications
-                .Where(sa => sa.UserId == user.Id)
-                .OrderByDescending(sa => sa.CreatedAt)
-                .FirstOrDefaultAsync();
+            var uniqueFileName = Guid.NewGuid() + extension;
+            var filePath = Path.Combine(uploadsFolder, uniqueFileName);
 
-            if (latestApplication != null &&
-                latestApplication.Status != "Cancelled" &&
-                latestApplication.Status != "Rejected")
+            using (var stream = new FileStream(filePath, FileMode.Create))
             {
-                return RedirectToAction("SellerApplicationDetails", new { id = latestApplication.Id });
+                await file.CopyToAsync(stream);
             }
 
-            return View(new SellerApplicationViewModel
+            application.Documents.Add(new SellerApplicationDocument
             {
-                FullName = user.FullName ?? ""
+                FileName = file.FileName,
+                ContentType = file.ContentType,
+                FileSize = file.Length,
+                FilePath = "/uploads/seller-documents/" + uniqueFileName,
+                UploadedAt = DateTime.Now
             });
         }
+    }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ApplySeller(SellerApplicationViewModel model)
-        {
-            ViewBag.ActiveRole = "Shopper";
+    _context.SellerApplications.Add(application);
+    await _context.SaveChangesAsync();
 
-            if (!ModelState.IsValid)
-                return View(model);
+    return RedirectToAction("SellerApplicationDetails", new { id = application.Id });
+}
 
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null)
-                return RedirectToAction("Login", "Account");
+[HttpGet]
+[Route("Shopper/SellerApplicationDetails/{id:int}")]
+public async Task<IActionResult> SellerApplicationDetails(int id)
+{
+    ViewBag.ActiveRole = "Shopper";
 
-            if (await _userManager.IsInRoleAsync(user, "Seller"))
-            {
-                TempData["ApplicationMessage"] = "Your seller account is already approved.";
-                return RedirectToAction("Index");
-            }
+    var user = await _userManager.GetUserAsync(User);
+    if (user == null)
+        return RedirectToAction("Login", "Account");
 
-            var latestApplication = await _context.SellerApplications
-                .Where(sa => sa.UserId == user.Id)
-                .OrderByDescending(sa => sa.CreatedAt)
-                .FirstOrDefaultAsync();
+    var application = await _context.SellerApplications
+        .Include(sa => sa.Documents)
+        .FirstOrDefaultAsync(sa => sa.Id == id && sa.UserId == user.Id);
 
-            if (latestApplication != null &&
-                latestApplication.Status != "Cancelled" &&
-                latestApplication.Status != "Rejected")
-            {
-                return RedirectToAction("SellerApplicationDetails", new { id = latestApplication.Id });
-            }
+    if (application == null)
+        return NotFound();
 
-            var application = new SellerApplication
-            {
-                UserId = user.Id,
-                FullName = model.FullName.Trim(),
-                ShopName = model.ShopName.Trim(),
-                PhoneNumber = model.PhoneNumber.Trim(),
-                Address = model.Address.Trim(),
-                BusinessDescription = model.BusinessDescription.Trim(),
-                Status = "Pending",
-                CreatedAt = DateTime.Now
-            };
-
-            if (model.Documents != null && model.Documents.Any())
-            {
-                var allowedExtensions = new[] { ".pdf", ".doc", ".docx", ".png", ".jpg", ".jpeg" };
-
-                foreach (var file in model.Documents)
-                {
-                    if (file.Length <= 0)
-                        continue;
-
-                    var extension = Path.GetExtension(file.FileName).ToLower();
-
-                    if (!allowedExtensions.Contains(extension))
-                    {
-                        ModelState.AddModelError("Documents", "Only PDF, DOC, DOCX, PNG, JPG, and JPEG files are allowed.");
-                        return View(model);
-                    }
-
-                    using var memoryStream = new MemoryStream();
-                    await file.CopyToAsync(memoryStream);
-
-                    application.Documents.Add(new SellerApplicationDocument
-                    {
-                        FileName = file.FileName,
-                        ContentType = file.ContentType,
-                        FileSize = file.Length,
-                        FileData = memoryStream.ToArray(),
-                        UploadedAt = DateTime.Now
-                    });
-                }
-            }
-
-            _context.SellerApplications.Add(application);
-            await _context.SaveChangesAsync();
-
-            TempData["ApplicationMessage"] = "Your seller application has been submitted successfully.";
-            return RedirectToAction("SellerApplicationDetails", new { id = application.Id });
-        }
-
-        public async Task<IActionResult> SellerApplicationDetails(int id)
-        {
-            ViewBag.ActiveRole = "Shopper";
-
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null)
-                return RedirectToAction("Login", "Account");
-
-            var application = await _context.SellerApplications
-                .Include(sa => sa.Documents)
-                .FirstOrDefaultAsync(sa => sa.Id == id && sa.UserId == user.Id);
-
-            if (application == null)
-                return NotFound();
-
-            return View(application);
-        }
-
+    return View(application);
+}
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CancelSellerApplication(int applicationId)
@@ -740,5 +783,106 @@ namespace BuyZaar.Controllers
             TempData["ApplicationMessage"] = "Your seller application has been cancelled.";
             return RedirectToAction("Index");
         }
+
+ [HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> RequestCancelDelivery(int orderId, string? reason)
+{
+    var user = await _userManager.GetUserAsync(User);
+    if (user == null)
+        return RedirectToAction("Login", "Account");
+
+    var order = await _context.Orders
+        .FirstOrDefaultAsync(o => o.Id == orderId && o.ShopperId == user.Id);
+
+    if (order == null)
+        return NotFound();
+
+    if (order.CancellationRequestStatus == "Pending")
+    {
+        TempData["ErrorMessage"] = "You already have a pending cancellation request for this order.";
+        return RedirectToAction("MyOrders");
+    }
+
+    var needsApprovalCancel =
+        order.DeliveryStatus == "Assigned" ||
+        order.DeliveryStatus == "Accepted" ||
+        order.DeliveryStatus == "Picked Up" ||
+        order.DeliveryStatus == "Out for Delivery" ||
+        order.DeliveryStatus == "Failed Delivery";
+
+    if (!needsApprovalCancel)
+    {
+        TempData["ErrorMessage"] = "This order can be cancelled instantly before rider pickup. Please use Cancel Order.";
+        return RedirectToAction("MyOrders");
+    }
+
+    order.CancellationRequestStatus = "Pending";
+    order.CancellationReason = string.IsNullOrWhiteSpace(reason)
+        ? "Buyer requested cancellation while order is already in delivery process."
+        : reason.Trim();
+    order.CancellationRequestedAt = DateTime.Now;
+
+    await _context.SaveChangesAsync();
+
+    TempData["SuccessMessage"] = "Cancellation request submitted. Admin will review your request.";
+    return RedirectToAction("MyOrders", new { status = "Returns" });
+}
+
+[HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> CancelOrder(int orderId)
+{
+    var user = await _userManager.GetUserAsync(User);
+    if (user == null)
+        return RedirectToAction("Login", "Account");
+
+    var order = await _context.Orders
+        .Include(o => o.OrderItems)
+            .ThenInclude(oi => oi.Product)
+        .FirstOrDefaultAsync(o => o.Id == orderId && o.ShopperId == user.Id);
+
+    if (order == null)
+        return NotFound();
+
+    var canInstantCancel =
+        order.Status == "To Pay" ||
+        order.Status == "Pending Payment" ||
+        order.Status == "To Ship" ||
+        order.Status == "Ready for Pickup";
+
+    if (!canInstantCancel)
+    {
+        TempData["ErrorMessage"] = "This order can no longer be cancelled instantly. Please request cancellation instead.";
+        return RedirectToAction("MyOrders");
+    }
+
+    order.Status = "Cancelled";
+    order.DeliveryStatus = "Cancelled";
+    order.CancellationRequestStatus = "Approved";
+    order.CancellationReason = "Buyer cancelled before rider pickup.";
+    order.CancellationRequestedAt = DateTime.Now;
+    order.CancellationReviewedAt = DateTime.Now;
+    order.CancellationAdminNote = "Instant cancellation before pickup.";
+
+    order.RiderId = null;
+    order.AssignedAt = null;
+    order.AcceptedAt = null;
+    order.PickedUpAt = null;
+    order.DeliveredAt = null;
+
+    foreach (var item in order.OrderItems)
+    {
+        if (item.Product != null)
+        {
+            item.Product.Stock += item.Quantity;
+        }
+    }
+
+    await _context.SaveChangesAsync();
+
+    TempData["SuccessMessage"] = $"Order #{order.Id} has been cancelled.";
+    return RedirectToAction("MyOrders", new { status = "Returns" });
+}
     }
 }

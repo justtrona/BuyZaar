@@ -1,0 +1,216 @@
+@model IEnumerable<BuyZaar.Models.Order>
+
+@{
+    Layout = "~/Views/Shared/_RiderLayout.cshtml";
+    ViewBag.ActiveRole = "Rider";
+    ViewData["Title"] = "Active Deliveries";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/rider-orders.css" asp-append-version="true" />
+}
+
+<div class="rider-orders-page">
+
+    <div class="rider-orders-header">
+        <div>
+            <h2>Active Deliveries</h2>
+            <p>Update delivery progress. Failed deliveries can be retried within 5 days.</p>
+        </div>
+    </div>
+
+    @if (TempData["Message"] != null)
+    {
+        <div class="alert alert-info rider-orders-alert">
+            @TempData["Message"]
+        </div>
+    }
+
+    @if (!Model.Any())
+    {
+        <div class="rider-empty-state">
+            <h4>No active deliveries</h4>
+            <p>Accepted and failed deliveries will appear here.</p>
+        </div>
+    }
+    else
+    {
+        <div class="rider-orders-table-card">
+            <div class="table-responsive">
+                <table class="table rider-orders-table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Receiver</th>
+                            <th>Contact</th>
+                            <th>Address</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                            <th>Accepted Date</th>
+                            <th>Return Deadline</th>
+                            <th class="text-end">Update Status</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @foreach (var order in Model)
+                        {
+                            <tr>
+                                <td class="fw-bold">#@order.Id</td>
+
+                                <td>@order.ReceiverName</td>
+
+                                <td>@order.ContactNumber</td>
+
+                                <td class="order-address">
+                                    @order.DeliveryAddress
+                                </td>
+
+                                <td>
+                                    ₱@order.TotalAmount.ToString("N2")
+                                </td>
+
+                                <td>
+                                    <span class="delivery-status-pill">
+                                        @order.DeliveryStatus
+                                    </span>
+                                </td>
+
+                                <td>
+                                    @(order.AcceptedAt?.ToString("MMM dd, yyyy hh:mm tt") ?? "N/A")
+                                </td>
+
+                                <td>
+                                    @if (order.DeliveryStatus == "Failed Delivery")
+                                    {
+                                        <strong>
+                                            @(order.ReturnToSellerAt?.ToString("MMM dd, yyyy hh:mm tt") ?? "N/A")
+                                        </strong>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">N/A</span>
+                                    }
+                                </td>
+
+                                <td class="text-end">
+                                    @if (order.DeliveryStatus == "Accepted")
+                                    {
+                                        <form asp-controller="Rider"
+                                              asp-action="MarkPickedUp"
+                                              method="post"
+                                              class="d-inline"
+                                              onsubmit="return confirm('Mark this order as picked up?');">
+
+                                            @Html.AntiForgeryToken()
+
+                                            <input type="hidden"
+                                                   name="orderId"
+                                                   value="@order.Id" />
+
+                                            <button type="submit"
+                                                    class="btn btn-primary btn-sm">
+                                                Mark Picked Up
+                                            </button>
+                                        </form>
+                                    }
+                                    else if (order.DeliveryStatus == "Picked Up")
+                                    {
+                                        <form asp-controller="Rider"
+                                              asp-action="MarkOutForDelivery"
+                                              method="post"
+                                              class="d-inline"
+                                              onsubmit="return confirm('Mark this order as out for delivery?');">
+
+                                            @Html.AntiForgeryToken()
+
+                                            <input type="hidden"
+                                                   name="orderId"
+                                                   value="@order.Id" />
+
+                                            <button type="submit"
+                                                    class="btn btn-warning btn-sm">
+                                                Out for Delivery
+                                            </button>
+                                        </form>
+                                    }
+                                    else if (order.DeliveryStatus == "Out for Delivery")
+                                    {
+                                        <div class="delivery-action-buttons">
+                                            <form asp-controller="Rider"
+                                                  asp-action="MarkDelivered"
+                                                  method="post"
+                                                  class="d-inline"
+                                                  onsubmit="return confirm('Mark this order as delivered?');">
+
+                                                @Html.AntiForgeryToken()
+
+                                                <input type="hidden"
+                                                       name="orderId"
+                                                       value="@order.Id" />
+
+                                                <button type="submit"
+                                                        class="btn btn-success btn-sm">
+                                                    Mark Delivered
+                                                </button>
+                                            </form>
+
+                                            <form asp-controller="Rider"
+                                                  asp-action="MarkFailedDelivery"
+                                                  method="post"
+                                                  class="d-inline"
+                                                  onsubmit="return confirm('Mark this order as failed delivery?');">
+
+                                                @Html.AntiForgeryToken()
+
+                                                <input type="hidden"
+                                                       name="orderId"
+                                                       value="@order.Id" />
+
+                                                <input type="hidden"
+                                                       name="reason"
+                                                       value="Failed delivery attempt" />
+
+                                                <button type="submit"
+                                                        class="btn btn-danger btn-sm">
+                                                    Failed Delivery
+                                                </button>
+                                            </form>
+                                        </div>
+                                    }
+                                    else if (order.DeliveryStatus == "Failed Delivery")
+                                    {
+                                        <div class="delivery-action-buttons">
+                                            <form asp-controller="Rider"
+                                                  asp-action="RetryDelivery"
+                                                  method="post"
+                                                  class="d-inline"
+                                                  onsubmit="return confirm('Retry delivery for this order?');">
+
+                                                @Html.AntiForgeryToken()
+
+                                                <input type="hidden"
+                                                       name="orderId"
+                                                       value="@order.Id" />
+
+                                                <button type="submit"
+                                                        class="btn btn-primary btn-sm">
+                                                    Retry Delivery
+                                                </button>
+                                            </form>
+                                        </div>
+
+                                        <small class="text-muted d-block mt-2">
+                                            You can retry until the return deadline.
+                                        </small>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+
+</div>

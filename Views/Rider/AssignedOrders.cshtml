@@ -1,0 +1,252 @@
+@model IEnumerable<BuyZaar.Models.Order>
+
+@{
+    Layout = "~/Views/Shared/_RiderLayout.cshtml";
+    ViewBag.ActiveRole = "Rider";
+    ViewData["Title"] = "Assigned Orders";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/rider-orders.css" asp-append-version="true" />
+}
+
+<div class="rider-orders-page">
+
+    <div class="rider-orders-header">
+        <div>
+            <h2>Assigned Delivery Orders</h2>
+            <p>Review assigned deliveries. View details before accepting or declining.</p>
+        </div>
+    </div>
+
+    @if (TempData["Message"] != null)
+    {
+        <div class="alert alert-info rider-orders-alert">
+            @TempData["Message"]
+        </div>
+    }
+
+    @if (!Model.Any())
+    {
+        <div class="rider-empty-state">
+            <h4>No assigned orders</h4>
+            <p>You currently have no delivery tasks waiting for acceptance.</p>
+        </div>
+    }
+    else
+    {
+        <div class="rider-orders-table-card">
+            <div class="table-responsive">
+                <table class="table rider-orders-table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Receiver</th>
+                            <th>Contact</th>
+                            <th>Address</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                            <th>Assigned Date</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @foreach (var order in Model)
+                        {
+                            var modalId = $"orderDetailsModal_{order.Id}";
+
+                            <tr>
+                                <td class="fw-bold">#@order.Id</td>
+                                <td>@order.ReceiverName</td>
+                                <td>@order.ContactNumber</td>
+                                <td class="order-address">@order.DeliveryAddress</td>
+                                <td>₱@order.TotalAmount.ToString("N2")</td>
+
+                                <td>
+                                    <span class="delivery-status-pill">
+                                        @order.DeliveryStatus
+                                    </span>
+                                </td>
+
+                                <td>
+                                    @(order.AssignedAt?.ToString("MMM dd, yyyy hh:mm tt") ?? "N/A")
+                                </td>
+
+                                <td class="text-end">
+                                    <button type="button"
+                                            class="btn btn-info btn-sm text-white"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#@modalId">
+                                        View
+                                    </button>
+
+                                    <form asp-controller="Rider"
+                                          asp-action="AcceptDelivery"
+                                          method="post"
+                                          class="d-inline ms-1"
+                                          onsubmit="return confirm('Accept this delivery task?');">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="orderId" value="@order.Id" />
+
+                                        <button type="submit" class="btn btn-success btn-sm">
+                                            Accept
+                                        </button>
+                                    </form>
+
+                                    <form asp-controller="Rider"
+                                          asp-action="DeclineDelivery"
+                                          method="post"
+                                          class="d-inline ms-1"
+                                          onsubmit="return confirm('Decline this delivery task?');">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="orderId" value="@order.Id" />
+
+                                        <button type="submit" class="btn btn-danger btn-sm">
+                                            Decline
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        @foreach (var order in Model)
+        {
+            var modalId = $"orderDetailsModal_{order.Id}";
+
+            <div class="modal fade"
+                 id="@modalId"
+                 tabindex="-1"
+                 aria-hidden="true">
+
+                <div class="modal-dialog modal-dialog-centered modal-xl">
+                    <div class="modal-content rider-order-modal">
+
+                        <div class="modal-header">
+                            <div>
+                                <h5 class="modal-title">
+                                    Order #@order.Id Details
+                                </h5>
+
+                                <small class="text-muted">
+                                    Assigned on @(order.AssignedAt?.ToString("MMM dd, yyyy hh:mm tt") ?? "N/A")
+                                </small>
+                            </div>
+
+                            <button type="button"
+                                    class="btn-close"
+                                    data-bs-dismiss="modal"
+                                    aria-label="Close">
+                            </button>
+                        </div>
+
+                        <div class="modal-body">
+
+                            <div class="order-detail-grid">
+
+                                <div>
+                                    <span>Receiver</span>
+                                    <strong>@order.ReceiverName</strong>
+                                </div>
+
+                                <div>
+                                    <span>Contact Number</span>
+                                    <strong>@order.ContactNumber</strong>
+                                </div>
+
+                                <div class="full-width">
+                                    <span>Delivery Address</span>
+                                    <strong>@order.DeliveryAddress</strong>
+                                </div>
+
+                                <div>
+                                    <span>Total Amount</span>
+                                    <strong>₱@order.TotalAmount.ToString("N2")</strong>
+                                </div>
+
+                                <div>
+                                    <span>Shipping Fee</span>
+                                    <strong>₱@order.ShippingFee.ToString("N2")</strong>
+                                </div>
+
+                                <div>
+                                    <span>Order Status</span>
+                                    <strong>@order.Status</strong>
+                                </div>
+
+                                <div>
+                                    <span>Delivery Status</span>
+                                    <strong>@order.DeliveryStatus</strong>
+                                </div>
+
+                                <div>
+                                    <span>Date Ordered</span>
+                                    <strong>@order.CreatedAt.ToString("MMM dd, yyyy hh:mm tt")</strong>
+                                </div>
+
+                                <div>
+                                    <span>Assigned Date</span>
+                                    <strong>@(order.AssignedAt?.ToString("MMM dd, yyyy hh:mm tt") ?? "N/A")</strong>
+                                </div>
+
+                            </div>
+
+                            <div class="modal-items-box">
+                                <h5>Order Items</h5>
+
+                                @foreach (var item in order.OrderItems)
+                                {
+                                    <div class="modal-item-row">
+                                        <span>@item.Product?.Name</span>
+                                        <strong>x @item.Quantity</strong>
+                                    </div>
+                                }
+                            </div>
+
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button"
+                                    class="btn btn-outline-secondary"
+                                    data-bs-dismiss="modal">
+                                Close
+                            </button>
+
+                            <form asp-controller="Rider"
+                                  asp-action="AcceptDelivery"
+                                  method="post"
+                                  class="d-inline"
+                                  onsubmit="return confirm('Accept this delivery task?');">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="orderId" value="@order.Id" />
+
+                                <button type="submit" class="btn btn-success">
+                                    Accept Delivery
+                                </button>
+                            </form>
+
+                            <form asp-controller="Rider"
+                                  asp-action="DeclineDelivery"
+                                  method="post"
+                                  class="d-inline"
+                                  onsubmit="return confirm('Decline this delivery task?');">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="orderId" value="@order.Id" />
+
+                                <button type="submit" class="btn btn-danger">
+                                    Decline
+                                </button>
+                            </form>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        }
+    }
+
+</div>

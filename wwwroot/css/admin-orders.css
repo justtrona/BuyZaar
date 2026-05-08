@@ -1,0 +1,244 @@
+.admin-orders-page {
+    padding: 8px;
+}
+
+.admin-orders-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.admin-orders-header h2 {
+    margin: 0;
+    font-size: 34px;
+    font-weight: 900;
+    color: #0f172a;
+}
+
+.admin-orders-header p {
+    margin: 6px 0 0;
+    color: #64748b;
+    font-weight: 700;
+}
+
+.admin-orders-alert {
+    border-radius: 16px;
+    border: none;
+    font-weight: 700;
+}
+
+.orders-table-card {
+    background: #ffffff;
+    border-radius: 24px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 12px 32px rgba(15, 23, 42, 0.07);
+    overflow: hidden;
+}
+
+.orders-table {
+    margin-bottom: 0;
+}
+
+.orders-table thead th {
+    background: #f8fafc;
+    color: #334155;
+    font-size: 13px;
+    font-weight: 900;
+    padding: 18px 16px;
+    white-space: nowrap;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.orders-table tbody td {
+    padding: 18px 16px;
+    font-size: 14px;
+    color: #0f172a;
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: middle;
+}
+
+.orders-table tbody tr:hover {
+    background: #f8fafc;
+}
+
+.order-address {
+    min-width: 320px;
+    max-width: 420px;
+    line-height: 1.5;
+    color: #334155;
+    font-weight: 600;
+}
+
+.order-status-badge,
+.delivery-status-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 13px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 900;
+    white-space: nowrap;
+}
+
+.order-status-badge {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.delivery-status-badge {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.assigned-rider-box {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.assigned-rider-box strong {
+    color: #0f172a;
+    font-weight: 900;
+}
+
+.assigned-rider-box small {
+    color: #64748b;
+    font-weight: 600;
+}
+
+.not-assigned-text {
+    color: #64748b;
+    font-weight: 700;
+}
+
+.assign-rider-form {
+    min-width: 280px;
+}
+
+.assign-rider-form .form-select {
+    height: 42px;
+    border-radius: 14px;
+    border: 1px solid #cbd5e1;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.assign-rider-form .form-select:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.14);
+}
+
+.assign-rider-form .btn {
+    border-radius: 12px;
+    font-weight: 900;
+    padding: 8px 18px;
+    background: #2563eb;
+    border: none;
+}
+
+.assign-rider-form .btn:hover {
+    background: #1d4ed8;
+}
+
+.recommended-note {
+    display: block;
+    margin-top: 7px;
+    color: #16a34a;
+    font-weight: 900;
+    font-size: 12px;
+}
+
+.no-recommended-note {
+    display: block;
+    margin-top: 7px;
+    color: #dc2626;
+    font-weight: 900;
+    font-size: 12px;
+}
+
+.no-rider-box {
+    background: #fff1f2;
+    border: 1px solid #fecaca;
+    border-radius: 14px;
+    padding: 12px;
+    max-width: 280px;
+}
+
+.no-rider-box strong {
+    display: block;
+    color: #dc2626;
+    font-size: 13px;
+    font-weight: 900;
+    margin-bottom: 4px;
+}
+
+.no-rider-box small {
+    display: block;
+    color: #991b1b;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.4;
+}
+
+.orders-empty-state {
+    background: #ffffff;
+    border-radius: 24px;
+    border: 1px dashed #cbd5e1;
+    text-align: center;
+    padding: 60px;
+    box-shadow: 0 10px 28px rgba(15, 23, 42, 0.05);
+}
+
+.orders-empty-state h5 {
+    font-weight: 900;
+    color: #0f172a;
+}
+
+.orders-empty-state p {
+    color: #64748b;
+    font-weight: 600;
+}
+
+.unassign-btn {
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 800;
+    padding: 6px 12px;
+}
+
+.already-assigned-note {
+    display: inline-block;
+    background: #f1f5f9;
+    color: #475569;
+    padding: 8px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.admin-cancel-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.cancellation-reason-box {
+    min-width: 220px;
+    max-width: 320px;
+    line-height: 1.5;
+    font-weight: 700;
+    color: #334155;
+}
+
+@media (max-width: 1200px) {
+    .orders-table-card {
+        overflow-x: auto;
+    }
+
+    .orders-table {
+        min-width: 1200px;
+    }
+}
