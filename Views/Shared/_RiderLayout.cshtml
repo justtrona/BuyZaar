@@ -26,7 +26,6 @@
 </head>
 
 <body>
-
     <div class="rider-layout">
 
         <!-- SIDEBAR -->
@@ -40,7 +39,6 @@
                          alt="BuyZaar Logo" />
 
                     <h5>BuyZaar</h5>
-
                     <span>Rider Panel</span>
                 </div>
 
@@ -50,15 +48,17 @@
                     <a asp-controller="Rider"
                        asp-action="Index"
                        class="@(currentAction == "Index" ? "active" : "")">
-
                         <i class="fa-solid fa-house"></i>
                         <span>Dashboard</span>
                     </a>
 
+                    <div class="rider-nav-group-title">
+                        Delivery Tasks
+                    </div>
+
                     <a asp-controller="Rider"
                        asp-action="AssignedOrders"
                        class="@(currentAction == "AssignedOrders" ? "active" : "")">
-
                         <i class="fa-solid fa-box"></i>
                         <span>Assigned Orders</span>
                     </a>
@@ -66,7 +66,6 @@
                     <a asp-controller="Rider"
                        asp-action="AvailableTasks"
                        class="@(currentAction == "AvailableTasks" ? "active" : "")">
-
                         <i class="fa-solid fa-hand"></i>
                         <span>Accept Tasks</span>
                     </a>
@@ -74,7 +73,6 @@
                     <a asp-controller="Rider"
                        asp-action="ActiveDeliveries"
                        class="@(currentAction == "ActiveDeliveries" ? "active" : "")">
-
                         <i class="fa-solid fa-truck-fast"></i>
                         <span>Active Deliveries</span>
                     </a>
@@ -82,15 +80,17 @@
                     <a asp-controller="Rider"
                        asp-action="UpdateStatus"
                        class="@(currentAction == "UpdateStatus" ? "active" : "")">
-
                         <i class="fa-solid fa-rotate"></i>
                         <span>Update Status</span>
                     </a>
 
+                    <div class="rider-nav-group-title">
+                        Monitoring
+                    </div>
+
                     <a asp-controller="Rider"
                        asp-action="DeliveryScope"
                        class="@(currentAction == "DeliveryScope" ? "active" : "")">
-
                         <i class="fa-solid fa-location-dot"></i>
                         <span>Delivery Scope</span>
                     </a>
@@ -98,15 +98,17 @@
                     <a asp-controller="Rider"
                        asp-action="DeliveryHistory"
                        class="@(currentAction == "DeliveryHistory" ? "active" : "")">
-
                         <i class="fa-solid fa-clock-rotate-left"></i>
                         <span>Delivery History</span>
                     </a>
 
+                    <div class="rider-nav-group-title">
+                        Account
+                    </div>
+
                     <a asp-controller="Rider"
                        asp-action="Profile"
                        class="@(currentAction == "Profile" ? "active" : "")">
-
                         <i class="fa-solid fa-user"></i>
                         <span>Profile</span>
                     </a>
@@ -144,7 +146,6 @@
 
                     <button type="submit"
                             class="rider-logout-btn">
-
                         <i class="fa-solid fa-right-from-bracket"></i>
                         Sign out
                     </button>
@@ -172,11 +173,8 @@
                 <div class="rider-topbar-actions">
 
                     <button class="rider-notification-btn">
-
                         <i class="fa-solid fa-bell"></i>
-
                         <span>0</span>
-
                     </button>
 
                 </div>
@@ -195,6 +193,5 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 
     @await RenderSectionAsync("Scripts", required: false)
-
 </body>
 </html>

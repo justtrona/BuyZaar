@@ -252,40 +252,48 @@ namespace BuyZaar.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> MarkDelivered(int orderId)
-        {
-            var user = await _userManager.GetUserAsync(User);
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> MarkDelivered(int orderId)
+{
+    var user = await _userManager.GetUserAsync(User);
 
-            if (user == null)
-            {
-                return RedirectToAction("Login", "Account");
-            }
+    if (user == null)
+    {
+        return RedirectToAction("Login", "Account");
+    }
 
-            var order = await _context.Orders
-                .FirstOrDefaultAsync(o => o.Id == orderId && o.RiderId == user.Id);
+    var order = await _context.Orders
+        .FirstOrDefaultAsync(o => o.Id == orderId && o.RiderId == user.Id);
 
-            if (order == null)
-            {
-                return NotFound();
-            }
+    if (order == null)
+    {
+        return NotFound();
+    }
 
-            if (order.DeliveryStatus != "Out for Delivery")
-            {
-                TempData["Message"] = "This order cannot be marked as delivered.";
-                return RedirectToAction(nameof(ActiveDeliveries));
-            }
+    if (order.DeliveryStatus != "Out for Delivery")
+    {
+        TempData["Message"] = "This order cannot be marked as delivered.";
+        return RedirectToAction(nameof(ActiveDeliveries));
+    }
 
-            order.DeliveryStatus = "Delivered";
-            order.Status = "To Receive";
-            order.DeliveredAt = DateTime.Now;
+    order.DeliveryStatus = "Delivered";
+    order.Status = "Delivered";
+    order.DeliveredAt = DateTime.Now;
 
-            await _context.SaveChangesAsync();
+    var payment = await _context.Payments
+        .FirstOrDefaultAsync(p => p.OrderId == order.Id);
 
-            TempData["Message"] = $"Order #{order.Id} marked as delivered.";
-            return RedirectToAction(nameof(ActiveDeliveries));
-        }
+    if (payment != null && payment.PaymentStatus == "Pending")
+    {
+        payment.PaymentStatus = "Paid";
+        payment.PaidAt = DateTime.Now;
+    }
 
+    await _context.SaveChangesAsync();
+
+    TempData["Message"] = $"Order #{order.Id} marked as delivered. Payment has been marked as paid.";
+    return RedirectToAction(nameof(ActiveDeliveries));
+}
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> MarkFailedDelivery(int orderId, string? reason)

@@ -396,96 +396,114 @@ namespace BuyZaar.Controllers
             return View("Checkout", model);
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> PlaceOrder(CheckoutViewModel model)
+      [HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> PlaceOrder(CheckoutViewModel model)
+{
+    ViewBag.ActiveRole = "Shopper";
+
+    var user = await _userManager.GetUserAsync(User);
+    if (user == null)
+        return RedirectToAction("Login", "Account");
+
+    if (string.IsNullOrWhiteSpace(model.ReceiverName) ||
+        string.IsNullOrWhiteSpace(model.ContactNumber) ||
+        string.IsNullOrWhiteSpace(model.HouseNo) ||
+        string.IsNullOrWhiteSpace(model.Street) ||
+        string.IsNullOrWhiteSpace(model.Barangay) ||
+        string.IsNullOrWhiteSpace(model.CityMunicipality) ||
+        string.IsNullOrWhiteSpace(model.Province))
+    {
+        TempData["ErrorMessage"] = "Please complete receiver name, contact number, and delivery address.";
+        return View("Checkout", model);
+    }
+
+    model.DeliveryAddress =
+        $"{model.HouseNo.Trim()}, {model.Street.Trim()}, {model.Barangay.Trim()}, {model.CityMunicipality.Trim()}, {model.Province.Trim()}" +
+        (string.IsNullOrWhiteSpace(model.Landmark) ? "" : $", Landmark: {model.Landmark.Trim()}");
+
+    if (model.Quantity < 1)
+        model.Quantity = 1;
+
+    using var transaction = await _context.Database.BeginTransactionAsync();
+
+    try
+    {
+        var product = await _context.Products
+            .FirstOrDefaultAsync(p => p.Id == model.ProductId);
+
+        if (product == null)
+            return NotFound();
+
+        if (product.Stock < model.Quantity)
         {
-            ViewBag.ActiveRole = "Shopper";
-
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null)
-                return RedirectToAction("Login", "Account");
-
-            if (string.IsNullOrWhiteSpace(model.ReceiverName) ||
-                string.IsNullOrWhiteSpace(model.ContactNumber) ||
-                string.IsNullOrWhiteSpace(model.HouseNo) ||
-                string.IsNullOrWhiteSpace(model.Street) ||
-                string.IsNullOrWhiteSpace(model.Barangay) ||
-                string.IsNullOrWhiteSpace(model.CityMunicipality) ||
-                string.IsNullOrWhiteSpace(model.Province))
-            {
-                TempData["ErrorMessage"] = "Please complete receiver name, contact number, and delivery address.";
-                return View("Checkout", model);
-            }
-
-            model.DeliveryAddress =
-                $"{model.HouseNo.Trim()}, {model.Street.Trim()}, {model.Barangay.Trim()}, {model.CityMunicipality.Trim()}, {model.Province.Trim()}" +
-                (string.IsNullOrWhiteSpace(model.Landmark) ? "" : $", Landmark: {model.Landmark.Trim()}");
-
-            if (model.Quantity < 1)
-                model.Quantity = 1;
-
-            using var transaction = await _context.Database.BeginTransactionAsync();
-
-            try
-            {
-                var product = await _context.Products
-                    .FirstOrDefaultAsync(p => p.Id == model.ProductId);
-
-                if (product == null)
-                    return NotFound();
-
-                if (product.Stock < model.Quantity)
-                {
-                    await transaction.RollbackAsync();
-                    TempData["ErrorMessage"] = "Not enough stock available.";
-                    return RedirectToAction("ViewDetails", new { id = model.ProductId });
-                }
-
-                var subtotal = product.Price * model.Quantity;
-                var shippingFee = subtotal >= 2500m ? 0m : 60m;
-
-                var order = new Order
-                {
-                    ShopperId = user.Id,
-                    ReceiverName = model.ReceiverName.Trim(),
-                    ContactNumber = model.ContactNumber.Trim(),
-                    DeliveryAddress = model.DeliveryAddress.Trim(),
-                    ShippingFee = shippingFee,
-                    TotalAmount = subtotal + shippingFee,
-                    Status = "To Ship",
-                    CreatedAt = DateTime.Now
-                };
-
-                order.OrderItems.Add(new OrderItem
-                {
-                    ProductId = product.Id,
-                    Quantity = model.Quantity,
-                    Price = product.Price,
-                    Subtotal = subtotal,
-                    SelectedVariant = string.IsNullOrWhiteSpace(model.SelectedVariant) ? null : model.SelectedVariant.Trim(),
-                    SelectedSize = string.IsNullOrWhiteSpace(model.SelectedSize) ? null : model.SelectedSize.Trim()
-                });
-
-                product.Stock -= model.Quantity;
-
-                _context.Orders.Add(order);
-                _context.Products.Update(product);
-
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
-
-                TempData["SuccessMessage"] = "Order created successfully.";
-                return RedirectToAction("OrderSuccess", new { id = order.Id });
-            }
-            catch
-            {
-                await transaction.RollbackAsync();
-                TempData["ErrorMessage"] = "Something went wrong while placing your order.";
-                return View("Checkout", model);
-            }
+            await transaction.RollbackAsync();
+            TempData["ErrorMessage"] = "Not enough stock available.";
+            return RedirectToAction("ViewDetails", new { id = model.ProductId });
         }
 
+        var subtotal = product.Price * model.Quantity;
+        var shippingFee = subtotal >= 2500m ? 0m : 60m;
+
+        var order = new Order
+        {
+            ShopperId = user.Id,
+            ReceiverName = model.ReceiverName.Trim(),
+            ContactNumber = model.ContactNumber.Trim(),
+            DeliveryAddress = model.DeliveryAddress.Trim(),
+            ShippingFee = shippingFee,
+            TotalAmount = subtotal + shippingFee,
+            Status = "To Ship",
+            CreatedAt = DateTime.Now
+        };
+
+        order.OrderItems.Add(new OrderItem
+        {
+            ProductId = product.Id,
+            Quantity = model.Quantity,
+            Price = product.Price,
+            Subtotal = subtotal,
+            SelectedVariant = string.IsNullOrWhiteSpace(model.SelectedVariant)
+                ? null
+                : model.SelectedVariant.Trim(),
+            SelectedSize = string.IsNullOrWhiteSpace(model.SelectedSize)
+                ? null
+                : model.SelectedSize.Trim()
+        });
+
+        product.Stock -= model.Quantity;
+
+        _context.Orders.Add(order);
+        _context.Products.Update(product);
+
+        await _context.SaveChangesAsync();
+
+        var payment = new Payment
+        {
+            OrderId = order.Id,
+            Amount = order.TotalAmount,
+            PaymentMethod = "COD",
+            PaymentStatus = "Pending",
+            ReferenceNumber = $"PAY-{DateTime.Now:yyyyMMddHHmmss}-{order.Id}",
+            CreatedAt = DateTime.Now
+        };
+
+        _context.Payments.Add(payment);
+
+        await _context.SaveChangesAsync();
+
+        await transaction.CommitAsync();
+
+        TempData["SuccessMessage"] = "Order created successfully.";
+        return RedirectToAction("OrderSuccess", new { id = order.Id });
+    }
+    catch
+    {
+        await transaction.RollbackAsync();
+        TempData["ErrorMessage"] = "Something went wrong while placing your order.";
+        return View("Checkout", model);
+    }
+}
         public async Task<IActionResult> OrderSuccess(int id)
         {
             ViewBag.ActiveRole = "Shopper";

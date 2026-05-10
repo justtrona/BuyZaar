@@ -10,136 +10,127 @@
 
     <title>@ViewData["Title"] - BuyZaar Admin</title>
 
-    <!-- Bootstrap -->
     <link rel="stylesheet"
           href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
 
-    <!-- Global Admin CSS -->
     <link rel="stylesheet"
           href="~/css/admin-dashboard.css"
           asp-append-version="true" />
 
-    <!-- Page Specific CSS -->
     @await RenderSectionAsync("Styles", required: false)
-
 </head>
 
 <body>
-
     <div class="dashboard-layout">
 
-        <!-- SIDEBAR -->
         <aside class="dashboard-sidebar">
-
             <div class="sidebar-main">
 
-                <!-- LOGO -->
                 <div class="sidebar-logo">
-
                     <img src="~/images/icon_logo.png"
                          alt="BuyZaar Logo" />
 
                     <h5>BuyZaar</h5>
-
                     <span>Admin Panel</span>
-
                 </div>
 
-                <!-- NAVIGATION -->
                 <nav class="sidebar-nav">
 
-                    <!-- Dashboard -->
                     <a asp-controller="Admin"
-                       asp-action="Dashboard">
+                       asp-action="Index"
+                       class="sidebar-link">
                         Dashboard
                     </a>
 
-                    <!-- Manage Users -->
+                    <div class="sidebar-group-title">
+                        User Management
+                    </div>
+
                     <a asp-controller="Admin"
-                       asp-action="Users">
+                       asp-action="Users"
+                       class="sidebar-link">
                         Manage Users
                     </a>
 
-                    <!-- Manage Products -->
                     <a asp-controller="Admin"
-                       asp-action="Products">
-                        Manage Products
-                    </a>
-
-                    <!-- Manage Inventory -->
-                    <a asp-controller="Admin"
-                       asp-action="Inventory">
-                        Manage Inventory
-                    </a>
-
-                    <!-- Manage Orders -->
-                    <a asp-controller="Admin"
-                       asp-action="Orders">
-                        Manage Orders
-                    </a>
-
-                    <a asp-controller="Admin" 
-                    asp-action="CancellationRequests">
-                    Cancellation Requests
-                    </a>
-
-                    <!-- Manage Payments -->
-                    <a asp-controller="Admin"
-                       asp-action="Payments">
-                        Manage Payments
-                    </a>
-
-                    <!-- Reports -->
-                    <a asp-controller="Admin"
-                       asp-action="Reports">
-                        Reports & Analytics
-                    </a>
-
-                    <!-- Audit Logs -->
-                    <a asp-controller="Admin"
-                       asp-action="AuditLogs">
-                        Audit Logs
-                    </a>
-
-                    <!-- Seller Applications -->
-                    <a asp-controller="Admin"
-                       asp-action="SellerApplications">
+                       asp-action="SellerApplications"
+                       class="sidebar-link">
                         Seller Applications
                     </a>
 
-                    <!-- Seller Activities -->
+                    <div class="sidebar-group-title">
+                        Product Management
+                    </div>
+
                     <a asp-controller="Admin"
-                       asp-action="SellerActivities">
-                        Seller Activities
+                       asp-action="Products"
+                       class="sidebar-link">
+                        Manage Products
                     </a>
 
-                    <!-- Rider Management -->
+                    <div class="sidebar-group-title">
+                        Order Management
+                    </div>
+
                     <a asp-controller="Admin"
-                       asp-action="Riders">
-                        Rider Activities
+                       asp-action="Orders"
+                       class="sidebar-link">
+                        Manage Orders
                     </a>
 
-                    
+                    <a asp-controller="Admin"
+                       asp-action="CancellationRequests"
+                       class="sidebar-link">
+                        Cancellation Requests
+                    </a>
+
+                    <a asp-controller="Admin"
+                       asp-action="Payments"
+                       class="sidebar-link">
+                        Manage Payments
+                    </a>
+
+                    <div class="sidebar-group-title">
+                        Monitoring
+                    </div>
+
+                    <a asp-controller="Admin"
+                       asp-action="Reports"
+                       class="sidebar-link">
+                        Reports & Analytics
+                    </a>
+
+                    <a asp-controller="Admin"
+                       asp-action="AuditLogs"
+                       class="sidebar-link">
+                        Audit Logs
+                    </a>
+
+                    <a asp-controller="Admin"
+                       asp-action="SellerActivities"
+                       class="sidebar-link">
+                        Manage Sellers
+                    </a>
+
+                    <a asp-controller="Admin"
+                       asp-action="Riders"
+                       class="sidebar-link">
+                        Manage Riders
+                    </a>
 
                 </nav>
-
             </div>
 
-            <!-- SIDEBAR ACCOUNT -->
             <div class="sidebar-account">
-
                 <div class="sidebar-user">
 
-                    <!-- AVATAR -->
                     <div class="sidebar-avatar">
                         @((User.Identity?.Name ?? "A")
                             .Substring(0, 1)
                             .ToUpper())
                     </div>
 
-                    <!-- USER INFO -->
                     <div class="sidebar-user-info">
-
                         <div class="sidebar-user-name">
                             @User.Identity?.Name
                         </div>
@@ -147,12 +138,10 @@
                         <div class="sidebar-user-role">
                             @activeRole
                         </div>
-
                     </div>
 
                 </div>
 
-                <!-- LOGOUT -->
                 <form asp-controller="Account"
                       asp-action="Logout"
                       method="post">
@@ -165,59 +154,34 @@
                     </button>
 
                 </form>
-
             </div>
-
         </aside>
 
-        <!-- MAIN CONTENT -->
         <main class="dashboard-main">
 
-            <!-- TOPBAR -->
             <div class="dashboard-topbar">
-
                 <div>
                     <h4>@ViewData["Title"]</h4>
-
-                    <p>
-                        Manage BuyZaar system operations
-                    </p>
+                    <p>Manage BuyZaar system operations</p>
                 </div>
 
-                <!-- TOPBAR ACTIONS -->
                 <div class="dashboard-topbar-actions">
-
-                    <!-- Notifications -->
                     <button class="notification-btn">
-
                         🔔
-
-                        <span class="notification-badge">
-                            3
-                        </span>
-
+                        <span class="notification-badge">3</span>
                     </button>
-
                 </div>
-
             </div>
 
-            <!-- PAGE CONTENT -->
             <div class="dashboard-content">
-
                 @RenderBody()
-
             </div>
 
         </main>
-
     </div>
 
-    <!-- Bootstrap JS -->
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- Page Specific Scripts -->
     @await RenderSectionAsync("Scripts", required: false)
-
 </body>
 </html>

@@ -229,6 +229,16 @@ namespace BuyZaar.Controllers
                 return View(model);
             }
 
+            if (IsUserDeactivated(user))
+            {
+                ModelState.AddModelError(
+                    string.Empty,
+                    "Your account has been deactivated by the administrator."
+                );
+
+                return View(model);
+            }
+
             var isSuperAdmin = await _userManager.IsInRoleAsync(user, "SuperAdmin");
             var isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
             var isRider = await _userManager.IsInRoleAsync(user, "Rider");
@@ -279,6 +289,12 @@ namespace BuyZaar.Controllers
         {
             await _signInManager.SignOutAsync();
             return RedirectToAction("Login", "Account");
+        }
+
+        private bool IsUserDeactivated(ApplicationUser user)
+        {
+            return user.LockoutEnd != null &&
+                   user.LockoutEnd > DateTimeOffset.UtcNow;
         }
     }
 }

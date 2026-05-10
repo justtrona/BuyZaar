@@ -3,11 +3,142 @@
     ViewData["Title"] = "Admin Dashboard";
 }
 
-<h2>Admin Dashboard</h2>
-<p>Welcome Admin.</p>
+<div class="admin-dashboard">
+    <div class="dashboard-header">
+        <div>
+            <h1>Admin Dashboard</h1>
+            <p>Welcome back, Admin. Here’s what’s happening in BuyZaar today.</p>
+        </div>
 
-<p>
-    <a asp-controller="Admin" asp-action="SellerApplications" class="btn btn-primary">
-        View Seller Applications
-    </a>
-</p>
+        <a asp-controller="Admin" asp-action="SellerApplications" class="header-action-btn">
+            Review Applications
+        </a>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card blue">
+            <div class="stat-icon">👥</div>
+            <div>
+                <span>Total Users</span>
+                <h2>@ViewBag.TotalUsers</h2>
+            </div>
+        </div>
+
+        <div class="stat-card green">
+            <div class="stat-icon">🏪</div>
+            <div>
+                <span>Total Sellers</span>
+                <h2>@ViewBag.TotalSellers</h2>
+            </div>
+        </div>
+
+        <div class="stat-card purple">
+            <div class="stat-icon">🛵</div>
+            <div>
+                <span>Total Riders</span>
+                <h2>@ViewBag.TotalRiders</h2>
+            </div>
+        </div>
+
+        <div class="stat-card orange">
+            <div class="stat-icon">📝</div>
+            <div>
+                <span>Pending Applications</span>
+                <h2>@ViewBag.PendingSellerApplications</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="dashboard-grid">
+        <div class="dashboard-panel">
+            <div class="panel-header">
+                <h3>Admin Actions</h3>
+                <p>Quick access to common management tools.</p>
+            </div>
+
+            <div class="action-grid">
+                <a asp-controller="Admin" asp-action="SellerApplications" class="action-card">
+                    <span>📝</span>
+                    <div>
+                        <h4>Seller Applications</h4>
+                        <p>Approve or reject seller requests</p>
+                    </div>
+                </a>
+
+                <a asp-controller="Admin" asp-action="Riders" class="action-card">
+                    <span>🛵</span>
+                    <div>
+                        <h4>Manage Riders</h4>
+                        <p>View and create rider accounts</p>
+                    </div>
+                </a>
+
+                <a asp-controller="Admin" asp-action="Orders" class="action-card">
+                    <span>📦</span>
+                    <div>
+                        <h4>Manage Orders</h4>
+                        <p>Assign riders and monitor orders</p>
+                    </div>
+                </a>
+
+                <a asp-controller="Admin" asp-action="CancellationRequests" class="action-card">
+                    <span>↩️</span>
+                    <div>
+                        <h4>Cancellations</h4>
+                        <p>Review cancellation requests</p>
+                    </div>
+                </a>
+
+                <a asp-controller="Admin" asp-action="Users" class="action-card">
+                    <span>👤</span>
+                    <div>
+                        <h4>Manage Users</h4>
+                        <p>View shoppers, sellers, and admins</p>
+                    </div>
+                </a>
+
+                <a asp-controller="Admin" asp-action="Products" class="action-card">
+                    <span>🛍️</span>
+                    <div>
+                        <h4>Manage Products</h4>
+                        <p>Monitor seller product listings</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <div class="dashboard-panel side-panel">
+            <div class="panel-header">
+                <h3>System Overview</h3>
+                <p>Important admin monitoring summary.</p>
+            </div>
+
+            <div class="overview-list">
+    <div>
+        <span>Total Orders</span>
+        <strong>@ViewBag.TotalOrders</strong>
+    </div>
+
+    <div>
+        <span>Pending Cancellations</span>
+        <strong>@ViewBag.PendingCancellationRequests</strong>
+    </div>
+
+    <div>
+        <span>Return Pending</span>
+        <strong>@ViewBag.ReturnPendingOrders</strong>
+    </div>
+
+    <div>
+        <span>Successful Returns</span>
+        <strong>@ViewBag.SuccessfulReturns</strong>
+    </div>
+
+    <div>
+        <span>Failed Deliveries</span>
+        <strong>@ViewBag.FailedDeliveries</strong>
+    </div>
+</div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,269 @@
+@model List<BuyZaar.Models.Payment>
+
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "Manage Payments";
+
+    var search = ViewBag.Search as string;
+    var selectedStatus = ViewBag.Status as string;
+    var selectedMethod = ViewBag.Method as string;
+
+    int currentPage = ViewBag.CurrentPage ?? 1;
+    int totalPages = ViewBag.TotalPages ?? 1;
+    int totalPayments = ViewBag.TotalPayments ?? Model.Count;
+
+    if (totalPages < 1)
+    {
+        totalPages = 1;
+    }
+}
+
+@section Styles {
+    <link rel="stylesheet"
+          href="~/css/admin-payments.css"
+          asp-append-version="true" />
+}
+
+<div class="payments-header">
+    <div>
+        <h1>Manage Payments</h1>
+        <p>Monitor transactions, payment status, revenue, and refunds.</p>
+    </div>
+</div>
+
+<div class="payments-stats-grid">
+    <div class="payment-stat-card green">
+        <span>Total Revenue</span>
+        <h2>₱@ViewBag.TotalRevenue.ToString("N2")</h2>
+    </div>
+
+    <div class="payment-stat-card red">
+        <span>Total Refunded</span>
+        <h2>₱@ViewBag.TotalRefunded.ToString("N2")</h2>
+    </div>
+
+    <div class="payment-stat-card orange">
+        <span>Pending Payments</span>
+        <h2>@ViewBag.PendingPayments</h2>
+    </div>
+
+    <div class="payment-stat-card blue">
+        <span>Paid Payments</span>
+        <h2>@ViewBag.PaidPayments</h2>
+    </div>
+</div>
+
+<div class="payments-filter-card">
+    <form asp-controller="Admin"
+          asp-action="Payments"
+          method="get"
+          class="payments-filter-form">
+
+        <div class="filter-group search-group">
+            <label>Search</label>
+            <input type="text"
+                   name="search"
+                   value="@search"
+                   placeholder="Search payment, order, reference, or receiver..." />
+        </div>
+
+        <div class="filter-group">
+            <label>Status</label>
+            <select name="status">
+                <option value="">All Status</option>
+                <option value="Pending" selected="@(selectedStatus == "Pending")">Pending</option>
+                <option value="Paid" selected="@(selectedStatus == "Paid")">Paid</option>
+                <option value="Failed" selected="@(selectedStatus == "Failed")">Failed</option>
+                <option value="Refunded" selected="@(selectedStatus == "Refunded")">Refunded</option>
+                <option value="Cancelled" selected="@(selectedStatus == "Cancelled")">Cancelled</option>
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label>Method</label>
+            <select name="method">
+                <option value="">All Methods</option>
+                <option value="COD" selected="@(selectedMethod == "COD")">COD</option>
+                <option value="GCash" selected="@(selectedMethod == "GCash")">GCash</option>
+                <option value="Card" selected="@(selectedMethod == "Card")">Card</option>
+                <option value="Bank Transfer" selected="@(selectedMethod == "Bank Transfer")">Bank Transfer</option>
+            </select>
+        </div>
+
+        <div class="filter-actions">
+            <button type="submit" class="filter-btn">
+                Filter
+            </button>
+
+            <a asp-controller="Admin"
+               asp-action="Payments"
+               class="reset-btn">
+                Reset
+            </a>
+        </div>
+    </form>
+</div>
+
+<div class="payments-table-card">
+
+    <div class="table-summary">
+        <div>
+            <h3>Payment Transactions</h3>
+            <p>@totalPayments payment(s) found</p>
+        </div>
+
+        <div class="table-page-summary">
+            Page @currentPage of @totalPages
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table payments-table align-middle">
+            <thead>
+                <tr>
+                    <th>Payment</th>
+                    <th>Order</th>
+                    <th>Receiver</th>
+                    <th>Method</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Refund</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @if (Model.Any())
+                {
+                    foreach (var payment in Model)
+                    {
+                        var statusClass = payment.PaymentStatus switch
+                        {
+                            "Paid" => "paid",
+                            "Pending" => "pending",
+                            "Failed" => "failed",
+                            "Refunded" => "refunded",
+                            "Cancelled" => "cancelled",
+                            _ => "pending"
+                        };
+
+                        <tr>
+                            <td>
+                                <div class="payment-cell">
+                                    <strong>#@payment.Id</strong>
+                                    <span>
+                                        @(string.IsNullOrWhiteSpace(payment.ReferenceNumber)
+                                            ? "No reference"
+                                            : payment.ReferenceNumber)
+                                    </span>
+                                </div>
+                            </td>
+
+                            <td>
+                                <strong>#@payment.OrderId</strong>
+                            </td>
+
+                            <td>
+                                <div class="receiver-cell">
+                                    <strong>
+                                        @(payment.Order != null && !string.IsNullOrWhiteSpace(payment.Order.ReceiverName)
+                                            ? payment.Order.ReceiverName
+                                            : "Unknown Receiver")
+                                    </strong>
+
+                                    <span>
+                                        @(payment.Order != null && !string.IsNullOrWhiteSpace(payment.Order.ContactNumber)
+                                            ? payment.Order.ContactNumber
+                                            : "No contact")
+                                    </span>
+                                </div>
+                            </td>
+
+                            <td>
+                                <span class="method-badge">
+                                    @payment.PaymentMethod
+                                </span>
+                            </td>
+
+                            <td>
+                                <strong>₱@payment.Amount.ToString("N2")</strong>
+                            </td>
+
+                            <td>
+                                <span class="payment-status-badge @statusClass">
+                                    @payment.PaymentStatus
+                                </span>
+                            </td>
+
+                            <td>
+                                @if (payment.IsRefunded)
+                                {
+                                    <span class="refund-badge refunded">
+                                        Refunded ₱@((payment.RefundAmount ?? 0).ToString("N2"))
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="refund-badge none">
+                                        No Refund
+                                    </span>
+                                }
+                            </td>
+
+                            <td>
+                                <span class="date-text">
+                                    @payment.CreatedAt.ToString("yyyy-MM-dd")
+                                </span>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="8"
+                            class="text-center text-muted py-5">
+                            No payments found.
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="pagination-wrapper">
+        <a class="page-btn @(currentPage == 1 ? "disabled" : "")"
+           asp-controller="Admin"
+           asp-action="Payments"
+           asp-route-search="@search"
+           asp-route-status="@selectedStatus"
+           asp-route-method="@selectedMethod"
+           asp-route-page="@(currentPage - 1)">
+            Previous
+        </a>
+
+        @for (int i = 1; i <= totalPages; i++)
+        {
+            <a class="page-number @(i == currentPage ? "active" : "")"
+               asp-controller="Admin"
+               asp-action="Payments"
+               asp-route-search="@search"
+               asp-route-status="@selectedStatus"
+               asp-route-method="@selectedMethod"
+               asp-route-page="@i">
+                @i
+            </a>
+        }
+
+        <a class="page-btn @(currentPage >= totalPages ? "disabled" : "")"
+           asp-controller="Admin"
+           asp-action="Payments"
+           asp-route-search="@search"
+           asp-route-status="@selectedStatus"
+           asp-route-method="@selectedMethod"
+           asp-route-page="@(currentPage + 1)">
+            Next
+        </a>
+    </div>
+
+</div>

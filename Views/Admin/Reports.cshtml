@@ -1,0 +1,217 @@
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "Reports & Analytics";
+
+    var topProducts = ViewBag.TopProducts as IEnumerable<dynamic>;
+    var recentOrders = ViewBag.RecentOrders as List<BuyZaar.Models.Order>;
+}
+
+@section Styles {
+    <link rel="stylesheet"
+          href="~/css/admin-reports.css"
+          asp-append-version="true" />
+}
+
+<div class="reports-header">
+    <div>
+        <h1>Reports & Analytics</h1>
+        <p>View BuyZaar platform performance, sales, users, products, and delivery reports.</p>
+    </div>
+</div>
+
+<div class="reports-grid">
+    <div class="report-card blue">
+        <span>Total Orders</span>
+        <h2>@ViewBag.TotalOrders</h2>
+    </div>
+
+    <div class="report-card green">
+        <span>Total Sales</span>
+        <h2>₱@ViewBag.TotalSales.ToString("N2")</h2>
+    </div>
+
+    <div class="report-card purple">
+        <span>Completed Orders</span>
+        <h2>@ViewBag.CompletedOrders</h2>
+    </div>
+
+    <div class="report-card orange">
+        <span>Pending Orders</span>
+        <h2>@ViewBag.PendingOrders</h2>
+    </div>
+</div>
+
+<div class="reports-section-grid">
+    <div class="reports-panel">
+        <div class="panel-title">
+            <h3>User Reports</h3>
+            <p>Registered platform users by role.</p>
+        </div>
+
+        <div class="mini-stat-list">
+            <div>
+                <span>Total Users</span>
+                <strong>@ViewBag.TotalUsers</strong>
+            </div>
+
+            <div>
+                <span>Shoppers</span>
+                <strong>@ViewBag.TotalShoppers</strong>
+            </div>
+
+            <div>
+                <span>Sellers</span>
+                <strong>@ViewBag.TotalSellers</strong>
+            </div>
+
+            <div>
+                <span>Riders</span>
+                <strong>@ViewBag.TotalRiders</strong>
+            </div>
+
+            <div>
+                <span>Pending Seller Applications</span>
+                <strong>@ViewBag.PendingSellerApplications</strong>
+            </div>
+        </div>
+    </div>
+
+    <div class="reports-panel">
+        <div class="panel-title">
+            <h3>Product Reports</h3>
+            <p>Product visibility and stock monitoring.</p>
+        </div>
+
+        <div class="mini-stat-list">
+            <div>
+                <span>Total Products</span>
+                <strong>@ViewBag.TotalProducts</strong>
+            </div>
+
+            <div>
+                <span>Hidden Products</span>
+                <strong>@ViewBag.HiddenProducts</strong>
+            </div>
+
+            <div>
+                <span>Low Stock Products</span>
+                <strong>@ViewBag.LowStockProducts</strong>
+            </div>
+
+            <div>
+                <span>Out of Stock Products</span>
+                <strong>@ViewBag.OutOfStockProducts</strong>
+            </div>
+        </div>
+    </div>
+
+    <div class="reports-panel">
+        <div class="panel-title">
+            <h3>Delivery Reports</h3>
+            <p>Delivery, return, and failed delivery monitoring.</p>
+        </div>
+
+        <div class="mini-stat-list">
+            <div>
+                <span>Returned Orders</span>
+                <strong>@ViewBag.ReturnedOrders</strong>
+            </div>
+
+            <div>
+                <span>Failed Deliveries</span>
+                <strong>@ViewBag.FailedDeliveries</strong>
+            </div>
+
+            <div>
+                <span>Cancelled Orders</span>
+                <strong>@ViewBag.CancelledOrders</strong>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="reports-section-grid bottom-grid">
+    <div class="reports-panel">
+        <div class="panel-title">
+            <h3>Top Selling Products</h3>
+            <p>Based on quantity sold.</p>
+        </div>
+
+        <div class="reports-table-wrapper">
+            <table class="reports-table">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Qty Sold</th>
+                        <th>Sales</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @if (topProducts != null && topProducts.Any())
+                    {
+                        foreach (var item in topProducts)
+                        {
+                            <tr>
+                                <td>@item.ProductName</td>
+                                <td>@item.QuantitySold</td>
+                                <td>₱@item.TotalSales.ToString("N2")</td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="3" class="empty-row">
+                                No sales data available.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="reports-panel">
+        <div class="panel-title">
+            <h3>Recent Orders</h3>
+            <p>Latest platform order activity.</p>
+        </div>
+
+        <div class="reports-table-wrapper">
+            <table class="reports-table">
+                <thead>
+                    <tr>
+                        <th>Order</th>
+                        <th>Status</th>
+                        <th>Total</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @if (recentOrders != null && recentOrders.Any())
+                    {
+                        foreach (var order in recentOrders)
+                        {
+                            <tr>
+                                <td>#@order.Id</td>
+                                <td>@order.Status</td>
+                                <td>₱@order.TotalAmount.ToString("N2")</td>
+                                <td>@order.CreatedAt.ToString("yyyy-MM-dd")</td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="4" class="empty-row">
+                                No recent orders found.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,206 @@
+.audit-header {
+    background: linear-gradient(135deg, #0f172a, #2563eb);
+    color: #ffffff;
+    padding: 34px;
+    border-radius: 26px;
+    margin-bottom: 28px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 18px 38px rgba(15, 23, 42, 0.18);
+}
+
+.audit-header::after {
+    content: "";
+    position: absolute;
+    width: 260px;
+    height: 260px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 50%;
+    top: -100px;
+    right: -80px;
+}
+
+.audit-header h1 {
+    margin: 0;
+    font-size: 34px;
+    font-weight: 900;
+    position: relative;
+    z-index: 1;
+}
+
+.audit-header p {
+    margin-top: 10px;
+    font-size: 14px;
+    color: #dbeafe;
+    position: relative;
+    z-index: 1;
+}
+
+.audit-card {
+    background: #ffffff;
+    border-radius: 24px;
+    padding: 22px;
+    border: 1px solid #eef2f7;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+}
+
+.audit-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+}
+
+.audit-summary h3 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 900;
+    color: #0f172a;
+}
+
+.audit-summary p {
+    margin: 5px 0 0;
+    color: #64748b;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.audit-table {
+    margin-bottom: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.audit-table thead th {
+    background: #f8fafc;
+    color: #475569;
+    font-size: 12px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 16px;
+    border-bottom: 1px solid #e5e7eb;
+    white-space: nowrap;
+}
+
+.audit-table tbody td {
+    padding: 18px 16px;
+    vertical-align: middle;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 14px;
+    color: #111827;
+}
+
+.audit-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.audit-table tbody tr:hover {
+    background: #f8fafc;
+}
+
+.admin-cell {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 220px;
+}
+
+.admin-avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #2563eb, #7c3aed);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    flex-shrink: 0;
+}
+
+.admin-cell strong {
+    display: block;
+    color: #0f172a;
+    font-weight: 900;
+}
+
+.admin-cell span {
+    display: block;
+    color: #64748b;
+    font-size: 12px;
+    margin-top: 3px;
+}
+
+.action-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #dbeafe;
+    color: #1d4ed8;
+    padding: 7px 12px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 900;
+    white-space: nowrap;
+}
+
+.entity-cell strong {
+    display: block;
+    color: #0f172a;
+    font-weight: 900;
+}
+
+.entity-cell span {
+    display: block;
+    color: #64748b;
+    font-size: 12px;
+    margin-top: 3px;
+}
+
+.description-text {
+    display: block;
+    color: #334155;
+    max-width: 420px;
+    line-height: 1.4;
+}
+
+.date-text {
+    color: #475569;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.table-responsive {
+    overflow-x: auto;
+}
+
+.table-responsive::-webkit-scrollbar {
+    height: 6px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 999px;
+}
+
+@media (max-width: 768px) {
+    .audit-header {
+        padding: 26px;
+        border-radius: 18px;
+    }
+
+    .audit-header h1 {
+        font-size: 28px;
+    }
+
+    .audit-card {
+        padding: 14px;
+        border-radius: 18px;
+    }
+
+    .audit-table tbody td,
+    .audit-table thead th {
+        padding: 14px;
+    }
+}

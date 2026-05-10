@@ -1,0 +1,302 @@
+@model List<BuyZaar.Models.Product>
+
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "Manage Products";
+
+    var search = ViewBag.Search as string;
+    var selectedStatus = ViewBag.Status as string;
+    var selectedStockStatus = ViewBag.StockStatus as string;
+
+    int currentPage = ViewBag.CurrentPage ?? 1;
+    int totalPages = ViewBag.TotalPages ?? 1;
+    int totalProducts = ViewBag.TotalProducts ?? Model.Count;
+
+    if (totalPages < 1)
+    {
+        totalPages = 1;
+    }
+}
+
+@section Styles {
+    <link rel="stylesheet"
+          href="~/css/admin-products.css"
+          asp-append-version="true" />
+}
+
+<div class="admin-page-header">
+    <div>
+        <h1>Manage Products</h1>
+        <p>Review seller products, monitor stock, and hide inappropriate listings.</p>
+    </div>
+</div>
+
+@if (TempData["Message"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["Message"]
+    </div>
+}
+
+<div class="products-filter-card">
+    <form asp-controller="Admin"
+          asp-action="Products"
+          method="get"
+          class="products-filter-form">
+
+        <div class="filter-group search-group">
+            <label>Search</label>
+            <input type="text"
+                   name="search"
+                   value="@search"
+                   placeholder="Search product, seller, or description..." />
+        </div>
+
+        <div class="filter-group">
+            <label>Visibility</label>
+            <select name="status">
+                <option value="">All Products</option>
+                <option value="Visible" selected="@(selectedStatus == "Visible")">Visible</option>
+                <option value="Hidden" selected="@(selectedStatus == "Hidden")">Hidden</option>
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label>Stock</label>
+            <select name="stockStatus">
+                <option value="">All Stock</option>
+                <option value="InStock" selected="@(selectedStockStatus == "InStock")">In Stock</option>
+                <option value="LowStock" selected="@(selectedStockStatus == "LowStock")">Low Stock</option>
+                <option value="OutOfStock" selected="@(selectedStockStatus == "OutOfStock")">Out of Stock</option>
+            </select>
+        </div>
+
+        <div class="filter-actions">
+            <button type="submit" class="filter-btn">
+                Filter
+            </button>
+
+            <a asp-controller="Admin"
+               asp-action="Products"
+               class="reset-btn">
+                Reset
+            </a>
+        </div>
+    </form>
+</div>
+
+<div class="admin-table-card">
+
+    <div class="table-summary">
+        <div>
+            <h3>Product Listings</h3>
+            <p>@totalProducts product(s) found</p>
+        </div>
+
+        <div class="table-page-summary">
+            Page @currentPage of @totalPages
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table admin-table align-middle">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Seller</th>
+                    <th>Price</th>
+                    <th>Stock</th>
+                    <th>Visibility</th>
+                    <th>Date Added</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @if (Model.Any())
+                {
+                    foreach (var product in Model)
+                    {
+                        var stockClass = product.Stock <= 0
+                            ? "out"
+                            : product.Stock <= 10
+                                ? "low"
+                                : "good";
+
+                        var stockText = product.Stock <= 0
+                            ? "Out of Stock"
+                            : product.Stock <= 10
+                                ? "Low Stock"
+                                : "In Stock";
+
+                        var firstImage = product.Images != null
+                            ? product.Images.FirstOrDefault()
+                            : null;
+
+                        <tr>
+                            <td>
+                                <div class="product-cell">
+                                    <div class="product-image">
+                                        @if (firstImage != null && !string.IsNullOrWhiteSpace(firstImage.ImagePath))
+                                        {
+                                            <img src="@firstImage.ImagePath" alt="@product.Name" />
+                                        }
+                                        else
+                                        {
+                                            <span>🛍️</span>
+                                        }
+                                    </div>
+
+                                    <div>
+                                        <strong>@product.Name</strong>
+                                        <span>
+                                            @(string.IsNullOrWhiteSpace(product.Description)
+                                                ? "No description"
+                                                : product.Description)
+                                        </span>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <td>
+                                <div class="seller-cell">
+                                    <strong>
+                                        @(product.Seller != null && !string.IsNullOrWhiteSpace(product.Seller.FullName)
+                                            ? product.Seller.FullName
+                                            : "Unknown Seller")
+                                    </strong>
+
+                                    <span>
+                                        @(product.Seller != null && !string.IsNullOrWhiteSpace(product.Seller.Email)
+                                            ? product.Seller.Email
+                                            : "No email")
+                                    </span>
+                                </div>
+                            </td>
+
+                            <td>
+                                <strong>₱@product.Price.ToString("N2")</strong>
+                            </td>
+
+                            <td>
+                                <span class="stock-badge @stockClass">
+                                    @stockText (@product.Stock)
+                                </span>
+                            </td>
+
+                            <td>
+                                @if (product.IsHiddenByAdmin)
+                                {
+                                    <span class="visibility-badge hidden">
+                                        Hidden
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="visibility-badge visible">
+                                        Visible
+                                    </span>
+                                }
+                            </td>
+
+                            <td>
+                                @product.CreatedAt.ToString("yyyy-MM-dd")
+                            </td>
+
+                            <td>
+                                @if (product.IsHiddenByAdmin)
+                                {
+                                    <form asp-controller="Admin"
+                                          asp-action="ShowProduct"
+                                          method="post"
+                                          class="d-inline">
+
+                                        @Html.AntiForgeryToken()
+
+                                        <input type="hidden"
+                                               name="productId"
+                                               value="@product.Id" />
+
+                                        <button type="submit"
+                                                class="action-btn show-btn">
+                                            Show
+                                        </button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <form asp-controller="Admin"
+                                          asp-action="HideProduct"
+                                          method="post"
+                                          class="hide-product-form"
+                                          onsubmit="return confirm('Hide this product from shoppers?');">
+
+                                        @Html.AntiForgeryToken()
+
+                                        <input type="hidden"
+                                               name="productId"
+                                               value="@product.Id" />
+
+                                        <input type="hidden"
+                                               name="reason"
+                                               value="Hidden by admin due to product moderation." />
+
+                                        <button type="submit"
+                                                class="action-btn hide-btn">
+                                            Hide
+                                        </button>
+                                    </form>
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="7"
+                            class="text-center text-muted py-5">
+                            No products found.
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="pagination-wrapper">
+        <a class="page-btn @(currentPage == 1 ? "disabled" : "")"
+           asp-controller="Admin"
+           asp-action="Products"
+           asp-route-search="@search"
+           asp-route-status="@selectedStatus"
+           asp-route-stockStatus="@selectedStockStatus"
+           asp-route-page="@(currentPage - 1)">
+            Previous
+        </a>
+
+        @for (int i = 1; i <= totalPages; i++)
+        {
+            <a class="page-number @(i == currentPage ? "active" : "")"
+               asp-controller="Admin"
+               asp-action="Products"
+               asp-route-search="@search"
+               asp-route-status="@selectedStatus"
+               asp-route-stockStatus="@selectedStockStatus"
+               asp-route-page="@i">
+                @i
+            </a>
+        }
+
+        <a class="page-btn @(currentPage >= totalPages ? "disabled" : "")"
+           asp-controller="Admin"
+           asp-action="Products"
+           asp-route-search="@search"
+           asp-route-status="@selectedStatus"
+           asp-route-stockStatus="@selectedStockStatus"
+           asp-route-page="@(currentPage + 1)">
+            Next
+        </a>
+    </div>
+
+</div>

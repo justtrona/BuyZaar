@@ -498,79 +498,101 @@ namespace BuyZaar.Controllers
             TempData["SuccessMessage"] = "Product deleted successfully.";
             return RedirectToAction("Products");
         }
+public async Task<IActionResult> SalesRecords(string? status, string? search, DateTime? fromDate, DateTime? toDate)
+{
+    ViewBag.ActiveRole = "Seller";
 
-        public async Task<IActionResult> SalesRecords(string? status, string? search, DateTime? fromDate, DateTime? toDate)
+    var user = await _userManager.GetUserAsync(User);
+    if (user == null)
+        return RedirectToAction("Login", "Account");
+
+    var query = _context.Orders
+        .Include(o => o.OrderItems)
+            .ThenInclude(oi => oi.Product)
+                .ThenInclude(p => p!.Images)
+        .Where(o => o.OrderItems.Any(oi =>
+            oi.Product != null &&
+            oi.Product.SellerId == user.Id))
+        .AsQueryable();
+
+    if (!string.IsNullOrWhiteSpace(status))
+    {
+        if (status == "Delivered")
         {
-            ViewBag.ActiveRole = "Seller";
-
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null)
-                return RedirectToAction("Login", "Account");
-
-            var query = _context.Orders
-                .Include(o => o.OrderItems)
-                    .ThenInclude(oi => oi.Product)
-                        .ThenInclude(p => p!.Images)
-                .Where(o => o.OrderItems.Any(oi =>
-                    oi.Product != null &&
-                    oi.Product.SellerId == user.Id))
-                .AsQueryable();
-
-            if (!string.IsNullOrWhiteSpace(status))
-                query = query.Where(o => o.Status == status);
-
-            if (!string.IsNullOrWhiteSpace(search))
-            {
-                search = search.Trim();
-
-                query = query.Where(o =>
-                    o.Id.ToString().Contains(search) ||
-                    o.ReceiverName.Contains(search) ||
-                    o.ContactNumber.Contains(search));
-            }
-
-            if (fromDate.HasValue)
-                query = query.Where(o => o.CreatedAt.Date >= fromDate.Value.Date);
-
-            if (toDate.HasValue)
-                query = query.Where(o => o.CreatedAt.Date <= toDate.Value.Date);
-
-            var orders = await query
-                .OrderByDescending(o => o.CreatedAt)
-                .ToListAsync();
-
-            ViewBag.TotalSales = orders
-                .Where(o => o.Status == "Completed")
-                .Sum(o => o.OrderItems
-                    .Where(oi => oi.Product != null && oi.Product.SellerId == user.Id)
-                    .Sum(oi => oi.Subtotal));
-
-            ViewBag.PendingSales = orders
-                .Where(o =>
-                    o.Status == "To Ship" ||
-                    o.Status == "Preparing Order" ||
-                    o.Status == "Ready for Pickup" ||
-                    o.Status == "To Receive" ||
-                    o.Status == "To Review")
-                .Sum(o => o.OrderItems
-                    .Where(oi => oi.Product != null && oi.Product.SellerId == user.Id)
-                    .Sum(oi => oi.Subtotal));
-
-            ViewBag.TotalOrders = orders.Count;
-
-            ViewBag.TotalItemsSold = orders
-                .Where(o => o.Status == "Completed")
-                .Sum(o => o.OrderItems
-                    .Where(oi => oi.Product != null && oi.Product.SellerId == user.Id)
-                    .Sum(oi => oi.Quantity));
-
-            ViewBag.Status = status;
-            ViewBag.Search = search;
-            ViewBag.FromDate = fromDate?.ToString("yyyy-MM-dd");
-            ViewBag.ToDate = toDate?.ToString("yyyy-MM-dd");
-
-            return View(orders);
+            query = query.Where(o =>
+                o.Status == "Delivered" ||
+                o.DeliveryStatus == "Delivered");
         }
+        else if (status == "Completed")
+        {
+            query = query.Where(o =>
+                o.Status == "Completed" ||
+                o.Status == "Delivered" ||
+                o.DeliveryStatus == "Delivered");
+        }
+        else
+        {
+            query = query.Where(o => o.Status == status);
+        }
+    }
+
+    if (!string.IsNullOrWhiteSpace(search))
+    {
+        search = search.Trim();
+
+        query = query.Where(o =>
+            o.Id.ToString().Contains(search) ||
+            o.ReceiverName.Contains(search) ||
+            o.ContactNumber.Contains(search));
+    }
+
+    if (fromDate.HasValue)
+        query = query.Where(o => o.CreatedAt.Date >= fromDate.Value.Date);
+
+    if (toDate.HasValue)
+        query = query.Where(o => o.CreatedAt.Date <= toDate.Value.Date);
+
+    var orders = await query
+        .OrderByDescending(o => o.CreatedAt)
+        .ToListAsync();
+
+    bool IsEarned(Order order)
+    {
+        return order.Status == "Delivered" ||
+               order.Status == "Completed" ||
+               order.DeliveryStatus == "Delivered";
+    }
+
+    ViewBag.TotalSales = orders
+        .Where(o => IsEarned(o))
+        .Sum(o => o.OrderItems
+            .Where(oi => oi.Product != null && oi.Product.SellerId == user.Id)
+            .Sum(oi => oi.Subtotal));
+
+    ViewBag.PendingSales = orders
+        .Where(o => !IsEarned(o) &&
+                    o.Status != "Cancelled" &&
+                    o.Status != "Returns" &&
+                    o.DeliveryStatus != "Returned to Seller")
+        .Sum(o => o.OrderItems
+            .Where(oi => oi.Product != null && oi.Product.SellerId == user.Id)
+            .Sum(oi => oi.Subtotal));
+
+    ViewBag.TotalOrders = orders.Count;
+
+    ViewBag.TotalItemsSold = orders
+        .Where(o => IsEarned(o))
+        .Sum(o => o.OrderItems
+            .Where(oi => oi.Product != null && oi.Product.SellerId == user.Id)
+            .Sum(oi => oi.Quantity));
+
+    ViewBag.Status = status;
+    ViewBag.Search = search;
+    ViewBag.FromDate = fromDate?.ToString("yyyy-MM-dd");
+    ViewBag.ToDate = toDate?.ToString("yyyy-MM-dd");
+
+    return View(orders);
+}
 
         [HttpPost]
         [ValidateAntiForgeryToken]
