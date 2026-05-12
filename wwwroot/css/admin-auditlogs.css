@@ -184,6 +184,96 @@
     border-radius: 999px;
 }
 
+.audit-filter-form {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr 1fr auto auto;
+    gap: 12px;
+    margin-bottom: 22px;
+}
+
+.audit-filter-form .form-control,
+.audit-filter-form .form-select {
+    height: 46px;
+    border-radius: 12px;
+    font-weight: 700;
+}
+
+.audit-filter-btn,
+.audit-reset-btn {
+    height: 46px;
+    border: none;
+    border-radius: 12px;
+    padding: 0 16px;
+    font-weight: 800;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.audit-filter-btn {
+    background: #2563eb;
+    color: #ffffff;
+}
+
+.audit-reset-btn {
+    background: #f1f5f9;
+    color: #334155;
+}
+
+.audit-pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-top: 22px;
+}
+
+.audit-pagination span {
+    font-weight: 800;
+    color: #334155;
+}
+
+.audit-page-btn {
+    background: #2563eb;
+    color: #ffffff;
+    text-decoration: none;
+    padding: 11px 18px;
+    border-radius: 14px;
+    font-weight: 800;
+}
+
+.audit-page-btn:hover {
+    background: #1d4ed8;
+    color: #ffffff;
+}
+
+.audit-page-btn.disabled {
+    pointer-events: none;
+    opacity: 0.45;
+}
+
+@media (max-width: 1200px) {
+    .audit-filter-form {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .audit-filter-form {
+        grid-template-columns: 1fr;
+    }
+
+    .audit-pagination {
+        flex-direction: column;
+    }
+
+    .audit-page-btn {
+        width: 100%;
+        text-align: center;
+    }
+}
+
 @media (max-width: 768px) {
     .audit-header {
         padding: 26px;

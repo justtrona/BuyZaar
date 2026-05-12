@@ -1,0 +1,191 @@
+@model List<BuyZaar.Models.ApplicationUser>
+
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "Manage Sellers";
+}
+
+@section Styles {
+    <link rel="stylesheet"
+          href="~/css/admin-manage-sellers.css"
+          asp-append-version="true" />
+}
+
+<div class="seller-header">
+    <div>
+        <h1>Manage Sellers</h1>
+        <p>View, filter, verify, activate, or deactivate BuyZaar sellers.</p>
+    </div>
+
+    <span class="seller-count">
+        @Model.Count Seller(s)
+    </span>
+</div>
+
+@if (TempData["SellerMessage"] != null)
+{
+    <div class="alert alert-success seller-alert">
+        @TempData["SellerMessage"]
+    </div>
+}
+
+<div class="seller-card">
+
+    <div class="seller-card-header">
+        <div>
+            <h3>Seller Accounts</h3>
+            <p>List of approved sellers in the system.</p>
+        </div>
+    </div>
+
+    <form asp-controller="Admin"
+          asp-action="ManageSeller"
+          method="get"
+          class="seller-filter-form">
+
+        <input type="text"
+               name="search"
+               value="@ViewBag.Search"
+               class="form-control"
+               placeholder="Search seller name or email..." />
+
+        <select name="verificationStatus" class="form-select">
+            <option value="">All Verification</option>
+            <option value="Verified" selected="@(ViewBag.VerificationStatus == "Verified")">Verified</option>
+            <option value="Pending" selected="@(ViewBag.VerificationStatus == "Pending")">Pending</option>
+        </select>
+
+        <select name="emailStatus" class="form-select">
+            <option value="">All Email Status</option>
+            <option value="Verified" selected="@(ViewBag.EmailStatus == "Verified")">Email Verified</option>
+            <option value="Unverified" selected="@(ViewBag.EmailStatus == "Unverified")">Email Unverified</option>
+        </select>
+
+        <select name="accountStatus" class="form-select">
+            <option value="">All Accounts</option>
+            <option value="Active" selected="@(ViewBag.AccountStatus == "Active")">Active</option>
+            <option value="Deactivated" selected="@(ViewBag.AccountStatus == "Deactivated")">Deactivated</option>
+        </select>
+
+        <button type="submit" class="seller-filter-btn">
+            Filter
+        </button>
+
+        <a asp-controller="Admin"
+           asp-action="ManageSeller"
+           class="seller-reset-btn">
+            Reset
+        </a>
+    </form>
+
+    <div class="table-responsive">
+        <table class="table seller-table align-middle">
+            <thead>
+                <tr>
+                    <th>Seller</th>
+                    <th>Email Status</th>
+                    <th>Verification</th>
+                    <th>Account Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @if (Model.Any())
+                {
+                    foreach (var seller in Model)
+                    {
+                        var isDeactivated = seller.LockoutEnd != null && seller.LockoutEnd > DateTimeOffset.Now;
+
+                        <tr>
+                            <td>
+                                <div class="seller-cell">
+                                    <div class="seller-avatar">
+                                        @((seller.FullName ?? seller.Email ?? "S")
+                                            .Substring(0, 1)
+                                            .ToUpper())
+                                    </div>
+
+                                    <div>
+                                        <strong>
+                                            @(string.IsNullOrWhiteSpace(seller.FullName)
+                                                ? "Unnamed Seller"
+                                                : seller.FullName)
+                                        </strong>
+
+                                        <span>
+                                            @(seller.Email ?? "No email")
+                                        </span>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <td>
+                                <span class="seller-pill @(seller.EmailConfirmed ? "verified" : "pending")">
+                                    @(seller.EmailConfirmed ? "Verified Email" : "Email Not Verified")
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="seller-pill @(seller.IsVerified ? "verified" : "pending")">
+                                    @(seller.IsVerified ? "Verified Seller" : "Pending Verification")
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="seller-pill @(isDeactivated ? "deactivated" : "verified")">
+                                    @(isDeactivated ? "Deactivated" : "Active")
+                                </span>
+                            </td>
+
+                            <td>
+                                <div class="seller-actions">
+                                    @* <form asp-controller="Admin"
+                                          asp-action="ToggleSellerVerification"
+                                          method="post">
+
+                                        @Html.AntiForgeryToken()
+
+                                        <input type="hidden"
+                                               name="userId"
+                                               value="@seller.Id" />
+
+                                        <button type="submit"
+                                                class="seller-action-btn verify">
+                                            @(seller.IsVerified ? "Unverify" : "Verify")
+                                        </button>
+                                    </form> *@
+
+                                    <form asp-controller="Admin"
+                                          asp-action="ToggleSellerActivation"
+                                          method="post">
+
+                                        @Html.AntiForgeryToken()
+
+                                        <input type="hidden"
+                                               name="userId"
+                                               value="@seller.Id" />
+
+                                        <button type="submit"
+                                                class="seller-action-btn @(isDeactivated ? "activate" : "deactivate")">
+                                            @(isDeactivated ? "Activate" : "Deactivate")
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="5" class="text-center text-muted py-5">
+                            No sellers found.
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+</div>

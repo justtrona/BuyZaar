@@ -1,0 +1,97 @@
+@model IEnumerable<BuyZaar.Models.Order>
+
+@{
+    Layout = "~/Views/Shared/_RiderLayout.cshtml";
+    ViewData["Title"] = "Delivery History";
+}
+
+@section Styles {
+    <link rel="stylesheet"
+          href="~/css/rider-history.css"
+          asp-append-version="true" />
+}
+
+<div class="history-page">
+
+    <div class="history-header">
+        <div>
+            <h1>Delivery History</h1>
+            <p>Review completed and returned delivery records.</p>
+        </div>
+
+        <span class="history-badge">
+            @Model.Count() Records
+        </span>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="history-empty">
+            <div class="history-empty-icon">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+            </div>
+
+            <h3>No delivery history yet</h3>
+            <p>Your completed and returned deliveries will appear here.</p>
+
+            <a asp-controller="Rider"
+               asp-action="ActiveDeliveries">
+                View Active Deliveries
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="history-grid">
+            @foreach (var order in Model)
+            {
+                <div class="history-card">
+                    <div class="history-card-header">
+                        <div>
+                            <h3>Order #@order.Id</h3>
+                            <p>
+                                @(order.DeliveredAt?.ToString("MMM dd, yyyy hh:mm tt") ?? "No delivery date")
+                            </p>
+                        </div>
+
+                        <span class="history-status">
+                            @order.DeliveryStatus
+                        </span>
+                    </div>
+
+                    <div class="history-info">
+                        <div>
+                            <span>Order Status</span>
+                            <strong>@order.Status</strong>
+                        </div>
+
+                        <div>
+                            <span>Total Items</span>
+                            <strong>@order.OrderItems.Count</strong>
+                        </div>
+
+                        <div>
+                            <span>Delivered At</span>
+                            <strong>
+                                @(order.DeliveredAt?.ToString("MMM dd, yyyy") ?? "Not available")
+                            </strong>
+                        </div>
+                    </div>
+
+                    <div class="history-items">
+                        <span>Items</span>
+
+                        @foreach (var item in order.OrderItems)
+                        {
+                            <p>
+                                @item.Product?.Name
+                                <strong>x@item.Quantity</strong>
+                            </p>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+</div>

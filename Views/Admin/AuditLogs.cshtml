@@ -3,6 +3,10 @@
 @{
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
     ViewData["Title"] = "Audit Logs";
+
+    var currentPage = ViewBag.CurrentPage as int? ?? 1;
+    var totalPages = ViewBag.TotalPages as int? ?? 1;
+    var totalLogs = ViewBag.TotalLogs as int? ?? Model.Count;
 }
 
 @section Styles {
@@ -23,9 +27,61 @@
     <div class="audit-summary">
         <div>
             <h3>Recent Admin Activities</h3>
-            <p>@Model.Count log(s) found</p>
+            <p>@totalLogs log(s) found · Page @currentPage of @(totalPages == 0 ? 1 : totalPages)</p>
         </div>
     </div>
+
+    <form asp-controller="Admin"
+          asp-action="AuditLogs"
+          method="get"
+          class="audit-filter-form">
+
+        <input type="text"
+               name="search"
+               value="@ViewBag.Search"
+               class="form-control"
+               placeholder="Search admin, action, entity, description..." />
+
+        <select name="actionFilter" class="form-select">
+            <option value="">All Actions</option>
+            @foreach (var action in ViewBag.ActionOptions)
+            {
+                <option value="@action" selected="@(ViewBag.ActionFilter == action)">
+                    @action
+                </option>
+            }
+        </select>
+
+        <select name="entityFilter" class="form-select">
+            <option value="">All Entities</option>
+            @foreach (var entity in ViewBag.EntityOptions)
+            {
+                <option value="@entity" selected="@(ViewBag.EntityFilter == entity)">
+                    @entity
+                </option>
+            }
+        </select>
+
+        <input type="date"
+               name="fromDate"
+               value="@ViewBag.FromDate"
+               class="form-control" />
+
+        <input type="date"
+               name="toDate"
+               value="@ViewBag.ToDate"
+               class="form-control" />
+
+        <button type="submit" class="audit-filter-btn">
+            Filter
+        </button>
+
+        <a asp-controller="Admin"
+           asp-action="AuditLogs"
+           class="audit-reset-btn">
+            Reset
+        </a>
+    </form>
 
     <div class="table-responsive">
         <table class="table audit-table align-middle">
@@ -105,6 +161,36 @@
                 }
             </tbody>
         </table>
+    </div>
+
+    <div class="audit-pagination">
+        <a asp-controller="Admin"
+           asp-action="AuditLogs"
+           asp-route-page="@(currentPage - 1)"
+           asp-route-search="@ViewBag.Search"
+           asp-route-actionFilter="@ViewBag.ActionFilter"
+           asp-route-entityFilter="@ViewBag.EntityFilter"
+           asp-route-fromDate="@ViewBag.FromDate"
+           asp-route-toDate="@ViewBag.ToDate"
+           class="audit-page-btn @(currentPage <= 1 ? "disabled" : "")">
+            Previous
+        </a>
+
+        <span>
+            Page @currentPage of @(totalPages == 0 ? 1 : totalPages)
+        </span>
+
+        <a asp-controller="Admin"
+           asp-action="AuditLogs"
+           asp-route-page="@(currentPage + 1)"
+           asp-route-search="@ViewBag.Search"
+           asp-route-actionFilter="@ViewBag.ActionFilter"
+           asp-route-entityFilter="@ViewBag.EntityFilter"
+           asp-route-fromDate="@ViewBag.FromDate"
+           asp-route-toDate="@ViewBag.ToDate"
+           class="audit-page-btn @(currentPage >= totalPages ? "disabled" : "")">
+            Next
+        </a>
     </div>
 
 </div>

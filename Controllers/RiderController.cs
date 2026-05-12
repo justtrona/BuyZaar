@@ -44,6 +44,65 @@ namespace BuyZaar.Controllers
             return View(riderProfile);
         }
 
+        public async Task<IActionResult> Profile()
+        {
+            ViewBag.ActiveRole = "Rider";
+
+            var user = await _userManager.GetUserAsync(User);
+
+            if (user == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var riderProfile = await _context.RiderProfiles
+                .Include(r => r.User)
+                .FirstOrDefaultAsync(r => r.UserId == user.Id);
+
+            if (riderProfile == null)
+            {
+                return NotFound();
+            }
+
+            return View(riderProfile);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateProfile(string fullName, string phoneNumber)
+        {
+            ViewBag.ActiveRole = "Rider";
+
+            var user = await _userManager.GetUserAsync(User);
+
+            if (user == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            if (string.IsNullOrWhiteSpace(fullName))
+            {
+                TempData["ProfileError"] = "Full name is required.";
+                return RedirectToAction(nameof(Profile));
+            }
+
+            user.FullName = fullName.Trim();
+            user.PhoneNumber = string.IsNullOrWhiteSpace(phoneNumber)
+                ? null
+                : phoneNumber.Trim();
+
+            var result = await _userManager.UpdateAsync(user);
+
+            if (!result.Succeeded)
+            {
+                TempData["ProfileError"] = "Profile update failed.";
+                return RedirectToAction(nameof(Profile));
+            }
+
+            TempData["ProfileSuccess"] = "Profile updated successfully.";
+            return RedirectToAction(nameof(Profile));
+        }
+
         public async Task<IActionResult> AssignedOrders()
         {
             ViewBag.ActiveRole = "Rider";
@@ -60,6 +119,106 @@ namespace BuyZaar.Controllers
                     .ThenInclude(oi => oi.Product)
                 .Where(o => o.RiderId == user.Id && o.DeliveryStatus == "Assigned")
                 .OrderByDescending(o => o.AssignedAt)
+                .ToListAsync();
+
+            return View(orders);
+        }
+
+        public async Task<IActionResult> AvailableTasks()
+        {
+            ViewBag.ActiveRole = "Rider";
+
+            var orders = await _context.Orders
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Product)
+                .Where(o => o.DeliveryStatus == "Pending Assignment")
+                .OrderByDescending(o => o.CreatedAt)
+                .ToListAsync();
+
+            return View(orders);
+        }
+
+        public async Task<IActionResult> DeliveryScope()
+        {
+            ViewBag.ActiveRole = "Rider";
+
+            var user = await _userManager.GetUserAsync(User);
+
+            if (user == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var riderProfile = await _context.RiderProfiles
+                .Include(r => r.User)
+                .FirstOrDefaultAsync(r => r.UserId == user.Id);
+
+            return View(riderProfile);
+        }
+
+        public async Task<IActionResult> DeliveryHistory()
+        {
+            ViewBag.ActiveRole = "Rider";
+
+            var user = await _userManager.GetUserAsync(User);
+
+            if (user == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var orders = await _context.Orders
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Product)
+                .Where(o => o.RiderId == user.Id &&
+                            (o.DeliveryStatus == "Delivered" ||
+                             o.DeliveryStatus == "Returned to Seller"))
+                .OrderByDescending(o => o.DeliveredAt)
+                .ToListAsync();
+
+            return View(orders);
+        }
+
+        public async Task<IActionResult> ActiveDeliveries()
+        {
+            ViewBag.ActiveRole = "Rider";
+
+            var user = await _userManager.GetUserAsync(User);
+
+            if (user == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var now = DateTime.Now;
+
+            var expiredFailedOrders = await _context.Orders
+                .Where(o => o.RiderId == user.Id &&
+                            o.DeliveryStatus == "Failed Delivery" &&
+                            o.ReturnToSellerAt != null &&
+                            o.ReturnToSellerAt <= now)
+                .ToListAsync();
+
+            foreach (var order in expiredFailedOrders)
+            {
+                order.DeliveryStatus = "Returned to Seller";
+                order.Status = "Returns";
+            }
+
+            if (expiredFailedOrders.Any())
+            {
+                await _context.SaveChangesAsync();
+            }
+
+            var orders = await _context.Orders
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Product)
+                .Where(o => o.RiderId == user.Id &&
+                            (o.DeliveryStatus == "Accepted" ||
+                             o.DeliveryStatus == "Picked Up" ||
+                             o.DeliveryStatus == "Out for Delivery" ||
+                             o.DeliveryStatus == "Failed Delivery"))
+                .OrderByDescending(o => o.AcceptedAt)
                 .ToListAsync();
 
             return View(orders);
@@ -128,58 +287,12 @@ namespace BuyZaar.Controllers
             order.RiderId = null;
             order.DeliveryStatus = "Pending Assignment";
             order.AssignedAt = null;
-
             order.Status = "To Receive";
 
             await _context.SaveChangesAsync();
 
             TempData["Message"] = $"You declined Order #{order.Id}.";
             return RedirectToAction(nameof(AssignedOrders));
-        }
-
-        public async Task<IActionResult> ActiveDeliveries()
-        {
-            ViewBag.ActiveRole = "Rider";
-
-            var user = await _userManager.GetUserAsync(User);
-
-            if (user == null)
-            {
-                return RedirectToAction("Login", "Account");
-            }
-
-            var now = DateTime.Now;
-
-            var expiredFailedOrders = await _context.Orders
-                .Where(o => o.RiderId == user.Id &&
-                            o.DeliveryStatus == "Failed Delivery" &&
-                            o.ReturnToSellerAt != null &&
-                            o.ReturnToSellerAt <= now)
-                .ToListAsync();
-
-            foreach (var order in expiredFailedOrders)
-            {
-                order.DeliveryStatus = "Returned to Seller";
-                order.Status = "Returns";
-            }
-
-            if (expiredFailedOrders.Any())
-            {
-                await _context.SaveChangesAsync();
-            }
-
-            var orders = await _context.Orders
-                .Include(o => o.OrderItems)
-                    .ThenInclude(oi => oi.Product)
-                .Where(o => o.RiderId == user.Id &&
-                            (o.DeliveryStatus == "Accepted" ||
-                             o.DeliveryStatus == "Picked Up" ||
-                             o.DeliveryStatus == "Out for Delivery" ||
-                             o.DeliveryStatus == "Failed Delivery"))
-                .OrderByDescending(o => o.AcceptedAt)
-                .ToListAsync();
-
-            return View(orders);
         }
 
         [HttpPost]
@@ -252,48 +365,49 @@ namespace BuyZaar.Controllers
         }
 
         [HttpPost]
-[ValidateAntiForgeryToken]
-public async Task<IActionResult> MarkDelivered(int orderId)
-{
-    var user = await _userManager.GetUserAsync(User);
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> MarkDelivered(int orderId)
+        {
+            var user = await _userManager.GetUserAsync(User);
 
-    if (user == null)
-    {
-        return RedirectToAction("Login", "Account");
-    }
+            if (user == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
 
-    var order = await _context.Orders
-        .FirstOrDefaultAsync(o => o.Id == orderId && o.RiderId == user.Id);
+            var order = await _context.Orders
+                .FirstOrDefaultAsync(o => o.Id == orderId && o.RiderId == user.Id);
 
-    if (order == null)
-    {
-        return NotFound();
-    }
+            if (order == null)
+            {
+                return NotFound();
+            }
 
-    if (order.DeliveryStatus != "Out for Delivery")
-    {
-        TempData["Message"] = "This order cannot be marked as delivered.";
-        return RedirectToAction(nameof(ActiveDeliveries));
-    }
+            if (order.DeliveryStatus != "Out for Delivery")
+            {
+                TempData["Message"] = "This order cannot be marked as delivered.";
+                return RedirectToAction(nameof(ActiveDeliveries));
+            }
 
-    order.DeliveryStatus = "Delivered";
-    order.Status = "Delivered";
-    order.DeliveredAt = DateTime.Now;
+            order.DeliveryStatus = "Delivered";
+            order.Status = "Delivered";
+            order.DeliveredAt = DateTime.Now;
 
-    var payment = await _context.Payments
-        .FirstOrDefaultAsync(p => p.OrderId == order.Id);
+            var payment = await _context.Payments
+                .FirstOrDefaultAsync(p => p.OrderId == order.Id);
 
-    if (payment != null && payment.PaymentStatus == "Pending")
-    {
-        payment.PaymentStatus = "Paid";
-        payment.PaidAt = DateTime.Now;
-    }
+            if (payment != null && payment.PaymentStatus == "Pending")
+            {
+                payment.PaymentStatus = "Paid";
+                payment.PaidAt = DateTime.Now;
+            }
 
-    await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync();
 
-    TempData["Message"] = $"Order #{order.Id} marked as delivered. Payment has been marked as paid.";
-    return RedirectToAction(nameof(ActiveDeliveries));
-}
+            TempData["Message"] = $"Order #{order.Id} marked as delivered. Payment has been marked as paid.";
+            return RedirectToAction(nameof(ActiveDeliveries));
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> MarkFailedDelivery(int orderId, string? reason)

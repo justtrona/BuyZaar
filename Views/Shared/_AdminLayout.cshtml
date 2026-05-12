@@ -1,12 +1,14 @@
 @{
     var activeRole = ViewBag.ActiveRole as string ?? "Admin";
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
 }
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0" />
 
     <title>@ViewData["Title"] - BuyZaar Admin</title>
 
@@ -38,7 +40,7 @@
 
                     <a asp-controller="Admin"
                        asp-action="Index"
-                       class="sidebar-link">
+                       class="sidebar-link @(currentAction == "Index" ? "active" : "")">
                         Dashboard
                     </a>
 
@@ -48,13 +50,13 @@
 
                     <a asp-controller="Admin"
                        asp-action="Users"
-                       class="sidebar-link">
+                       class="sidebar-link @(currentAction == "Users" ? "active" : "")">
                         Manage Users
                     </a>
 
                     <a asp-controller="Admin"
                        asp-action="SellerApplications"
-                       class="sidebar-link">
+                       class="sidebar-link @(currentAction == "SellerApplications" ? "active" : "")">
                         Seller Applications
                     </a>
 
@@ -64,7 +66,7 @@
 
                     <a asp-controller="Admin"
                        asp-action="Products"
-                       class="sidebar-link">
+                       class="sidebar-link @(currentAction == "Products" ? "active" : "")">
                         Manage Products
                     </a>
 
@@ -74,19 +76,25 @@
 
                     <a asp-controller="Admin"
                        asp-action="Orders"
-                       class="sidebar-link">
+                       class="sidebar-link @(currentAction == "Orders" ? "active" : "")">
                         Manage Orders
                     </a>
 
                     <a asp-controller="Admin"
                        asp-action="CancellationRequests"
-                       class="sidebar-link">
+                       class="sidebar-link @(currentAction == "CancellationRequests" ? "active" : "")">
                         Cancellation Requests
                     </a>
 
                     <a asp-controller="Admin"
+                       asp-action="ReturnedOrders"
+                       class="sidebar-link @(currentAction == "ReturnedOrders" ? "active" : "")">
+                        Returned Orders
+                    </a>
+
+                    <a asp-controller="Admin"
                        asp-action="Payments"
-                       class="sidebar-link">
+                       class="sidebar-link @(currentAction == "Payments" ? "active" : "")">
                         Manage Payments
                     </a>
 
@@ -96,25 +104,25 @@
 
                     <a asp-controller="Admin"
                        asp-action="Reports"
-                       class="sidebar-link">
+                       class="sidebar-link @(currentAction == "Reports" ? "active" : "")">
                         Reports & Analytics
                     </a>
 
                     <a asp-controller="Admin"
                        asp-action="AuditLogs"
-                       class="sidebar-link">
+                       class="sidebar-link @(currentAction == "AuditLogs" ? "active" : "")">
                         Audit Logs
                     </a>
 
                     <a asp-controller="Admin"
-                       asp-action="SellerActivities"
-                       class="sidebar-link">
+                       asp-action="ManageSeller"
+                       class="sidebar-link @(currentAction == "ManageSeller" ? "active" : "")">
                         Manage Sellers
                     </a>
 
                     <a asp-controller="Admin"
                        asp-action="Riders"
-                       class="sidebar-link">
+                       class="sidebar-link @(currentAction == "Riders" ? "active" : "")">
                         Manage Riders
                     </a>
 

@@ -1,0 +1,205 @@
+@model BuyZaar.Models.RiderProfile
+
+@{
+    Layout = "~/Views/Shared/_RiderLayout.cshtml";
+    ViewData["Title"] = "Rider Profile";
+
+    var fullName = Model?.User?.FullName ?? "Rider";
+    var email = Model?.User?.Email ?? User.Identity?.Name ?? "Not set";
+    var phoneNumber = Model?.User?.PhoneNumber ?? "";
+    var displayPhoneNumber = string.IsNullOrWhiteSpace(phoneNumber) ? "Not set" : phoneNumber;
+}
+
+<div class="profile-page">
+
+    <div class="profile-header">
+        <div>
+            <h1>Rider Profile</h1>
+            <p>Manage your rider account information and delivery status.</p>
+        </div>
+
+        <a asp-controller="Rider"
+           asp-action="Index"
+           class="profile-back-btn">
+            Back to Dashboard
+        </a>
+    </div>
+
+    @if (TempData["ProfileSuccess"] != null)
+    {
+        <div class="alert alert-success profile-alert">
+            @TempData["ProfileSuccess"]
+        </div>
+    }
+
+    @if (TempData["ProfileError"] != null)
+    {
+        <div class="alert alert-danger profile-alert">
+            @TempData["ProfileError"]
+        </div>
+    }
+
+    <div class="profile-grid">
+
+        <div class="profile-card profile-main-card">
+            <div class="profile-avatar-large">
+                @fullName.Substring(0, 1).ToUpper()
+            </div>
+
+            <div>
+                <h2>@fullName</h2>
+                <p>BuyZaar Rider</p>
+                <span class="profile-status-badge">Active Rider</span>
+            </div>
+        </div>
+
+        <div class="profile-card">
+            <div class="profile-card-header profile-card-header-row">
+                <div>
+                    <h3>Personal Information</h3>
+                    <p>Your basic rider account details.</p>
+                </div>
+
+                <button type="button"
+                        class="profile-small-edit-btn"
+                        data-bs-toggle="modal"
+                        data-bs-target="#editProfileModal">
+                    Edit
+                </button>
+            </div>
+
+            <div class="profile-info-list">
+                <div>
+                    <span>Full Name</span>
+                    <strong>@fullName</strong>
+                </div>
+
+                <div>
+                    <span>Role</span>
+                    <strong>Rider</strong>
+                </div>
+
+                <div>
+                    <span>Email</span>
+                    <strong>@email</strong>
+                </div>
+
+                <div>
+                    <span>Phone Number</span>
+                    <strong>@displayPhoneNumber</strong>
+                </div>
+            </div>
+        </div>
+
+        <div class="profile-card profile-wide-card">
+            <div class="profile-card-header">
+                <h3>Delivery Information</h3>
+                <p>Overview of rider delivery details.</p>
+            </div>
+
+            <div class="profile-info-list delivery-list">
+                <div>
+                    <span>Delivery Area</span>
+                    <strong>Not assigned</strong>
+                </div>
+
+                <div>
+                    <span>Vehicle Type</span>
+                    <strong>Not set</strong>
+                </div>
+
+                <div>
+                    <span>Active Deliveries</span>
+                    <strong>0</strong>
+                </div>
+
+                <div>
+                    <span>Completed Deliveries</span>
+                    <strong>0</strong>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<div class="modal fade"
+     id="editProfileModal"
+     tabindex="-1"
+     aria-labelledby="editProfileModalLabel"
+     aria-hidden="true">
+
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content profile-modal">
+
+            <div class="modal-header profile-modal-header">
+                <div>
+                    <h5 class="modal-title" id="editProfileModalLabel">
+                        Edit Rider Profile
+                    </h5>
+                    <p>Update your basic account information.</p>
+                </div>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close">
+                </button>
+            </div>
+
+            <form asp-controller="Rider"
+                  asp-action="UpdateProfile"
+                  method="post">
+
+                @Html.AntiForgeryToken()
+
+                <div class="modal-body profile-modal-body">
+
+                    <div class="profile-form-group">
+                        <label>Full Name</label>
+                        <input type="text"
+                               name="fullName"
+                               value="@fullName"
+                               class="form-control"
+                               required />
+                    </div>
+
+                    <div class="profile-form-group">
+                        <label>Email</label>
+                        <input type="email"
+                               value="@email"
+                               class="form-control"
+                               disabled />
+                        <small>Email cannot be edited here.</small>
+                    </div>
+
+                    <div class="profile-form-group">
+                        <label>Phone Number</label>
+                        <input type="text"
+                               name="phoneNumber"
+                               value="@phoneNumber"
+                               class="form-control"
+                               placeholder="Enter phone number" />
+                    </div>
+
+                </div>
+
+                <div class="modal-footer profile-modal-footer">
+                    <button type="button"
+                            class="profile-modal-cancel"
+                            data-bs-dismiss="modal">
+                        Cancel
+                    </button>
+
+                    <button type="submit"
+                            class="profile-modal-save">
+                        Save Changes
+                    </button>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>

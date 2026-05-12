@@ -1,0 +1,175 @@
+@model List<BuyZaar.Models.Order>
+
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "Returned Orders";
+}
+
+@section Styles {
+    <link rel="stylesheet"
+          href="~/css/admin-returned-orders.css"
+          asp-append-version="true" />
+}
+
+<div class="returns-header">
+    <div>
+        <h1>Returned Orders</h1>
+        <p>Track returned products, buyers, sellers, riders, and return status.</p>
+    </div>
+
+    <span class="returns-count">
+        @Model.Count Return(s)
+    </span>
+</div>
+
+<div class="returns-card">
+
+    <div class="returns-card-header">
+        <div>
+            <h3>Return Records</h3>
+            <p>Orders marked as returns, return pending, or returned to seller.</p>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table returns-table align-middle">
+            <thead>
+                <tr>
+                    <th>Order</th>
+                    <th>Buyer</th>
+                    <th>Returned Product / Seller</th>
+                    <th>Total</th>
+                    <th>Rider</th>
+                    <th>Return Status</th>
+                    <th>Reason / Note</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @if (Model.Any())
+                {
+                    foreach (var order in Model)
+                    {
+                        var returnStatusClass = order.DeliveryStatus switch
+                        {
+                            "Returned to Seller" => "completed",
+                            "Return Pending" => "pending",
+                            "Failed Delivery" => "failed",
+                            _ => "returns"
+                        };
+
+                        <tr>
+                            <td>
+                                <div class="order-cell">
+                                    <strong>#@order.Id</strong>
+                                    <span>@order.Status</span>
+                                </div>
+                            </td>
+
+                            <td>
+                                <div class="buyer-cell">
+                                    <strong>
+                                        @(string.IsNullOrWhiteSpace(order.ReceiverName)
+                                            ? "Unknown Buyer"
+                                            : order.ReceiverName)
+                                    </strong>
+
+                                    <span>
+                                        @(string.IsNullOrWhiteSpace(order.ContactNumber)
+                                            ? "No contact"
+                                            : order.ContactNumber)
+                                    </span>
+                                </div>
+                            </td>
+
+                            <td>
+                                <div class="return-items-cell">
+                                    @foreach (var item in order.OrderItems)
+                                    {
+                                        <div class="return-item">
+                                            <strong>
+                                                @(item.Product?.Name ?? "Unknown Product")
+                                            </strong>
+
+                                            <span>
+                                                Seller:
+                                                @(item.Product?.Seller?.FullName
+                                                    ?? item.Product?.Seller?.Email
+                                                    ?? "Unknown Seller")
+                                            </span>
+
+                                            <small>
+                                                Qty: @item.Quantity · ₱@item.Price.ToString("N2")
+                                            </small>
+                                        </div>
+                                    }
+                                </div>
+                            </td>
+
+                            <td>
+                                <strong>₱@order.TotalAmount.ToString("N2")</strong>
+                            </td>
+
+                            <td>
+                                @if (order.Rider != null)
+                                {
+                                    <div class="rider-cell">
+                                        <strong>@order.Rider.FullName</strong>
+                                        <span>@order.Rider.PhoneNumber</span>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <span class="muted-pill">
+                                        No rider
+                                    </span>
+                                }
+                            </td>
+
+                            <td>
+                                <span class="return-status @returnStatusClass">
+                                    @order.DeliveryStatus
+                                </span>
+                            </td>
+
+                            <td>
+                                <div class="reason-cell">
+                                    @if (!string.IsNullOrWhiteSpace(order.FailedDeliveryReason))
+                                    {
+                                        <strong>Failed Delivery:</strong>
+                                        <span>@order.FailedDeliveryReason</span>
+                                    }
+                                    else if (!string.IsNullOrWhiteSpace(order.CancellationAdminNote))
+                                    {
+                                        <strong>Admin Note:</strong>
+                                        <span>@order.CancellationAdminNote</span>
+                                    }
+                                    else
+                                    {
+                                        <span>No note provided</span>
+                                    }
+                                </div>
+                            </td>
+
+                            <td>
+                                <span class="date-text">
+                                    @order.CreatedAt.ToString("yyyy-MM-dd")
+                                </span>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="8" class="text-center text-muted py-5">
+                            No returned orders found.
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+</div>

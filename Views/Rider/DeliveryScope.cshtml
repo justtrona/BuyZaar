@@ -1,0 +1,93 @@
+@{
+    Layout = "~/Views/Shared/_RiderLayout.cshtml";
+    ViewData["Title"] = "Delivery Scope";
+}
+
+@section Styles {
+    <link rel="stylesheet"
+          href="~/css/rider-scope.css"
+          asp-append-version="true" />
+}
+
+<div class="scope-page">
+
+    <div class="scope-header">
+        <div>
+            <h1>Delivery Scope</h1>
+            <p>View your assigned delivery coverage and delivery guidelines.</p>
+        </div>
+
+        <span class="scope-badge">
+            Active Coverage
+        </span>
+    </div>
+
+    <div class="scope-grid">
+
+        <div class="scope-card">
+            <div class="scope-icon">
+                <i class="fa-solid fa-location-dot"></i>
+            </div>
+
+            <h3>Assigned Area</h3>
+            <p>Your current delivery area is based on admin assignment.</p>
+
+            <div class="scope-info-box">
+                <span>Coverage Area</span>
+                <strong>Not assigned yet</strong>
+            </div>
+        </div>
+
+        <div class="scope-card">
+            <div class="scope-icon">
+                <i class="fa-solid fa-motorcycle"></i>
+            </div>
+
+            <h3>Delivery Mode</h3>
+            <p>Use your registered vehicle for accepted delivery tasks.</p>
+
+            <div class="scope-info-box">
+                <span>Vehicle Type</span>
+                <strong>Not set</strong>
+            </div>
+        </div>
+
+        <div class="scope-card">
+            <div class="scope-icon">
+                <i class="fa-solid fa-clock"></i>
+            </div>
+
+            <h3>Delivery Reminders</h3>
+            <p>Keep orders moving and update statuses on time.</p>
+
+            <ul class="scope-list">
+                <li>Accept only tasks you can deliver.</li>
+                <li>Mark orders as picked up after collection.</li>
+                <li>Update failed deliveries with a reason.</li>
+            </ul>
+        </div>
+
+        <div class="scope-card">
+            <div class="scope-icon">
+                <i class="fa-solid fa-check"></i>
+            </div>
+
+            <h3>Allowed Actions</h3>
+            <p>These are the main actions you can perform as a rider.</p>
+
+            <div class="scope-actions">
+                <a asp-controller="Rider"
+                   asp-action="AssignedOrders">
+                    View Assigned Orders
+                </a>
+
+                <a asp-controller="Rider"
+                   asp-action="ActiveDeliveries">
+                    Active Deliveries
+                </a>
+            </div>
+        </div>
+
+    </div>
+
+</div>

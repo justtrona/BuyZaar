@@ -15,24 +15,22 @@
 
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/styles.css" asp-append-version="true" />
+
+    @await RenderSectionAsync("Styles", required: false)
 </head>
 
 <body>
     <div class="dashboard-layout">
 
-        <!-- SIDEBAR -->
         <aside class="dashboard-sidebar">
-
             <div class="sidebar-main">
 
-                <!-- LOGO -->
                 <div class="sidebar-logo">
                     <img src="~/images/icon_logo.png" alt="BuyZaar Logo" />
                     <h5>BuyZaar</h5>
                     <span>@activeRole Panel</span>
                 </div>
 
-                <!-- NAVIGATION -->
                 <nav class="sidebar-nav">
 
                     @if (activeRole == "Seller")
@@ -70,7 +68,8 @@
                         </a>
 
                         <div class="sidebar-group-title">
-                            Business</div>
+                            Business
+                        </div>
 
                         <a asp-controller="Seller"
                            asp-action="SalesRecords"
@@ -131,7 +130,6 @@
                 </nav>
             </div>
 
-            <!-- SIDEBAR ACCOUNT -->
             <div class="sidebar-account">
 
                 <div class="sidebar-user">
@@ -215,13 +213,10 @@
                 </form>
 
             </div>
-
         </aside>
 
-        <!-- MAIN CONTENT -->
         <main class="dashboard-main">
 
-            <!-- TOPBAR -->
             <div class="dashboard-topbar">
 
                 <div class="dashboard-topbar-content">
@@ -233,16 +228,14 @@
                     {
                         <div>
                             <h4>@ViewData["Title"]</h4>
-                            <p>
-                                Manage your BuyZaar @activeRole workspace
-                            </p>
+                            <p>Manage your BuyZaar @activeRole workspace</p>
                         </div>
                     }
                 </div>
 
                 <div class="dashboard-topbar-actions">
                     <div class="dropdown">
-                        <button class="btn btn-light position-relative notification-btn"
+                        <button class="notification-btn"
                                 type="button"
                                 data-bs-toggle="dropdown"
                                 aria-expanded="false">
@@ -305,7 +298,6 @@
 
             </div>
 
-            <!-- PAGE CONTENT -->
             <div class="dashboard-content">
                 @RenderBody()
             </div>

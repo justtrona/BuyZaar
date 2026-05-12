@@ -759,16 +759,98 @@ namespace BuyZaar.Controllers
             return RedirectToAction(nameof(Products));
         }
 
-        public async Task<IActionResult> AuditLogs()
-        {
-            var logs = await _context.AuditLogs
-                .Include(a => a.Admin)
-                .OrderByDescending(a => a.CreatedAt)
-                .Take(200)
-                .ToListAsync();
+      public async Task<IActionResult> AuditLogs(
+    string? search,
+    string? actionFilter,
+    string? entityFilter,
+    DateTime? fromDate,
+    DateTime? toDate,
+    int page = 1)
+{
+    ViewBag.ActiveRole = "Admin";
 
-            return View(logs);
-        }
+    const int pageSize = 20;
+
+    if (page < 1)
+    {
+        page = 1;
+    }
+
+    var query = _context.AuditLogs
+        .Include(a => a.Admin)
+        .AsQueryable();
+
+    if (!string.IsNullOrWhiteSpace(search))
+    {
+        query = query.Where(a =>
+            (a.Admin != null && (
+                a.Admin.FullName.Contains(search) ||
+                a.Admin.Email!.Contains(search)
+            )) ||
+            a.Action.Contains(search) ||
+            a.EntityType.Contains(search) ||
+            a.Description.Contains(search));
+    }
+
+    if (!string.IsNullOrWhiteSpace(actionFilter))
+    {
+        query = query.Where(a => a.Action == actionFilter);
+    }
+
+    if (!string.IsNullOrWhiteSpace(entityFilter))
+    {
+        query = query.Where(a => a.EntityType == entityFilter);
+    }
+
+    if (fromDate.HasValue)
+    {
+        query = query.Where(a => a.CreatedAt >= fromDate.Value);
+    }
+
+    if (toDate.HasValue)
+    {
+        query = query.Where(a => a.CreatedAt <= toDate.Value.AddDays(1).AddTicks(-1));
+    }
+
+    var totalLogs = await query.CountAsync();
+    var totalPages = (int)Math.Ceiling(totalLogs / (double)pageSize);
+
+    if (totalPages > 0 && page > totalPages)
+    {
+        page = totalPages;
+    }
+
+    var logs = await query
+        .OrderByDescending(a => a.CreatedAt)
+        .Skip((page - 1) * pageSize)
+        .Take(pageSize)
+        .ToListAsync();
+
+    ViewBag.Search = search;
+    ViewBag.ActionFilter = actionFilter;
+    ViewBag.EntityFilter = entityFilter;
+    ViewBag.FromDate = fromDate?.ToString("yyyy-MM-dd");
+    ViewBag.ToDate = toDate?.ToString("yyyy-MM-dd");
+
+    ViewBag.CurrentPage = page;
+    ViewBag.TotalPages = totalPages;
+    ViewBag.TotalLogs = totalLogs;
+    ViewBag.PageSize = pageSize;
+
+    ViewBag.ActionOptions = await _context.AuditLogs
+        .Select(a => a.Action)
+        .Distinct()
+        .OrderBy(a => a)
+        .ToListAsync();
+
+    ViewBag.EntityOptions = await _context.AuditLogs
+        .Select(a => a.EntityType)
+        .Distinct()
+        .OrderBy(e => e)
+        .ToListAsync();
+
+    return View(logs);
+}
 
         public async Task<IActionResult> Reports()
         {
@@ -932,7 +1014,7 @@ namespace BuyZaar.Controllers
                 .Trim();
         }
 
-        public async Task<IActionResult> Payments(string? search, string? status, string? method, int page = 1)
+public async Task<IActionResult> Payments(string? search, string? status, string? method, int page = 1)
 {
     const int pageSize = 15;
 
@@ -941,6 +1023,9 @@ namespace BuyZaar.Controllers
 
     var paymentsQuery = _context.Payments
         .Include(p => p.Order)
+            .ThenInclude(o => o.OrderItems)
+                .ThenInclude(oi => oi.Product)
+                    .ThenInclude(p => p.Seller)
         .OrderByDescending(p => p.CreatedAt)
         .AsQueryable();
 
@@ -950,7 +1035,15 @@ namespace BuyZaar.Controllers
             p.Id.ToString().Contains(search) ||
             p.OrderId.ToString().Contains(search) ||
             (p.ReferenceNumber != null && p.ReferenceNumber.Contains(search)) ||
-            (p.Order != null && p.Order.ReceiverName.Contains(search))
+            (p.Order != null && p.Order.ReceiverName.Contains(search)) ||
+            (p.Order != null && p.Order.ContactNumber.Contains(search)) ||
+            (p.Order != null && p.Order.OrderItems.Any(oi =>
+                oi.Product != null &&
+                (
+                    oi.Product.Name.Contains(search) ||
+                    oi.Product.Seller.FullName.Contains(search) ||
+                    oi.Product.Seller.Email!.Contains(search)
+                )))
         );
     }
 
@@ -993,6 +1086,15 @@ namespace BuyZaar.Controllers
         .Where(p => p.IsRefunded)
         .SumAsync(p => p.RefundAmount ?? 0);
 
+    ViewBag.ReturnedPayments = await _context.Payments
+        .Include(p => p.Order)
+        .CountAsync(p =>
+            p.Order != null &&
+            (
+                p.Order.Status == "Returns" ||
+                p.Order.DeliveryStatus == "Returned to Seller"
+            ));
+
     ViewBag.PendingPayments = await _context.Payments
         .CountAsync(p => p.PaymentStatus == "Pending");
 
@@ -1001,5 +1103,128 @@ namespace BuyZaar.Controllers
 
     return View(payments);
 }
+
+public async Task<IActionResult> ManageSeller(
+    string? search,
+    string? verificationStatus,
+    string? emailStatus,
+    string? accountStatus)
+{
+    ViewBag.ActiveRole = "Admin";
+
+    var sellers = (await _userManager.GetUsersInRoleAsync("Seller")).ToList();
+
+    if (!string.IsNullOrWhiteSpace(search))
+    {
+        sellers = sellers.Where(s =>
+            (!string.IsNullOrWhiteSpace(s.FullName) &&
+             s.FullName.Contains(search, StringComparison.OrdinalIgnoreCase)) ||
+            (!string.IsNullOrWhiteSpace(s.Email) &&
+             s.Email.Contains(search, StringComparison.OrdinalIgnoreCase))
+        ).ToList();
+    }
+
+    if (verificationStatus == "Verified")
+    {
+        sellers = sellers.Where(s => s.IsVerified).ToList();
+    }
+    else if (verificationStatus == "Pending")
+    {
+        sellers = sellers.Where(s => !s.IsVerified).ToList();
+    }
+
+    if (emailStatus == "Verified")
+    {
+        sellers = sellers.Where(s => s.EmailConfirmed).ToList();
+    }
+    else if (emailStatus == "Unverified")
+    {
+        sellers = sellers.Where(s => !s.EmailConfirmed).ToList();
+    }
+
+    if (accountStatus == "Active")
+    {
+        sellers = sellers.Where(s => s.LockoutEnd == null || s.LockoutEnd <= DateTimeOffset.Now).ToList();
+    }
+    else if (accountStatus == "Deactivated")
+    {
+        sellers = sellers.Where(s => s.LockoutEnd != null && s.LockoutEnd > DateTimeOffset.Now).ToList();
+    }
+
+    ViewBag.Search = search;
+    ViewBag.VerificationStatus = verificationStatus;
+    ViewBag.EmailStatus = emailStatus;
+    ViewBag.AccountStatus = accountStatus;
+
+    return View(sellers);
+}
+
+[HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> ToggleSellerActivation(string userId)
+{
+    var seller = await _userManager.FindByIdAsync(userId);
+
+    if (seller == null)
+    {
+        return NotFound();
+    }
+
+    var isDeactivated = seller.LockoutEnd != null && seller.LockoutEnd > DateTimeOffset.Now;
+
+    seller.LockoutEnd = isDeactivated
+        ? null
+        : DateTimeOffset.MaxValue;
+
+    await _userManager.UpdateAsync(seller);
+
+    TempData["SellerMessage"] = isDeactivated
+        ? "Seller account activated successfully."
+        : "Seller account deactivated successfully.";
+
+    return RedirectToAction(nameof(ManageSeller));
+}
+
+public async Task<IActionResult> ReturnedOrders()
+{
+    ViewBag.ActiveRole = "Admin";
+
+    var returnedOrders = await _context.Orders
+        .Include(o => o.Rider)
+        .Include(o => o.OrderItems)
+            .ThenInclude(oi => oi.Product)
+                .ThenInclude(p => p.Seller)
+        .Where(o =>
+            o.Status == "Returns" ||
+            o.DeliveryStatus == "Return Pending" ||
+            o.DeliveryStatus == "Returned to Seller")
+        .OrderByDescending(o => o.CreatedAt)
+        .ToListAsync();
+
+    return View(returnedOrders);
+}
+
+// [HttpPost]
+// [ValidateAntiForgeryToken]
+// public async Task<IActionResult> ToggleSellerVerification(string userId)
+// {
+//     var seller = await _userManager.FindByIdAsync(userId);
+
+//     if (seller == null)
+//     {
+//         return NotFound();
+//     }
+
+//     seller.IsVerified = !seller.IsVerified;
+//     seller.VerifiedAt = seller.IsVerified ? DateTime.Now : null;
+
+//     await _userManager.UpdateAsync(seller);
+
+//     TempData["SellerMessage"] = seller.IsVerified
+//         ? "Seller verified successfully."
+//         : "Seller verification removed.";
+
+//     return RedirectToAction(nameof(ManageSeller));
+// }
     }
 }

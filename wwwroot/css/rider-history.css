@@ -1,0 +1,235 @@
+/* ================= RIDER DELIVERY HISTORY ================= */
+
+.history-page {
+    width: 100%;
+}
+
+.history-header {
+    width: 100%;
+    background: linear-gradient(135deg, #0f172a, #1d4ed8);
+    color: #ffffff;
+    padding: 32px;
+    border-radius: 26px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    box-shadow: 0 18px 38px rgba(15, 23, 42, 0.18);
+    position: relative;
+    overflow: hidden;
+}
+
+.history-header::after {
+    content: "";
+    position: absolute;
+    width: 260px;
+    height: 260px;
+    background: rgba(255, 255, 255, 0.09);
+    border-radius: 50%;
+    right: -80px;
+    top: -100px;
+}
+
+.history-header h1 {
+    margin: 0;
+    font-size: 34px;
+    font-weight: 900;
+    position: relative;
+    z-index: 1;
+}
+
+.history-header p {
+    margin: 8px 0 0;
+    color: #dbeafe;
+    position: relative;
+    z-index: 1;
+}
+
+.history-badge {
+    background: #ffffff;
+    color: #1d4ed8;
+    padding: 12px 18px;
+    border-radius: 999px;
+    font-weight: 900;
+    position: relative;
+    z-index: 1;
+}
+
+.history-empty {
+    background: #ffffff;
+    border-radius: 26px;
+    padding: 50px;
+    text-align: center;
+    border: 1px solid #eef2f7;
+    box-shadow: 0 10px 26px rgba(15, 23, 42, 0.08);
+}
+
+.history-empty-icon {
+    width: 76px;
+    height: 76px;
+    margin: 0 auto 18px;
+    border-radius: 24px;
+    background: #eff6ff;
+    color: #2563eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+}
+
+.history-empty h3 {
+    margin: 0;
+    font-size: 26px;
+    font-weight: 900;
+    color: #111827;
+}
+
+.history-empty p {
+    margin: 8px 0 22px;
+    color: #64748b;
+    font-weight: 600;
+}
+
+.history-empty a {
+    display: inline-block;
+    background: #2563eb;
+    color: #ffffff;
+    text-decoration: none;
+    padding: 12px 18px;
+    border-radius: 14px;
+    font-weight: 800;
+}
+
+.history-empty a:hover {
+    background: #1d4ed8;
+}
+
+.history-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+}
+
+.history-card {
+    background: #ffffff;
+    border-radius: 26px;
+    padding: 26px;
+    border: 1px solid #eef2f7;
+    box-shadow: 0 10px 26px rgba(15, 23, 42, 0.08);
+}
+
+.history-card-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    align-items: flex-start;
+    margin-bottom: 20px;
+}
+
+.history-card-header h3 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 900;
+    color: #111827;
+}
+
+.history-card-header p {
+    margin: 6px 0 0;
+    color: #64748b;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.history-status {
+    background: #dcfce7;
+    color: #166534;
+    padding: 8px 13px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 900;
+    white-space: nowrap;
+}
+
+.history-info {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.history-info div {
+    background: #f8fafc;
+    border: 1px solid #e5e7eb;
+    padding: 14px;
+    border-radius: 16px;
+}
+
+.history-info span,
+.history-items span {
+    display: block;
+    color: #64748b;
+    font-size: 13px;
+    font-weight: 800;
+    margin-bottom: 6px;
+}
+
+.history-info strong {
+    display: block;
+    color: #111827;
+    font-size: 15px;
+    font-weight: 900;
+}
+
+.history-items {
+    background: #f8fafc;
+    border: 1px solid #e5e7eb;
+    padding: 14px;
+    border-radius: 16px;
+}
+
+.history-items p {
+    margin: 8px 0 0;
+    color: #111827;
+    font-weight: 700;
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.history-items strong {
+    color: #2563eb;
+    font-weight: 900;
+}
+
+/* ================= RESPONSIVE ================= */
+
+@media (max-width: 1100px) {
+    .history-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .history-info {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .history-header {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 26px;
+        gap: 16px;
+    }
+
+    .history-header h1 {
+        font-size: 28px;
+    }
+
+    .history-card-header {
+        flex-direction: column;
+    }
+
+    .history-empty {
+        padding: 34px 20px;
+    }
+}

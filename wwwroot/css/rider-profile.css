@@ -1,0 +1,342 @@
+/* ================= RIDER PROFILE PAGE ================= */
+
+.profile-page {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+}
+
+.profile-header {
+    width: 100%;
+    background: linear-gradient(135deg, #0f172a, #1d4ed8);
+    color: #ffffff;
+    padding: 30px 34px;
+    border-radius: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 18px 38px rgba(15, 23, 42, 0.18);
+    overflow: hidden;
+    position: relative;
+}
+
+.profile-header::after {
+    content: "";
+    position: absolute;
+    width: 260px;
+    height: 260px;
+    background: rgba(255, 255, 255, 0.09);
+    border-radius: 50%;
+    right: -80px;
+    top: -100px;
+}
+
+.profile-header h1 {
+    margin: 0;
+    font-size: 34px;
+    font-weight: 900;
+    position: relative;
+    z-index: 1;
+}
+
+.profile-header p {
+    margin: 8px 0 0;
+    color: #dbeafe;
+    position: relative;
+    z-index: 1;
+}
+
+.profile-back-btn {
+    background: #ffffff;
+    color: #1d4ed8;
+    text-decoration: none;
+    padding: 13px 20px;
+    border-radius: 15px;
+    font-weight: 800;
+    position: relative;
+    z-index: 1;
+    transition: 0.2s ease;
+    white-space: nowrap;
+}
+
+.profile-back-btn:hover {
+    background: #eff6ff;
+    color: #1e40af;
+    transform: translateY(-2px);
+}
+
+.profile-grid {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 360px 1fr;
+    gap: 24px;
+    align-items: stretch;
+}
+
+.profile-card {
+    background: #ffffff;
+    border-radius: 26px;
+    padding: 28px;
+    box-shadow: 0 10px 26px rgba(15, 23, 42, 0.08);
+    border: 1px solid #eef2f7;
+}
+
+.profile-main-card {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    text-align: left;
+}
+
+.profile-avatar-large {
+    width: 92px;
+    height: 92px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #2563eb, #7c3aed);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 38px;
+    font-weight: 900;
+}
+
+.profile-main-card h2 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 900;
+    color: #111827;
+    overflow-wrap: anywhere;
+}
+
+.profile-main-card p {
+    margin: 6px 0 12px;
+    color: #6b7280;
+    font-weight: 600;
+}
+
+.profile-status-badge {
+    display: inline-block;
+    background: #dcfce7;
+    color: #166534;
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.profile-card-header {
+    margin-bottom: 18px;
+}
+
+.profile-card-header h3 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 900;
+    color: #111827;
+}
+
+.profile-card-header p {
+    margin: 6px 0 0;
+    color: #6b7280;
+    font-size: 14px;
+}
+
+.profile-card-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 14px;
+}
+
+.profile-small-edit-btn {
+    border: none;
+    background: #2563eb;
+    color: #ffffff;
+    padding: 9px 14px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 800;
+    transition: 0.2s ease;
+}
+
+.profile-small-edit-btn:hover {
+    background: #1d4ed8;
+    transform: translateY(-2px);
+}
+
+.profile-info-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+}
+
+.delivery-list {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+.profile-info-list div {
+    background: #f8fafc;
+    border: 1px solid #e5e7eb;
+    padding: 18px;
+    border-radius: 18px;
+    min-height: 90px;
+}
+
+.profile-info-list span {
+    display: block;
+    color: #64748b;
+    font-size: 13px;
+    font-weight: 800;
+    margin-bottom: 8px;
+}
+
+.profile-info-list strong {
+    display: block;
+    font-size: 16px;
+    color: #111827;
+    font-weight: 900;
+    overflow-wrap: anywhere;
+}
+
+.profile-wide-card {
+    grid-column: 1 / -1;
+}
+
+.profile-alert {
+    border: none;
+    border-radius: 16px;
+    font-weight: 700;
+}
+
+/* ================= MODAL ================= */
+
+.profile-modal {
+    border: none;
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.25);
+}
+
+.profile-modal-header {
+    background: linear-gradient(135deg, #0f172a, #1d4ed8);
+    color: #ffffff;
+    border-bottom: none;
+    padding: 24px;
+}
+
+.profile-modal-header h5 {
+    font-size: 22px;
+    font-weight: 900;
+}
+
+.profile-modal-header p {
+    margin: 5px 0 0;
+    color: #dbeafe;
+    font-size: 14px;
+}
+
+.profile-modal-body {
+    padding: 24px;
+}
+
+.profile-form-group {
+    margin-bottom: 16px;
+}
+
+.profile-form-group label {
+    display: block;
+    color: #334155;
+    font-size: 13px;
+    font-weight: 800;
+    margin-bottom: 8px;
+}
+
+.profile-form-group .form-control {
+    height: 50px;
+    border-radius: 14px;
+    border: 1px solid #e5e7eb;
+    font-weight: 700;
+}
+
+.profile-form-group small {
+    display: block;
+    margin-top: 6px;
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.profile-modal-footer {
+    border-top: 1px solid #e5e7eb;
+    padding: 18px 24px;
+}
+
+.profile-modal-cancel,
+.profile-modal-save {
+    border: none;
+    padding: 11px 16px;
+    border-radius: 14px;
+    font-weight: 800;
+}
+
+.profile-modal-cancel {
+    background: #f1f5f9;
+    color: #334155;
+}
+
+.profile-modal-save {
+    background: #2563eb;
+    color: #ffffff;
+}
+
+.profile-modal-save:hover {
+    background: #1d4ed8;
+}
+
+/* ================= RESPONSIVE ================= */
+
+@media (max-width: 1100px) {
+    .profile-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .delivery-list {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .profile-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 18px;
+        padding: 26px;
+    }
+
+    .profile-header h1 {
+        font-size: 28px;
+    }
+
+    .profile-back-btn {
+        width: 100%;
+        text-align: center;
+    }
+
+    .profile-main-card {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .profile-card-header-row {
+        flex-direction: column;
+    }
+
+    .profile-info-list,
+    .delivery-list {
+        grid-template-columns: 1fr;
+    }
+}

@@ -27,7 +27,7 @@
 <div class="payments-header">
     <div>
         <h1>Manage Payments</h1>
-        <p>Monitor transactions, payment status, revenue, and refunds.</p>
+        <p>Monitor transactions, payment status, revenue, refunds, and returns.</p>
     </div>
 </div>
 
@@ -40,6 +40,11 @@
     <div class="payment-stat-card red">
         <span>Total Refunded</span>
         <h2>₱@ViewBag.TotalRefunded.ToString("N2")</h2>
+    </div>
+
+    <div class="payment-stat-card purple">
+        <span>Returned Orders</span>
+        <h2>@(ViewBag.ReturnedPayments ?? 0)</h2>
     </div>
 
     <div class="payment-stat-card orange">
@@ -128,6 +133,8 @@
                     <th>Amount</th>
                     <th>Status</th>
                     <th>Refund</th>
+                    <th>Return Status</th>
+                    <th>Returned Item / Seller</th>
                     <th>Date</th>
                 </tr>
             </thead>
@@ -146,6 +153,13 @@
                             "Cancelled" => "cancelled",
                             _ => "pending"
                         };
+
+                        var hasReturn =
+                            payment.Order != null &&
+                            (
+                                payment.Order.Status == "Returns" ||
+                                payment.Order.DeliveryStatus == "Returned to Seller"
+                            );
 
                         <tr>
                             <td>
@@ -211,6 +225,56 @@
                             </td>
 
                             <td>
+                                @if (hasReturn)
+                                {
+                                    <span class="refund-badge returned">
+                                        @(payment.Order?.DeliveryStatus == "Returned to Seller"
+                                            ? "Returned to Seller"
+                                            : "Returned")
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="refund-badge none">
+                                        No Return
+                                    </span>
+                                }
+                            </td>
+
+                            <td>
+                                @if (hasReturn && payment.Order?.OrderItems != null && payment.Order.OrderItems.Any())
+                                {
+                                    <div class="return-items-cell">
+                                        @foreach (var item in payment.Order.OrderItems)
+                                        {
+                                            <div class="return-item">
+                                                <strong>
+                                                    @(item.Product?.Name ?? "Unknown Product")
+                                                </strong>
+
+                                                <span>
+                                                    Seller:
+                                                    @(item.Product?.Seller?.FullName
+                                                        ?? item.Product?.Seller?.Email
+                                                        ?? "Unknown Seller")
+                                                </span>
+
+                                                <small>
+                                                    Qty: @item.Quantity
+                                                </small>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                                else
+                                {
+                                    <span class="refund-badge none">
+                                        Not returned
+                                    </span>
+                                }
+                            </td>
+
+                            <td>
                                 <span class="date-text">
                                     @payment.CreatedAt.ToString("yyyy-MM-dd")
                                 </span>
@@ -221,7 +285,7 @@
                 else
                 {
                     <tr>
-                        <td colspan="8"
+                        <td colspan="10"
                             class="text-center text-muted py-5">
                             No payments found.
                         </td>
