@@ -11,17 +11,15 @@
 
 <div class="admin-orders-page">
 
-    <div class="admin-orders-header">
+    <div class="cancelled-header">
         <div>
-            <h2>Cancellation Requests</h2>
+            <h1>Cancellation Requests</h1>
             <p>Review buyer cancellation requests before approving returns or continuing delivery.</p>
         </div>
 
-        <a asp-controller="Admin"
-           asp-action="Orders"
-           class="btn btn-outline-secondary">
-            Back to Orders
-        </a>
+        <span class="cancelled-count">
+            @Model.Count() Request(s)
+        </span>
     </div>
 
     @if (TempData["Message"] != null)
@@ -31,16 +29,71 @@
         </div>
     }
 
-    @if (!Model.Any())
-    {
-        <div class="orders-empty-state">
-            <h5>No cancellation requests</h5>
-            <p>Buyer cancellation requests will appear here.</p>
+    <div class="cancelled-card">
+
+        <div class="cancelled-card-header">
+            <div>
+                <h3>Cancellation Records</h3>
+                <p>Buyer cancellation requests waiting for admin review.</p>
+            </div>
+
+            @* <a asp-controller="Admin"
+               asp-action="Orders"
+               class="btn btn-outline-secondary">
+                Back to Orders
+            </a> *@
         </div>
-    }
-    else
-    {
-        <div class="orders-table-card">
+
+        <div class="orders-filter-card">
+            <div class="orders-filter-group orders-filter-search">
+                <input type="text"
+                       id="cancelSearchInput"
+                       placeholder="Search order ID, receiver, contact, address, or reason..." />
+            </div>
+
+            <div class="orders-filter-group">
+                <select id="cancelOrderStatusFilter">
+                    <option value="">All Order Status</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Processing">Processing</option>
+                    <option value="Ready for Pickup">Ready for Pickup</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Cancelled">Cancelled</option>
+                    <option value="Cancellation Requested">Cancellation Requested</option>
+                </select>
+            </div>
+
+            <div class="orders-filter-group">
+                <select id="cancelDeliveryStatusFilter">
+                    <option value="">All Delivery Status</option>
+                    <option value="Pending Assignment">Pending Assignment</option>
+                    <option value="Assigned">Assigned</option>
+                    <option value="Picked Up">Picked Up</option>
+                    <option value="Out for Delivery">Out for Delivery</option>
+                    <option value="Delivered">Delivered</option>
+                    <option value="Return Pending">Return Pending</option>
+                    <option value="Returned to Seller">Returned to Seller</option>
+                </select>
+            </div>
+
+            <button type="button" id="cancelFilterBtn" class="cancelled-filter-btn">
+                Filter
+            </button>
+
+            <button type="button" id="cancelResetBtn" class="cancelled-reset-btn">
+                Reset
+            </button>
+        </div>
+
+        @if (!Model.Any())
+        {
+            <div class="orders-empty-state">
+                <h5>No cancellation requests</h5>
+                <p>Buyer cancellation requests will appear here.</p>
+            </div>
+        }
+        else
+        {
             <div class="table-responsive">
                 <table class="table orders-table align-middle">
                     <thead>
@@ -65,7 +118,15 @@
                                 ? "Pending Assignment"
                                 : order.DeliveryStatus;
 
-                            <tr>
+                            var cancellationReason = string.IsNullOrWhiteSpace(order.CancellationReason)
+                                ? "No reason provided"
+                                : order.CancellationReason;
+
+                            <tr class="cancel-request-row"
+                                data-search="@($"#{order.Id} {order.Id} {order.ReceiverName} {order.ContactNumber} {order.DeliveryAddress} {cancellationReason}".ToLower())"
+                                data-order-status="@order.Status"
+                                data-delivery-status="@deliveryStatus">
+
                                 <td class="fw-bold">#@order.Id</td>
 
                                 <td>@order.ReceiverName</td>
@@ -94,9 +155,7 @@
 
                                 <td>
                                     <div class="cancellation-reason-box">
-                                        @(string.IsNullOrWhiteSpace(order.CancellationReason)
-                                            ? "No reason provided"
-                                            : order.CancellationReason)
+                                        @cancellationReason
                                     </div>
                                 </td>
 
@@ -154,7 +213,69 @@
                     </tbody>
                 </table>
             </div>
-        </div>
-    }
 
+            <div id="cancelNoResults" class="orders-no-results d-none">
+                <h5>No matching cancellation requests found</h5>
+                <p>Try changing your search or filter options.</p>
+            </div>
+        }
+
+    </div>
 </div>
+
+@section Scripts {
+    <script>
+        const cancelSearchInput = document.getElementById("cancelSearchInput");
+        const cancelOrderStatusFilter = document.getElementById("cancelOrderStatusFilter");
+        const cancelDeliveryStatusFilter = document.getElementById("cancelDeliveryStatusFilter");
+        const cancelFilterBtn = document.getElementById("cancelFilterBtn");
+        const cancelResetBtn = document.getElementById("cancelResetBtn");
+        const cancelNoResults = document.getElementById("cancelNoResults");
+
+        function filterCancellationRequests() {
+            const searchValue = cancelSearchInput.value.toLowerCase().trim();
+            const orderStatusValue = cancelOrderStatusFilter.value;
+            const deliveryStatusValue = cancelDeliveryStatusFilter.value;
+
+            let visibleCount = 0;
+
+            document.querySelectorAll(".cancel-request-row").forEach(row => {
+                const rowSearch = row.dataset.search || "";
+                const rowOrderStatus = row.dataset.orderStatus || "";
+                const rowDeliveryStatus = row.dataset.deliveryStatus || "";
+
+                const matchesSearch = !searchValue || rowSearch.includes(searchValue);
+                const matchesOrderStatus = !orderStatusValue || rowOrderStatus === orderStatusValue;
+                const matchesDeliveryStatus = !deliveryStatusValue || rowDeliveryStatus === deliveryStatusValue;
+
+                const isVisible =
+                    matchesSearch &&
+                    matchesOrderStatus &&
+                    matchesDeliveryStatus;
+
+                row.style.display = isVisible ? "" : "none";
+
+                if (isVisible) {
+                    visibleCount++;
+                }
+            });
+
+            if (cancelNoResults) {
+                cancelNoResults.classList.toggle("d-none", visibleCount > 0);
+            }
+        }
+
+        cancelFilterBtn.addEventListener("click", filterCancellationRequests);
+
+        cancelResetBtn.addEventListener("click", function () {
+            cancelSearchInput.value = "";
+            cancelOrderStatusFilter.value = "";
+            cancelDeliveryStatusFilter.value = "";
+            filterCancellationRequests();
+        });
+
+        cancelSearchInput.addEventListener("keyup", filterCancellationRequests);
+        cancelOrderStatusFilter.addEventListener("change", filterCancellationRequests);
+        cancelDeliveryStatusFilter.addEventListener("change", filterCancellationRequests);
+    </script>
+}

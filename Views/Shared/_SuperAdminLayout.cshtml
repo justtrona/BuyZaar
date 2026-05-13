@@ -1,0 +1,211 @@
+@{
+    var activeRole = ViewBag.ActiveRole as string ?? "SuperAdmin";
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0" />
+
+    <title>@ViewData["Title"] - BuyZaar SuperAdmin</title>
+
+    <link rel="stylesheet"
+          href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+    <link rel="stylesheet"
+          href="~/css/superadmin-dashboard.css"
+          asp-append-version="true" />
+
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+
+<body>
+    <div class="dashboard-layout">
+
+        <aside class="dashboard-sidebar">
+            <div class="sidebar-main">
+
+                <div class="sidebar-logo">
+                    <img src="~/images/icon_logo.png"
+                         alt="BuyZaar Logo" />
+
+                    <h5>BuyZaar</h5>
+                    <span>SuperAdmin Panel</span>
+                </div>
+
+                <nav class="sidebar-nav">
+
+                    <a asp-controller="SuperAdmin"
+                       asp-action="Index"
+                       class="sidebar-link @(currentAction == "Index" ? "active" : "")">
+                        Dashboard
+                    </a>
+
+                    <div class="sidebar-group-title">
+                        Admin Management
+                    </div>
+
+                    <a asp-controller="SuperAdmin"
+                       asp-action="CreateAdmin"
+                       class="sidebar-link @(currentAction == "CreateAdmin" ? "active" : "")">
+                        Create Admin
+                    </a>
+
+                    <a asp-controller="SuperAdmin"
+                       asp-action="Admins"
+                       class="sidebar-link @(currentAction == "Admins" ? "active" : "")">
+                        Manage Admins
+                    </a>
+
+                    <div class="sidebar-group-title">
+                        User Management
+                    </div>
+
+                    <a asp-controller="SuperAdmin"
+                       asp-action="Users"
+                       class="sidebar-link @(currentAction == "Users" ? "active" : "")">
+                        Manage All Users
+                    </a>
+
+                    <a asp-controller="SuperAdmin"
+                       asp-action="Sellers"
+                       class="sidebar-link @(currentAction == "Sellers" ? "active" : "")">
+                        Manage Sellers
+                    </a>
+
+                    <a asp-controller="SuperAdmin"
+                       asp-action="Riders"
+                       class="sidebar-link @(currentAction == "Riders" ? "active" : "")">
+                        View Riders
+                    </a>
+
+                    <div class="sidebar-group-title">
+                        Product Monitoring
+                    </div>
+
+                    <a asp-controller="SuperAdmin"
+                       asp-action="Products"
+                       class="sidebar-link @(currentAction == "Products" ? "active" : "")">
+                        Monitor Products
+                    </a>
+
+                    <div class="sidebar-group-title">
+                        Order Monitoring
+                    </div>
+
+                    <a asp-controller="SuperAdmin"
+                       asp-action="Orders"
+                       class="sidebar-link @(currentAction == "Orders" ? "active" : "")">
+                        Monitor Orders
+                    </a>
+
+                    <a asp-controller="SuperAdmin"
+                       asp-action="Payments"
+                       class="sidebar-link @(currentAction == "Payments" ? "active" : "")">
+                        Monitor Payments
+                    </a>
+
+                    <a asp-controller="SuperAdmin"
+                       asp-action="Deliveries"
+                       class="sidebar-link @(currentAction == "Deliveries" ? "active" : "")">
+                        Monitor Deliveries
+                    </a>
+
+                    <div class="sidebar-group-title">
+                        Reports & Control
+                    </div>
+
+                    <a asp-controller="SuperAdmin"
+                       asp-action="Reports"
+                       class="sidebar-link @(currentAction == "Reports" ? "active" : "")">
+                        Reports & Dashboard
+                    </a>
+
+                    <a asp-controller="SuperAdmin"
+                       asp-action="AuditLogs"
+                       class="sidebar-link @(currentAction == "AuditLogs" ? "active" : "")">
+                        Audit Logs
+                    </a>
+
+                    <a asp-controller="SuperAdmin"
+                       asp-action="RiderLocations"
+                       class="sidebar-link @(currentAction == "RiderLocations" ? "active" : "")">
+                        Rider Service Locations
+                    </a>
+
+                    <a asp-controller="SuperAdmin"
+                       asp-action="Settings"
+                       class="sidebar-link @(currentAction == "Settings" ? "active" : "")">
+                        System Settings
+                    </a>
+
+                </nav>
+            </div>
+
+            <div class="sidebar-account">
+                <div class="sidebar-user">
+
+                    <div class="sidebar-avatar">
+                        @((User.Identity?.Name ?? "S")
+                            .Substring(0, 1)
+                            .ToUpper())
+                    </div>
+
+                    <div class="sidebar-user-info">
+                        <div class="sidebar-user-name">
+                            @User.Identity?.Name
+                        </div>
+
+                        <div class="sidebar-user-role">
+                            @activeRole
+                        </div>
+                    </div>
+
+                </div>
+
+                <form asp-controller="Account"
+                      asp-action="Logout"
+                      method="post">
+
+                    @Html.AntiForgeryToken()
+
+                    <button type="submit"
+                            class="sidebar-logout-btn">
+                        Sign out
+                    </button>
+
+                </form>
+            </div>
+        </aside>
+
+        <main class="dashboard-main">
+
+            <div class="dashboard-topbar">
+                <div>
+                    <h4>@ViewData["Title"]</h4>
+                    <p>Manage BuyZaar system operations</p>
+                </div>
+
+                <div class="dashboard-topbar-actions">
+                    <button class="notification-btn">
+                        🔔
+                        <span class="notification-badge">3</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="dashboard-content">
+                @RenderBody()
+            </div>
+
+        </main>
+    </div>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

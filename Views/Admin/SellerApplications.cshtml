@@ -46,6 +46,42 @@
             </a>
         </div>
 
+        <div class="seller-filter-card">
+            <div class="seller-filter-group seller-filter-search">
+                <label>Search</label>
+                <input type="text"
+                       id="sellerSearchInput"
+                       placeholder="Search name, email, shop, or phone..." />
+            </div>
+
+            <div class="seller-filter-group">
+                <label>Role</label>
+                <select id="sellerRoleFilter">
+                    <option value="">All Roles</option>
+                    <option value="seller">Seller</option>
+                </select>
+            </div>
+
+            <div class="seller-filter-group">
+                <label>Status</label>
+                <select id="sellerStatusFilter">
+                    <option value="">All Status</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Approved">Approved</option>
+                    <option value="Rejected">Rejected</option>
+                    <option value="Cancelled">Cancelled</option>
+                </select>
+            </div>
+
+            <button type="button" id="sellerFilterBtn" class="seller-filter-btn">
+                Filter
+            </button>
+
+            <button type="button" id="sellerResetBtn" class="seller-reset-btn">
+                Reset
+            </button>
+        </div>
+
         @if (!Model.Any())
         {
             <div class="seller-empty-state">
@@ -85,7 +121,11 @@
                             var modalId = $"sellerApplicationModal_{app.Id}";
                             var applicantInitial = (app.FullName ?? "S").Substring(0, 1).ToUpper();
 
-                            <tr>
+                            <tr class="seller-application-row"
+                                data-search="@($"{app.FullName} {app.User?.Email} {app.ShopName} {app.PhoneNumber}".ToLower())"
+                                data-status="@app.Status"
+                                data-role="seller">
+
                                 <td>
                                     <div class="seller-applicant-cell">
                                         <div class="seller-app-avatar">
@@ -157,8 +197,7 @@
 
                                         @if (app.Status == "Pending")
                                         {
-                                            <form asp-action="ApproveSeller"
-                                                  method="post">
+                                            <form asp-action="ApproveSeller" method="post">
                                                 @Html.AntiForgeryToken()
                                                 <input type="hidden" name="id" value="@app.Id" />
 
@@ -167,8 +206,7 @@
                                                 </button>
                                             </form>
 
-                                            <form asp-action="RejectSeller"
-                                                  method="post">
+                                            <form asp-action="RejectSeller" method="post">
                                                 @Html.AntiForgeryToken()
                                                 <input type="hidden" name="id" value="@app.Id" />
 
@@ -335,3 +373,45 @@
 
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        const searchInput = document.getElementById("sellerSearchInput");
+        const roleFilter = document.getElementById("sellerRoleFilter");
+        const statusFilter = document.getElementById("sellerStatusFilter");
+        const filterBtn = document.getElementById("sellerFilterBtn");
+        const resetBtn = document.getElementById("sellerResetBtn");
+
+        function filterSellerApplications() {
+            const searchValue = searchInput.value.toLowerCase().trim();
+            const roleValue = roleFilter.value;
+            const statusValue = statusFilter.value;
+
+            document.querySelectorAll(".seller-application-row").forEach(row => {
+                const rowSearch = row.dataset.search || "";
+                const rowRole = row.dataset.role || "";
+                const rowStatus = row.dataset.status || "";
+
+                const matchesSearch = !searchValue || rowSearch.includes(searchValue);
+                const matchesRole = !roleValue || rowRole === roleValue;
+                const matchesStatus = !statusValue || rowStatus === statusValue;
+
+                row.style.display =
+                    matchesSearch && matchesRole && matchesStatus ? "" : "none";
+            });
+        }
+
+        filterBtn.addEventListener("click", filterSellerApplications);
+
+        resetBtn.addEventListener("click", function () {
+            searchInput.value = "";
+            roleFilter.value = "";
+            statusFilter.value = "";
+            filterSellerApplications();
+        });
+
+        searchInput.addEventListener("keyup", filterSellerApplications);
+        roleFilter.addEventListener("change", filterSellerApplications);
+        statusFilter.addEventListener("change", filterSellerApplications);
+    </script>
+}

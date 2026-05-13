@@ -84,6 +84,84 @@
     color: #0f172a;
 }
 
+/* FILTER */
+.seller-filter-card {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr auto auto;
+    gap: 14px;
+    align-items: end;
+    background: #ffffff;
+    padding: 18px;
+    border-radius: 18px;
+    margin-bottom: 24px;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+    border: 1px solid #eef2f7;
+}
+
+.seller-filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.seller-filter-group label {
+    font-size: 12px;
+    font-weight: 900;
+    text-transform: uppercase;
+    color: #1e293b;
+    letter-spacing: 0.04em;
+}
+
+.seller-filter-group input,
+.seller-filter-group select {
+    width: 100%;
+    height: 42px;
+    border: 1px solid #cbd5e1;
+    border-radius: 12px;
+    padding: 0 14px;
+    font-size: 14px;
+    font-weight: 600;
+    outline: none;
+    background: #f8fafc;
+    color: #334155;
+}
+
+.seller-filter-group input:focus,
+.seller-filter-group select:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    background: #ffffff;
+}
+
+.seller-filter-btn,
+.seller-reset-btn {
+    height: 42px;
+    border-radius: 12px;
+    padding: 0 18px;
+    font-weight: 900;
+    cursor: pointer;
+    transition: 0.2s ease;
+    white-space: nowrap;
+}
+
+.seller-filter-btn {
+    border: none;
+    background: #2563eb;
+    color: #ffffff;
+}
+
+.seller-reset-btn {
+    background: #ffffff;
+    color: #334155;
+    border: 1px solid #cbd5e1;
+}
+
+.seller-filter-btn:hover,
+.seller-reset-btn:hover {
+    transform: translateY(-2px);
+    opacity: 0.92;
+}
+
 /* TABLE */
 .seller-app-table {
     margin-bottom: 0;
@@ -403,6 +481,16 @@
 }
 
 /* RESPONSIVE */
+@media (max-width: 992px) {
+    .seller-filter-card {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .seller-filter-search {
+        grid-column: span 2;
+    }
+}
+
 @media (max-width: 768px) {
     .seller-app-hero,
     .seller-app-card-header {
@@ -420,5 +508,15 @@
 
     .seller-modal-footer {
         flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 576px) {
+    .seller-filter-card {
+        grid-template-columns: 1fr;
+    }
+
+    .seller-filter-search {
+        grid-column: span 1;
     }
 }

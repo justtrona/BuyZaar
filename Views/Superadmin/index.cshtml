@@ -1,19 +1,253 @@
 @{
+    Layout = "~/Views/Shared/_SuperAdminLayout.cshtml";
     ViewData["Title"] = "SuperAdmin Dashboard";
+
+    var totalUsers = ViewBag.TotalUsers ?? 0;
+    var totalShoppers = ViewBag.TotalShoppers ?? 0;
+    var totalSellers = ViewBag.TotalSellers ?? 0;
+    var totalRiders = ViewBag.TotalRiders ?? 0;
+    var totalAdmins = ViewBag.TotalAdmins ?? 0;
+
+    var totalProducts = ViewBag.TotalProducts ?? 0;
+    var totalOrders = ViewBag.TotalOrders ?? 0;
+    var totalPayments = ViewBag.TotalPayments ?? 0;
+    var totalDeliveries = ViewBag.TotalDeliveries ?? 0;
 }
 
-<h2>SuperAdmin Dashboard</h2>
-<p>Welcome SuperAdmin.</p>
+<div class="superadmin-page">
 
-@if (TempData["SuccessMessage"] != null)
-{
-    <div class="alert alert-success">
-        @TempData["SuccessMessage"]
+    <div class="superadmin-hero">
+        <div>
+            <h1>SuperAdmin Dashboard</h1>
+            <p>Monitor users, sellers, riders, products, orders, payments, deliveries, and system activity.</p>
+        </div>
+
+        <span class="superadmin-badge">
+            SuperAdmin
+        </span>
     </div>
-}
 
-<p>
-    <a asp-controller="SuperAdmin" asp-action="CreateAdmin" class="btn btn-primary">
-        Create Admin
-    </a>
-</p>
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success superadmin-alert">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+
+    <div class="dashboard-kpi-grid">
+
+        <div class="dashboard-kpi-card">
+            <span>Total Users</span>
+            <strong>@totalUsers</strong>
+            <p>All registered accounts</p>
+        </div>
+
+        <div class="dashboard-kpi-card">
+            <span>Shoppers</span>
+            <strong>@totalShoppers</strong>
+            <p>Buyer accounts</p>
+        </div>
+
+        <div class="dashboard-kpi-card">
+            <span>Sellers</span>
+            <strong>@totalSellers</strong>
+            <p>Approved seller accounts</p>
+        </div>
+
+        <div class="dashboard-kpi-card">
+            <span>Riders</span>
+            <strong>@totalRiders</strong>
+            <p>Delivery personnel</p>
+        </div>
+
+    </div>
+
+    <div class="dashboard-analytics-grid">
+
+        <div class="dashboard-chart-card">
+            <div class="chart-card-header">
+                <div>
+                    <h3>User Distribution</h3>
+                    <p>Breakdown of shoppers, sellers, riders, and admins.</p>
+                </div>
+            </div>
+
+            <canvas id="userDistributionChart"></canvas>
+        </div>
+
+        <div class="dashboard-chart-card">
+            <div class="chart-card-header">
+                <div>
+                    <h3>Platform Overview</h3>
+                    <p>Products, orders, payments, and deliveries summary.</p>
+                </div>
+            </div>
+
+            <canvas id="platformOverviewChart"></canvas>
+        </div>
+
+    </div>
+
+    <div class="dashboard-section-grid">
+
+        <div class="dashboard-panel">
+            <div class="dashboard-panel-header">
+                <h3>System Modules</h3>
+                <p>Quick access to SuperAdmin controls.</p>
+            </div>
+
+            <div class="superadmin-action-grid">
+
+                <a asp-controller="SuperAdmin" asp-action="CreateAdmin" class="superadmin-action-card">
+                    <strong>Create Admin</strong>
+                    <span>Add admin accounts</span>
+                </a>
+
+                <a asp-controller="SuperAdmin" asp-action="Admins" class="superadmin-action-card">
+                    <strong>Manage Admins</strong>
+                    <span>View and manage admins</span>
+                </a>
+
+                <a asp-controller="SuperAdmin" asp-action="Users" class="superadmin-action-card">
+                    <strong>Manage Users</strong>
+                    <span>All platform users</span>
+                </a>
+
+                <a asp-controller="SuperAdmin" asp-action="Products" class="superadmin-action-card">
+                    <strong>Products</strong>
+                    <span>Monitor product listings</span>
+                </a>
+
+                <a asp-controller="SuperAdmin" asp-action="Orders" class="superadmin-action-card">
+                    <strong>Orders</strong>
+                    <span>Track order activity</span>
+                </a>
+
+                <a asp-controller="SuperAdmin" asp-action="Payments" class="superadmin-action-card">
+                    <strong>Payments</strong>
+                    <span>Monitor transactions</span>
+                </a>
+
+                <a asp-controller="SuperAdmin" asp-action="Deliveries" class="superadmin-action-card">
+                    <strong>Deliveries</strong>
+                    <span>Track delivery operations</span>
+                </a>
+
+                <a asp-controller="SuperAdmin" asp-action="AuditLogs" class="superadmin-action-card">
+                    <strong>Audit Logs</strong>
+                    <span>Review system actions</span>
+                </a>
+
+            </div>
+        </div>
+
+        <div class="dashboard-panel">
+            <div class="dashboard-panel-header">
+                <h3>Operational Summary</h3>
+                <p>Current platform totals.</p>
+            </div>
+
+            <div class="summary-list">
+                <div>
+                    <span>Total Products</span>
+                    <strong>@totalProducts</strong>
+                </div>
+
+                <div>
+                    <span>Total Orders</span>
+                    <strong>@totalOrders</strong>
+                </div>
+
+                <div>
+                    <span>Total Payments</span>
+                    <strong>@totalPayments</strong>
+                </div>
+
+                <div>
+                    <span>Total Deliveries</span>
+                    <strong>@totalDeliveries</strong>
+                </div>
+
+                <div>
+                    <span>Total Admins</span>
+                    <strong>@totalAdmins</strong>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        const userDistributionCtx = document.getElementById("userDistributionChart");
+        const platformOverviewCtx = document.getElementById("platformOverviewChart");
+
+        new Chart(userDistributionCtx, {
+            type: "doughnut",
+            data: {
+                labels: ["Shoppers", "Sellers", "Riders", "Admins"],
+                datasets: [{
+                    data: [
+                        @totalShoppers,
+                        @totalSellers,
+                        @totalRiders,
+                        @totalAdmins
+                    ],
+                    backgroundColor: [
+                        "#2563eb",
+                        "#16a34a",
+                        "#f59e0b",
+                        "#7c3aed"
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: "bottom"
+                    }
+                }
+            }
+        });
+
+        new Chart(platformOverviewCtx, {
+            type: "bar",
+            data: {
+                labels: ["Products", "Orders", "Payments", "Deliveries"],
+                datasets: [{
+                    label: "Total Records",
+                    data: [
+                        @totalProducts,
+                        @totalOrders,
+                        @totalPayments,
+                        @totalDeliveries
+                    ],
+                    backgroundColor: "#2563eb",
+                    borderRadius: 10
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+    </script>
+}

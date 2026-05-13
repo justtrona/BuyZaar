@@ -11,19 +11,23 @@
 
 <div class="rider-page">
 
-    <div class="rider-header">
-
+    <div class="rider-hero">
         <div>
-            <h2>Rider Management</h2>
+            <h1>Rider Management</h1>
             <p>Manage BuyZaar rider accounts and delivery personnel.</p>
         </div>
 
-        <a asp-controller="Admin"
-           asp-action="CreateRider"
-           class="btn btn-primary add-rider-btn">
-            + Create Rider
-        </a>
+        <div class="rider-hero-actions">
+            <span class="rider-count">
+                @Model.Count() Rider(s)
+            </span>
 
+            <a asp-controller="Admin"
+               asp-action="CreateRider"
+               class="btn add-rider-btn">
+                + Create Rider
+            </a>
+        </div>
     </div>
 
     @if (TempData["Message"] != null)
@@ -32,6 +36,48 @@
             @TempData["Message"]
         </div>
     }
+
+    <div class="rider-filter-card">
+        <div class="rider-filter-group rider-filter-search">
+            <label>Search</label>
+            <input type="text"
+                   id="riderSearchInput"
+                   placeholder="Search name, email, phone, location, or vehicle..." />
+        </div>
+
+        <div class="rider-filter-group">
+            <label>Status</label>
+            <select id="riderStatusFilter">
+                <option value="">All Status</option>
+                <option value="Available">Available</option>
+                <option value="Unavailable">Unavailable</option>
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
+                <option value="Busy">Busy</option>
+                <option value="PendingPasswordSetup">PendingPasswordSetup</option>
+            </select>
+        </div>
+
+        <div class="rider-filter-group">
+            <label>Vehicle</label>
+            <select id="riderVehicleFilter">
+                <option value="">All Vehicles</option>
+                <option value="Motorcycle">Motorcycle</option>
+                <option value="Bicycle">Bicycle</option>
+                <option value="Car">Car</option>
+                <option value="Van">Van</option>
+                <option value="N/A">N/A</option>
+            </select>
+        </div>
+
+        <button type="button" id="riderFilterBtn" class="rider-filter-btn">
+            Filter
+        </button>
+
+        <button type="button" id="riderResetBtn" class="rider-reset-btn">
+            Reset
+        </button>
+    </div>
 
     @if (!Model.Any())
     {
@@ -43,11 +89,8 @@
     else
     {
         <div class="rider-table-card">
-
             <div class="table-responsive">
-
                 <table class="table rider-table align-middle">
-
                     <thead>
                         <tr>
                             <th>Full Name</th>
@@ -61,32 +104,22 @@
                     </thead>
 
                     <tbody>
-
                         @foreach (var rider in Model)
                         {
-                            <tr>
+                            var vehicleType = string.IsNullOrWhiteSpace(rider.VehicleType)
+                                ? "N/A"
+                                : rider.VehicleType;
 
-                                <td class="fw-bold">
-                                    @rider.FullName
-                                </td>
+                            <tr class="rider-row"
+                                data-search="@($"{rider.FullName} {rider.User?.Email} {rider.PhoneNumber} {rider.AssignedLocation} {vehicleType}".ToLower())"
+                                data-status="@rider.Status"
+                                data-vehicle="@vehicleType">
 
-                                <td>
-                                    @rider.User?.Email
-                                </td>
-
-                                <td>
-                                    @rider.PhoneNumber
-                                </td>
-
-                                <td>
-                                    @rider.AssignedLocation
-                                </td>
-
-                                <td>
-                                    @(string.IsNullOrWhiteSpace(rider.VehicleType)
-                                        ? "N/A"
-                                        : rider.VehicleType)
-                                </td>
+                                <td class="fw-bold">@rider.FullName</td>
+                                <td>@rider.User?.Email</td>
+                                <td>@rider.PhoneNumber</td>
+                                <td>@rider.AssignedLocation</td>
+                                <td>@vehicleType</td>
 
                                 <td>
                                     <span class="rider-status">
@@ -97,17 +130,71 @@
                                 <td>
                                     @rider.CreatedAt.ToString("yyyy-MM-dd")
                                 </td>
-
                             </tr>
                         }
-
                     </tbody>
-
                 </table>
-
             </div>
 
+            <div id="riderNoResults" class="rider-no-results d-none">
+                <h4>No matching riders found</h4>
+                <p>Try changing your search or filter options.</p>
+            </div>
         </div>
     }
 
 </div>
+
+@section Scripts {
+    <script>
+        const riderSearchInput = document.getElementById("riderSearchInput");
+        const riderStatusFilter = document.getElementById("riderStatusFilter");
+        const riderVehicleFilter = document.getElementById("riderVehicleFilter");
+        const riderFilterBtn = document.getElementById("riderFilterBtn");
+        const riderResetBtn = document.getElementById("riderResetBtn");
+        const riderNoResults = document.getElementById("riderNoResults");
+
+        function filterRiders() {
+            const searchValue = riderSearchInput.value.toLowerCase().trim();
+            const statusValue = riderStatusFilter.value;
+            const vehicleValue = riderVehicleFilter.value;
+
+            let visibleCount = 0;
+
+            document.querySelectorAll(".rider-row").forEach(row => {
+                const rowSearch = row.dataset.search || "";
+                const rowStatus = row.dataset.status || "";
+                const rowVehicle = row.dataset.vehicle || "";
+
+                const matchesSearch = !searchValue || rowSearch.includes(searchValue);
+                const matchesStatus = !statusValue || rowStatus === statusValue;
+                const matchesVehicle = !vehicleValue || rowVehicle === vehicleValue;
+
+                const isVisible = matchesSearch && matchesStatus && matchesVehicle;
+
+                row.style.display = isVisible ? "" : "none";
+
+                if (isVisible) {
+                    visibleCount++;
+                }
+            });
+
+            if (riderNoResults) {
+                riderNoResults.classList.toggle("d-none", visibleCount > 0);
+            }
+        }
+
+        riderFilterBtn.addEventListener("click", filterRiders);
+
+        riderResetBtn.addEventListener("click", function () {
+            riderSearchInput.value = "";
+            riderStatusFilter.value = "";
+            riderVehicleFilter.value = "";
+            filterRiders();
+        });
+
+        riderSearchInput.addEventListener("keyup", filterRiders);
+        riderStatusFilter.addEventListener("change", filterRiders);
+        riderVehicleFilter.addEventListener("change", filterRiders);
+    </script>
+}
