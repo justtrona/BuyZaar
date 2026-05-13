@@ -3,6 +3,9 @@
 @{
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
     ViewData["Title"] = "Manage Sellers";
+
+    var sellerSales = ViewBag.SellerSales as Dictionary<string, decimal>
+        ?? new Dictionary<string, decimal>();
 }
 
 @section Styles {
@@ -14,7 +17,7 @@
 <div class="seller-header">
     <div>
         <h1>Manage Sellers</h1>
-        <p>View, filter, verify, activate, or deactivate BuyZaar sellers.</p>
+        <p>View, filter, monitor sales, activate, or deactivate BuyZaar sellers.</p>
     </div>
 
     <span class="seller-count">
@@ -85,6 +88,7 @@
                     <th>Seller</th>
                     <th>Email Status</th>
                     <th>Verification</th>
+                    <th>Total Sales</th>
                     <th>Account Status</th>
                     <th>Actions</th>
                 </tr>
@@ -96,6 +100,7 @@
                     foreach (var seller in Model)
                     {
                         var isDeactivated = seller.LockoutEnd != null && seller.LockoutEnd > DateTimeOffset.Now;
+                        var totalSales = sellerSales.ContainsKey(seller.Id) ? sellerSales[seller.Id] : 0;
 
                         <tr>
                             <td>
@@ -133,6 +138,12 @@
                             </td>
 
                             <td>
+                                <strong class="seller-sales">
+                                    ₱@totalSales.ToString("N2")
+                                </strong>
+                            </td>
+
+                            <td>
                                 <span class="seller-pill @(isDeactivated ? "deactivated" : "verified")">
                                     @(isDeactivated ? "Deactivated" : "Active")
                                 </span>
@@ -140,22 +151,6 @@
 
                             <td>
                                 <div class="seller-actions">
-                                    @* <form asp-controller="Admin"
-                                          asp-action="ToggleSellerVerification"
-                                          method="post">
-
-                                        @Html.AntiForgeryToken()
-
-                                        <input type="hidden"
-                                               name="userId"
-                                               value="@seller.Id" />
-
-                                        <button type="submit"
-                                                class="seller-action-btn verify">
-                                            @(seller.IsVerified ? "Unverify" : "Verify")
-                                        </button>
-                                    </form> *@
-
                                     <form asp-controller="Admin"
                                           asp-action="ToggleSellerActivation"
                                           method="post">
@@ -179,7 +174,7 @@
                 else
                 {
                     <tr>
-                        <td colspan="5" class="text-center text-muted py-5">
+                        <td colspan="6" class="text-center text-muted py-5">
                             No sellers found.
                         </td>
                     </tr>

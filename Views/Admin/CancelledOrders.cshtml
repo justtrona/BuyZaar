@@ -1,0 +1,234 @@
+@model List<BuyZaar.Models.Order>
+
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "Cancelled Orders";
+
+    var search = ViewBag.Search as string;
+    var selectedDeliveryStatus = ViewBag.DeliveryStatus as string;
+    var selectedFromDate = ViewBag.FromDate as string;
+    var selectedToDate = ViewBag.ToDate as string;
+}
+
+@section Styles {
+    <link rel="stylesheet"
+          href="~/css/admin-cancelled-orders.css"
+          asp-append-version="true" />
+}
+
+<div class="cancelled-header">
+    <div>
+        <h1>Cancelled Orders</h1>
+        <p>Track orders cancelled before rider acceptance or before delivery started.</p>
+    </div>
+
+    <span class="cancelled-count">
+        @Model.Count Cancelled
+    </span>
+</div>
+
+<div class="cancelled-card">
+
+    <div class="cancelled-card-header">
+        <div>
+            <h3>Cancellation Records</h3>
+            <p>Orders cancelled while still on seller-side processing or before rider pickup.</p>
+        </div>
+    </div>
+
+    <form asp-controller="Admin"
+          asp-action="CancelledOrders"
+          method="get"
+          class="cancelled-filter-form">
+
+        <input type="text"
+               name="search"
+               value="@search"
+               class="form-control"
+               placeholder="Search order, buyer, seller, product, or contact..." />
+
+        <select name="deliveryStatus" class="form-select">
+            <option value="">All Delivery Status</option>
+            <option value="Pending Assignment" selected="@(selectedDeliveryStatus == "Pending Assignment")">
+                Pending Assignment
+            </option>
+            <option value="Assigned" selected="@(selectedDeliveryStatus == "Assigned")">
+                Assigned
+            </option>
+            <option value="Return Pending" selected="@(selectedDeliveryStatus == "Return Pending")">
+                Return Pending
+            </option>
+        </select>
+
+        <input type="date"
+               name="fromDate"
+               value="@selectedFromDate"
+               class="form-control" />
+
+        <input type="date"
+               name="toDate"
+               value="@selectedToDate"
+               class="form-control" />
+
+        <button type="submit"
+                class="cancelled-filter-btn">
+            Filter
+        </button>
+
+        <a asp-controller="Admin"
+           asp-action="CancelledOrders"
+           class="cancelled-reset-btn">
+            Reset
+        </a>
+    </form>
+
+    <div class="table-responsive">
+        <table class="table cancelled-table align-middle">
+            <thead>
+                <tr>
+                    <th>Order</th>
+                    <th>Buyer</th>
+                    <th>Cancelled Product / Seller</th>
+                    <th>Total</th>
+                    <th>Rider Status</th>
+                    <th>Order Status</th>
+                    <th>Admin Note</th>
+                    <th>Cancelled Date</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @if (Model.Any())
+                {
+                    foreach (var order in Model)
+                    {
+                        <tr>
+                            <td>
+                                <div class="order-cell">
+                                    <strong>#@order.Id</strong>
+                                    <span>@order.CancellationRequestStatus</span>
+                                </div>
+                            </td>
+
+                            <td>
+                                <div class="buyer-cell">
+                                    <strong>
+                                        @(string.IsNullOrWhiteSpace(order.ReceiverName)
+                                            ? "Unknown Buyer"
+                                            : order.ReceiverName)
+                                    </strong>
+
+                                    <span>
+                                        @(string.IsNullOrWhiteSpace(order.ContactNumber)
+                                            ? "No contact"
+                                            : order.ContactNumber)
+                                    </span>
+                                </div>
+                            </td>
+
+                            <td>
+                                <div class="cancelled-items-cell">
+                                    @if (order.OrderItems != null && order.OrderItems.Any())
+                                    {
+                                        foreach (var item in order.OrderItems)
+                                        {
+                                            <div class="cancelled-item">
+                                                <strong>
+                                                    @(item.Product?.Name ?? "Unknown Product")
+                                                </strong>
+
+                                                <span>
+                                                    Seller:
+                                                    @(item.Product?.Seller?.FullName
+                                                        ?? item.Product?.Seller?.Email
+                                                        ?? "Unknown Seller")
+                                                </span>
+
+                                                <small>
+                                                    Qty: @item.Quantity · ₱@item.Price.ToString("N2")
+                                                </small>
+                                            </div>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <span class="muted-pill">
+                                            No product items
+                                        </span>
+                                    }
+                                </div>
+                            </td>
+
+                            <td>
+                                <strong>₱@order.TotalAmount.ToString("N2")</strong>
+                            </td>
+
+                            <td>
+                                @if (order.Rider != null)
+                                {
+                                    <div class="rider-cell">
+                                        <strong>@order.Rider.FullName</strong>
+                                        <span>
+                                            @(string.IsNullOrWhiteSpace(order.Rider.PhoneNumber)
+                                                ? "No phone number"
+                                                : order.Rider.PhoneNumber)
+                                        </span>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <span class="muted-pill">
+                                        No rider assigned
+                                    </span>
+                                }
+                            </td>
+
+                            <td>
+                                <div class="status-stack">
+                                    <span class="cancel-status">
+                                        @order.Status
+                                    </span>
+
+                                    <span class="delivery-status">
+                                        @order.DeliveryStatus
+                                    </span>
+                                </div>
+                            </td>
+
+                            <td>
+                                <div class="note-cell">
+                                    @if (!string.IsNullOrWhiteSpace(order.CancellationAdminNote))
+                                    {
+                                        <strong>Admin Note:</strong>
+                                        <span>@order.CancellationAdminNote</span>
+                                    }
+                                    else
+                                    {
+                                        <span>No note provided</span>
+                                    }
+                                </div>
+                            </td>
+
+                            <td>
+                                <span class="date-text">
+                                    @(order.CancellationReviewedAt.HasValue
+                                        ? order.CancellationReviewedAt.Value.ToString("yyyy-MM-dd")
+                                        : order.CreatedAt.ToString("yyyy-MM-dd"))
+                                </span>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="8" class="text-center text-muted py-5">
+                            No cancelled orders found.
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+</div>

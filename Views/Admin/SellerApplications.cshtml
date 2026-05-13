@@ -6,47 +6,62 @@
 }
 
 @section Styles {
-    <link rel="stylesheet" href="~/css/admin-sellerapplication.css" asp-append-version="true" />
+    <link rel="stylesheet"
+          href="~/css/admin-sellerapplication.css"
+          asp-append-version="true" />
 }
 
-<div class="seller-application-page">
+<div class="seller-app-page">
 
-    <div class="seller-application-header">
+    <div class="seller-app-hero">
         <div>
-            <h2>Seller Applications</h2>
-            <p>Review, approve, or reject seller account requests.</p>
+            <h1>Seller Applications</h1>
+            <p>Review seller account requests, verify submitted details, and manage approvals.</p>
         </div>
 
-        <a asp-controller="Admin" asp-action="Index" class="btn btn-outline-secondary">
-            Back to Dashboard
-        </a>
+        <span class="seller-app-count">
+            @Model.Count() Application(s)
+        </span>
     </div>
 
     @if (TempData["Message"] != null)
     {
-        <div class="alert alert-info seller-application-alert">
+        <div class="alert seller-app-alert">
             @TempData["Message"]
         </div>
     }
 
-    @if (!Model.Any())
-    {
-        <div class="seller-empty-state">
-            <h5>No seller applications found</h5>
-            <p>There are currently no seller applications to review.</p>
+    <div class="seller-app-card">
+
+        <div class="seller-app-card-header">
+            <div>
+                <h3>Application Records</h3>
+                <p>Seller applications submitted by users.</p>
+            </div>
+
+            <a asp-controller="Admin"
+               asp-action="Index"
+               class="seller-back-btn">
+                Back to Dashboard
+            </a>
         </div>
-    }
-    else
-    {
-        <div class="seller-table-card">
+
+        @if (!Model.Any())
+        {
+            <div class="seller-empty-state">
+                <h5>No seller applications found</h5>
+                <p>There are currently no seller applications to review.</p>
+            </div>
+        }
+        else
+        {
             <div class="table-responsive">
-                <table class="table seller-table align-middle">
+                <table class="table seller-app-table align-middle">
                     <thead>
                         <tr>
-                            <th>Full Name</th>
-                            <th>Shop Name</th>
-                            <th>Email</th>
-                            <th>Phone Number</th>
+                            <th>Applicant</th>
+                            <th>Shop</th>
+                            <th>Contact</th>
                             <th>Address</th>
                             <th>Description</th>
                             <th>Status</th>
@@ -60,70 +75,109 @@
                         {
                             var statusClass = app.Status switch
                             {
-                                "Pending" => "status-pending",
-                                "Approved" => "status-approved",
-                                "Rejected" => "status-rejected",
-                                "Cancelled" => "status-cancelled",
-                                _ => "status-default"
+                                "Pending" => "pending",
+                                "Approved" => "approved",
+                                "Rejected" => "rejected",
+                                "Cancelled" => "cancelled",
+                                _ => "default"
                             };
 
                             var modalId = $"sellerApplicationModal_{app.Id}";
+                            var applicantInitial = (app.FullName ?? "S").Substring(0, 1).ToUpper();
 
                             <tr>
-                                <td class="fw-semibold">@app.FullName</td>
-                                <td>@app.ShopName</td>
-                                <td>@app.User?.Email</td>
-                                <td>@app.PhoneNumber</td>
-                                <td>@app.Address</td>
                                 <td>
-                                    @if (!string.IsNullOrWhiteSpace(app.BusinessDescription))
-                                    {
-                                        @(app.BusinessDescription.Length > 40
-                                            ? app.BusinessDescription.Substring(0, 40) + "..."
-                                            : app.BusinessDescription)
-                                    }
-                                    else
-                                    {
-                                        <span class="text-muted">No description</span>
-                                    }
+                                    <div class="seller-applicant-cell">
+                                        <div class="seller-app-avatar">
+                                            @applicantInitial
+                                        </div>
+
+                                        <div>
+                                            <strong>@app.FullName</strong>
+                                            <span>@(app.User?.Email ?? "No email")</span>
+                                        </div>
+                                    </div>
                                 </td>
 
                                 <td>
-                                    <span class="status-badge @statusClass">
+                                    <div class="seller-shop-cell">
+                                        <strong>@app.ShopName</strong>
+                                        <span>Seller request</span>
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <div class="seller-contact-cell">
+                                        <strong>@app.PhoneNumber</strong>
+                                        <span>@(app.User?.Email ?? "No email")</span>
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <span class="seller-address-text">
+                                        @app.Address
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <span class="seller-description-text">
+                                        @if (!string.IsNullOrWhiteSpace(app.BusinessDescription))
+                                        {
+                                            @(app.BusinessDescription.Length > 45
+                                                ? app.BusinessDescription.Substring(0, 45) + "..."
+                                                : app.BusinessDescription)
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">No description</span>
+                                        }
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <span class="seller-status-badge @statusClass">
                                         @app.Status
                                     </span>
                                 </td>
 
-                                <td>@app.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                                <td>
+                                    <span class="seller-date-text">
+                                        @app.CreatedAt.ToString("yyyy-MM-dd HH:mm")
+                                    </span>
+                                </td>
 
                                 <td class="text-end">
-                                    <button type="button"
-                                            class="btn btn-info btn-sm text-white"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#@modalId">
-                                        View
-                                    </button>
+                                    <div class="seller-action-group">
+                                        <button type="button"
+                                                class="seller-view-btn"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#@modalId">
+                                            View
+                                        </button>
 
-                                    @if (app.Status == "Pending")
-                                    {
-                                        <form asp-action="ApproveSeller" method="post" class="d-inline ms-1">
-                                            <input type="hidden" name="id" value="@app.Id" />
-                                            @Html.AntiForgeryToken()
+                                        @if (app.Status == "Pending")
+                                        {
+                                            <form asp-action="ApproveSeller"
+                                                  method="post">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="id" value="@app.Id" />
 
-                                            <button type="submit" class="btn btn-success btn-sm">
-                                                Approve
-                                            </button>
-                                        </form>
+                                                <button type="submit" class="seller-approve-btn">
+                                                    Approve
+                                                </button>
+                                            </form>
 
-                                        <form asp-action="RejectSeller" method="post" class="d-inline ms-1">
-                                            <input type="hidden" name="id" value="@app.Id" />
-                                            @Html.AntiForgeryToken()
+                                            <form asp-action="RejectSeller"
+                                                  method="post">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="id" value="@app.Id" />
 
-                                            <button type="submit" class="btn btn-danger btn-sm">
-                                                Reject
-                                            </button>
-                                        </form>
-                                    }
+                                                <button type="submit" class="seller-reject-btn">
+                                                    Reject
+                                                </button>
+                                            </form>
+                                        }
+                                    </div>
                                 </td>
                             </tr>
 
@@ -136,24 +190,22 @@
                                 <div class="modal-dialog modal-dialog-centered modal-lg">
                                     <div class="modal-content seller-modal-content">
 
-                                        <div class="modal-header">
+                                        <div class="modal-header seller-modal-header">
                                             <div>
                                                 <h5 class="modal-title" id="@($"{modalId}_Label")">
                                                     Seller Application Details
                                                 </h5>
-                                                <small class="text-muted">
-                                                    Application submitted by @app.FullName
-                                                </small>
+                                                <p>Submitted by @app.FullName</p>
                                             </div>
 
                                             <button type="button"
-                                                    class="btn-close"
+                                                    class="btn-close btn-close-white"
                                                     data-bs-dismiss="modal"
                                                     aria-label="Close">
                                             </button>
                                         </div>
 
-                                        <div class="modal-body">
+                                        <div class="modal-body seller-modal-body">
 
                                             <div class="seller-detail-grid">
 
@@ -169,7 +221,7 @@
 
                                                 <div class="seller-detail-item">
                                                     <span>Email</span>
-                                                    <strong>@app.User?.Email</strong>
+                                                    <strong>@(app.User?.Email ?? "No email")</strong>
                                                 </div>
 
                                                 <div class="seller-detail-item">
@@ -185,21 +237,16 @@
                                                 <div class="seller-detail-item full-width">
                                                     <span>Business Description</span>
                                                     <strong>
-                                                        @if (!string.IsNullOrWhiteSpace(app.BusinessDescription))
-                                                        {
-                                                            @app.BusinessDescription
-                                                        }
-                                                        else
-                                                        {
-                                                            <span class="text-muted">No business description provided.</span>
-                                                        }
+                                                        @(string.IsNullOrWhiteSpace(app.BusinessDescription)
+                                                            ? "No business description provided."
+                                                            : app.BusinessDescription)
                                                     </strong>
                                                 </div>
 
                                                 <div class="seller-detail-item">
                                                     <span>Status</span>
                                                     <strong>
-                                                        <span class="status-badge @statusClass">
+                                                        <span class="seller-status-badge @statusClass">
                                                             @app.Status
                                                         </span>
                                                     </strong>
@@ -248,29 +295,29 @@
 
                                         </div>
 
-                                        <div class="modal-footer">
+                                        <div class="modal-footer seller-modal-footer">
                                             <button type="button"
-                                                    class="btn btn-outline-secondary"
+                                                    class="seller-modal-close"
                                                     data-bs-dismiss="modal">
                                                 Close
                                             </button>
 
                                             @if (app.Status == "Pending")
                                             {
-                                                <form asp-action="ApproveSeller" method="post" class="d-inline">
-                                                    <input type="hidden" name="id" value="@app.Id" />
+                                                <form asp-action="ApproveSeller" method="post">
                                                     @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="id" value="@app.Id" />
 
-                                                    <button type="submit" class="btn btn-success">
+                                                    <button type="submit" class="seller-approve-btn">
                                                         Approve Application
                                                     </button>
                                                 </form>
 
-                                                <form asp-action="RejectSeller" method="post" class="d-inline">
-                                                    <input type="hidden" name="id" value="@app.Id" />
+                                                <form asp-action="RejectSeller" method="post">
                                                     @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="id" value="@app.Id" />
 
-                                                    <button type="submit" class="btn btn-danger">
+                                                    <button type="submit" class="seller-reject-btn">
                                                         Reject Application
                                                     </button>
                                                 </form>
@@ -284,7 +331,7 @@
                     </tbody>
                 </table>
             </div>
-        </div>
-    }
+        }
 
+    </div>
 </div>

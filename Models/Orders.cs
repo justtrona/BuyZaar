@@ -46,6 +46,11 @@ namespace BuyZaar.Models
 
         public DateTime? DeliveredAt { get; set; }
 
+
+
+public string? ReturnedByRiderId { get; set; }
+public RiderProfile? ReturnedByRider { get; set; }
+public DateTime? ReturnedAt { get; set; }
         /*
          * =========================
          * ORDER ITEMS

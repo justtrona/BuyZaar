@@ -65,7 +65,20 @@
 .seller-filter-form .form-select {
     height: 46px;
     border-radius: 12px;
+    border: 1px solid #dbe3ee;
+    background: #f9fbfd;
+    color: #111827;
+    padding: 0 14px;
+    font-size: 14px;
     font-weight: 700;
+}
+
+.seller-filter-form .form-control:focus,
+.seller-filter-form .form-select:focus {
+    outline: none;
+    border-color: #2563eb;
+    background: #ffffff;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.08);
 }
 
 .seller-filter-btn,
@@ -88,6 +101,7 @@
 
 .seller-filter-btn:hover {
     background: #1d4ed8;
+    color: #ffffff;
 }
 
 .seller-reset-btn {
@@ -121,6 +135,7 @@
     text-transform: uppercase;
     letter-spacing: 0.06em;
     padding: 0 18px 8px;
+    white-space: nowrap;
 }
 
 .seller-table tbody tr {
@@ -133,6 +148,7 @@
     border-top: 1px solid #e5e7eb;
     border-bottom: 1px solid #e5e7eb;
     padding: 18px;
+    vertical-align: middle;
 }
 
 .seller-table tbody td:first-child {
@@ -143,6 +159,10 @@
 .seller-table tbody td:last-child {
     border-right: 1px solid #e5e7eb;
     border-radius: 0 18px 18px 0;
+}
+
+.seller-table tbody tr:hover td {
+    background: #f1f5f9;
 }
 
 .seller-cell {
@@ -209,6 +229,20 @@
     color: #991b1b;
 }
 
+/* Sales */
+.seller-sales {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #eff6ff;
+    color: #1d4ed8;
+    padding: 9px 13px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 900;
+    white-space: nowrap;
+}
+
 /* Action Buttons */
 .seller-actions {
     display: flex;
@@ -270,6 +304,10 @@
     .seller-filter-form {
         grid-template-columns: repeat(2, 1fr);
     }
+
+    .seller-table {
+        min-width: 1050px;
+    }
 }
 
 @media (max-width: 768px) {
@@ -290,6 +328,6 @@
     }
 
     .seller-table {
-        min-width: 900px;
+        min-width: 1050px;
     }
 }

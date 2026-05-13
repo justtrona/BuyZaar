@@ -87,6 +87,12 @@
                     </a>
 
                     <a asp-controller="Admin"
+                       asp-action="CancelledOrders"
+                       class="sidebar-link @(currentAction == "CancelledOrders" ? "active" : "")">
+                        Cancelled Orders
+                    </a>
+
+                    <a asp-controller="Admin"
                        asp-action="ReturnedOrders"
                        class="sidebar-link @(currentAction == "ReturnedOrders" ? "active" : "")">
                         Returned Orders

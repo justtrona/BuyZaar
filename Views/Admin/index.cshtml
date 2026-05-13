@@ -1,6 +1,20 @@
 @{
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
     ViewData["Title"] = "Admin Dashboard";
+
+    var topSellers = ViewBag.TopSellersMonthly as IEnumerable<dynamic>;
+    decimal maxSales = 0;
+    decimal totalMonthlySales = 0;
+    int totalMonthlyItems = 0;
+    string topSellerName = "No seller yet";
+
+    if (topSellers != null && topSellers.Any())
+    {
+        maxSales = topSellers.Max(s => (decimal)s.TotalSales);
+        totalMonthlySales = topSellers.Sum(s => (decimal)s.TotalSales);
+        totalMonthlyItems = topSellers.Sum(s => (int)s.TotalItems);
+        topSellerName = topSellers.First().SellerName;
+    }
 }
 
 <div class="admin-dashboard">
@@ -10,7 +24,9 @@
             <p>Welcome back, Admin. Here’s what’s happening in BuyZaar today.</p>
         </div>
 
-        <a asp-controller="Admin" asp-action="SellerApplications" class="header-action-btn">
+        <a asp-controller="Admin"
+           asp-action="SellerApplications"
+           class="header-action-btn">
             Review Applications
         </a>
     </div>
@@ -47,6 +63,105 @@
                 <h2>@ViewBag.PendingSellerApplications</h2>
             </div>
         </div>
+    </div>
+
+    <div class="seller-analytics-grid">
+
+        <div class="dashboard-panel top-sellers-panel">
+            <div class="panel-header top-sellers-header">
+                <div>
+                    <h3>Top Sellers This Month</h3>
+                    <p>Top 10 sellers ranked by delivered sales.</p>
+                </div>
+
+                <a asp-controller="Admin"
+                   asp-action="ManageSeller"
+                   class="top-sellers-link">
+                    View Sellers
+                </a>
+            </div>
+
+            @if (topSellers != null && topSellers.Any())
+            {
+                <div class="top-sellers-list">
+                    @{
+                        var rank = 1;
+                    }
+
+                    @foreach (var seller in topSellers)
+                    {
+                        decimal totalSales = seller.TotalSales;
+                        decimal percentage = maxSales > 0 ? (totalSales / maxSales) * 100 : 0;
+
+                        <div class="top-seller-row">
+                            <div class="seller-rank">
+                                #@rank
+                            </div>
+
+                            <div class="seller-chart-info">
+                                <div class="seller-chart-header">
+                                    <strong>@seller.SellerName</strong>
+                                    <span>₱@totalSales.ToString("N2")</span>
+                                </div>
+
+                                <div class="seller-bar-track">
+                                    <div class="seller-bar-fill"
+                                         style="width: @percentage%;">
+                                    </div>
+                                </div>
+
+                                <small>
+                                    @seller.TotalItems item(s) sold this month
+                                </small>
+                            </div>
+                        </div>
+
+                        rank++;
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="empty-top-sellers">
+                    No delivered seller sales recorded this month.
+                </div>
+            }
+        </div>
+
+        <div class="dashboard-panel sales-analytics-panel">
+            <div class="panel-header">
+                <h3>Sales Analytics</h3>
+                <p>Monthly sales performance summary.</p>
+            </div>
+
+            <div class="sales-kpi-main">
+                <span>Total Monthly Sales</span>
+                <strong>₱@totalMonthlySales.ToString("N2")</strong>
+            </div>
+
+            <div class="sales-kpi-grid">
+                <div>
+                    <span>Items Sold</span>
+                    <strong>@totalMonthlyItems</strong>
+                </div>
+
+                <div>
+                    <span>Top Seller</span>
+                    <strong>@topSellerName</strong>
+                </div>
+
+                <div>
+                    <span>Ranked Sellers</span>
+                    <strong>@(topSellers?.Count() ?? 0)</strong>
+                </div>
+
+                <div>
+                    <span>Best Sale</span>
+                    <strong>₱@maxSales.ToString("N2")</strong>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <div class="dashboard-grid">
@@ -114,31 +229,31 @@
             </div>
 
             <div class="overview-list">
-    <div>
-        <span>Total Orders</span>
-        <strong>@ViewBag.TotalOrders</strong>
-    </div>
+                <div>
+                    <span>Total Orders</span>
+                    <strong>@ViewBag.TotalOrders</strong>
+                </div>
 
-    <div>
-        <span>Pending Cancellations</span>
-        <strong>@ViewBag.PendingCancellationRequests</strong>
-    </div>
+                <div>
+                    <span>Pending Cancellations</span>
+                    <strong>@ViewBag.PendingCancellationRequests</strong>
+                </div>
 
-    <div>
-        <span>Return Pending</span>
-        <strong>@ViewBag.ReturnPendingOrders</strong>
-    </div>
+                <div>
+                    <span>Return Pending</span>
+                    <strong>@ViewBag.ReturnPendingOrders</strong>
+                </div>
 
-    <div>
-        <span>Successful Returns</span>
-        <strong>@ViewBag.SuccessfulReturns</strong>
-    </div>
+                <div>
+                    <span>Successful Returns</span>
+                    <strong>@ViewBag.SuccessfulReturns</strong>
+                </div>
 
-    <div>
-        <span>Failed Deliveries</span>
-        <strong>@ViewBag.FailedDeliveries</strong>
-    </div>
-</div>
+                <div>
+                    <span>Failed Deliveries</span>
+                    <strong>@ViewBag.FailedDeliveries</strong>
+                </div>
+            </div>
         </div>
     </div>
 </div>

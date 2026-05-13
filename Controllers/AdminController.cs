@@ -26,37 +26,69 @@ namespace BuyZaar.Controllers
             _emailService = emailService;
         }
 
-        public async Task<IActionResult> Index()
+       public async Task<IActionResult> Index()
+{
+    await AutoMarkReturnPendingOrders();
+
+    ViewBag.TotalUsers = await _context.Users.CountAsync();
+
+    var sellers = await _userManager.GetUsersInRoleAsync("Seller");
+    ViewBag.TotalSellers = sellers.Count;
+
+    ViewBag.TotalRiders = await _context.RiderProfiles.CountAsync();
+
+    ViewBag.PendingSellerApplications = await _context.SellerApplications
+        .CountAsync(sa => sa.Status == "Pending");
+
+    ViewBag.TotalOrders = await _context.Orders.CountAsync();
+
+    ViewBag.PendingCancellationRequests = await _context.Orders
+        .CountAsync(o => o.CancellationRequestStatus == "Pending");
+
+    ViewBag.ReturnPendingOrders = await _context.Orders
+        .CountAsync(o => o.DeliveryStatus == "Return Pending");
+
+    ViewBag.SuccessfulReturns = await _context.Orders
+        .CountAsync(o => o.DeliveryStatus == "Returned to Seller");
+
+    ViewBag.FailedDeliveries = await _context.Orders
+        .CountAsync(o => o.DeliveryStatus == "Failed Delivery");
+
+    var currentMonth = DateTime.Now.Month;
+    var currentYear = DateTime.Now.Year;
+
+    ViewBag.TopSellersMonthly = await _context.OrderItems
+        .Include(oi => oi.Order)
+        .Include(oi => oi.Product)
+            .ThenInclude(p => p.Seller)
+        .Where(oi =>
+            oi.Order != null &&
+            oi.Product != null &&
+            oi.Product.Seller != null &&
+            oi.Order.Status == "Delivered" &&
+            oi.Order.DeliveredAt != null &&
+            oi.Order.DeliveredAt.Value.Month == currentMonth &&
+            oi.Order.DeliveredAt.Value.Year == currentYear)
+        .GroupBy(oi => new
         {
-            await AutoMarkReturnPendingOrders();
+            oi.Product.SellerId,
+            SellerName = oi.Product.Seller.FullName,
+            SellerEmail = oi.Product.Seller.Email
+        })
+        .Select(g => new
+        {
+            SellerName = string.IsNullOrWhiteSpace(g.Key.SellerName)
+                ? g.Key.SellerEmail
+                : g.Key.SellerName,
+            TotalSales = g.Sum(oi => oi.Price * oi.Quantity),
+            TotalItems = g.Sum(oi => oi.Quantity)
+        })
+        .OrderByDescending(x => x.TotalSales)
+        .Take(10)
+        .ToListAsync();
 
-            ViewBag.TotalUsers = await _context.Users.CountAsync();
-
-            var sellers = await _userManager.GetUsersInRoleAsync("Seller");
-            ViewBag.TotalSellers = sellers.Count;
-
-            ViewBag.TotalRiders = await _context.RiderProfiles.CountAsync();
-
-            ViewBag.PendingSellerApplications = await _context.SellerApplications
-                .CountAsync(sa => sa.Status == "Pending");
-
-            ViewBag.TotalOrders = await _context.Orders.CountAsync();
-
-            ViewBag.PendingCancellationRequests = await _context.Orders
-                .CountAsync(o => o.CancellationRequestStatus == "Pending");
-
-            ViewBag.ReturnPendingOrders = await _context.Orders
-                .CountAsync(o => o.DeliveryStatus == "Return Pending");
-
-            ViewBag.SuccessfulReturns = await _context.Orders
-                .CountAsync(o => o.DeliveryStatus == "Returned to Seller");
-
-            ViewBag.FailedDeliveries = await _context.Orders
-                .CountAsync(o => o.DeliveryStatus == "Failed Delivery");
-
-            return View();
-        }
-
+    return View();
+}   
         public async Task<IActionResult> Users(string? search, string? role, string? status, int page = 1)
         {
             const int pageSize = 15;
@@ -602,39 +634,42 @@ namespace BuyZaar.Controllers
             return RedirectToAction(nameof(CancellationRequests));
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> MarkReturnedToSeller(int orderId)
-        {
-            var order = await _context.Orders.FirstOrDefaultAsync(o => o.Id == orderId);
+       [HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> MarkReturnedToSeller(int orderId)
+{
+    var order = await _context.Orders
+        .FirstOrDefaultAsync(o => o.Id == orderId);
 
-            if (order == null)
-                return NotFound();
+    if (order == null)
+        return NotFound();
 
-            if (order.DeliveryStatus != "Return Pending" &&
-                order.DeliveryStatus != "Returned to Seller")
-            {
-                TempData["Message"] = "This order is not ready to be marked as returned to seller.";
-                return RedirectToAction(nameof(Orders));
-            }
+    if (order.DeliveryStatus != "Return Pending" &&
+        order.DeliveryStatus != "Returned to Seller")
+    {
+        TempData["Message"] = "This order is not ready to be marked as returned to seller.";
+        return RedirectToAction(nameof(Orders));
+    }
 
-            order.Status = "Returns";
-            order.DeliveryStatus = "Returned to Seller";
-            order.RiderId = null;
+    order.ReturnedByRiderId = order.RiderId;
+    order.ReturnedAt = DateTime.Now;
 
-            await _context.SaveChangesAsync();
+    order.Status = "Returns";
+    order.DeliveryStatus = "Returned to Seller";
+    order.RiderId = null;
 
-            await LogAdminAction(
-                "Mark Returned To Seller",
-                "Order",
-                order.Id.ToString(),
-                $"Admin marked Order #{order.Id} as returned to seller"
-            );
+    await _context.SaveChangesAsync();
 
-            TempData["Message"] = $"Order #{order.Id} marked as returned to seller.";
-            return RedirectToAction(nameof(Orders));
-        }
+    await LogAdminAction(
+        "Mark Returned To Seller",
+        "Order",
+        order.Id.ToString(),
+        $"Admin marked Order #{order.Id} as returned to seller"
+    );
 
+    TempData["Message"] = $"Order #{order.Id} marked as returned to seller.";
+    return RedirectToAction(nameof(Orders));
+}
         public async Task<IActionResult> Products(string? search, string? stockStatus, string? visibility, int page = 1)
         {
             const int pageSize = 15;
@@ -1144,21 +1179,48 @@ public async Task<IActionResult> ManageSeller(
 
     if (accountStatus == "Active")
     {
-        sellers = sellers.Where(s => s.LockoutEnd == null || s.LockoutEnd <= DateTimeOffset.Now).ToList();
+        sellers = sellers.Where(s =>
+            s.LockoutEnd == null ||
+            s.LockoutEnd <= DateTimeOffset.Now
+        ).ToList();
     }
     else if (accountStatus == "Deactivated")
     {
-        sellers = sellers.Where(s => s.LockoutEnd != null && s.LockoutEnd > DateTimeOffset.Now).ToList();
+        sellers = sellers.Where(s =>
+            s.LockoutEnd != null &&
+            s.LockoutEnd > DateTimeOffset.Now
+        ).ToList();
     }
+
+    var sellerIds = sellers.Select(s => s.Id).ToList();
+
+    var sellerSales = await _context.OrderItems
+        .Include(oi => oi.Order)
+        .Include(oi => oi.Product)
+        .Where(oi =>
+            oi.Order != null &&
+            oi.Product != null &&
+            sellerIds.Contains(oi.Product.SellerId) &&
+            (
+                oi.Order.Status == "Delivered" ||
+                oi.Order.DeliveryStatus == "Delivered"
+            ))
+        .GroupBy(oi => oi.Product.SellerId)
+        .Select(g => new
+        {
+            SellerId = g.Key,
+            TotalSales = g.Sum(oi => oi.Price * oi.Quantity)
+        })
+        .ToDictionaryAsync(x => x.SellerId, x => x.TotalSales);
 
     ViewBag.Search = search;
     ViewBag.VerificationStatus = verificationStatus;
     ViewBag.EmailStatus = emailStatus;
     ViewBag.AccountStatus = accountStatus;
+    ViewBag.SellerSales = sellerSales;
 
     return View(sellers);
 }
-
 [HttpPost]
 [ValidateAntiForgeryToken]
 public async Task<IActionResult> ToggleSellerActivation(string userId)
@@ -1191,6 +1253,7 @@ public async Task<IActionResult> ReturnedOrders()
 
     var returnedOrders = await _context.Orders
         .Include(o => o.Rider)
+        .Include(o => o.ReturnedByRider)
         .Include(o => o.OrderItems)
             .ThenInclude(oi => oi.Product)
                 .ThenInclude(p => p.Seller)
@@ -1202,6 +1265,29 @@ public async Task<IActionResult> ReturnedOrders()
         .ToListAsync();
 
     return View(returnedOrders);
+}
+
+public async Task<IActionResult> CancelledOrders()
+{
+    ViewBag.ActiveRole = "Admin";
+
+    var cancelledOrders = await _context.Orders
+        .Include(o => o.Rider)
+        .Include(o => o.OrderItems)
+            .ThenInclude(oi => oi.Product)
+                .ThenInclude(p => p.Seller)
+        .Where(o =>
+            o.CancellationRequestStatus == "Approved" &&
+            (
+                o.RiderId == null ||
+                o.DeliveryStatus == "Pending Assignment" ||
+                o.DeliveryStatus == "Assigned" ||
+                o.DeliveryStatus == "Return Pending"
+            ))
+        .OrderByDescending(o => o.CancellationReviewedAt ?? o.CreatedAt)
+        .ToListAsync();
+
+    return View(cancelledOrders);
 }
 
 // [HttpPost]
