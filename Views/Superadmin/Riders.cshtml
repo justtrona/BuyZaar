@@ -1,0 +1,341 @@
+@model IEnumerable<BuyZaar.Models.RiderProfile>
+
+@{
+    Layout = "~/Views/Shared/_SuperAdminLayout.cshtml";
+    ViewData["Title"] = "View Riders";
+
+    var search = ViewBag.Search as string;
+    var status = ViewBag.Status as string;
+    var vehicle = ViewBag.Vehicle as string;
+
+    var currentPage = ViewBag.CurrentPage as int? ?? 1;
+    var totalPages = ViewBag.TotalPages as int? ?? 1;
+    var totalRiders = ViewBag.TotalRiders as int? ?? 0;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/superadmin-riders.css" asp-append-version="true" />
+}
+
+<div class="super-riders-page">
+
+    <div class="super-riders-hero">
+        <div>
+            <h1>View Riders</h1>
+            <p>Monitor rider accounts, assigned service locations, vehicle types, and delivery personnel status.</p>
+        </div>
+
+        <span class="super-riders-count">
+            @totalRiders Rider(s)
+        </span>
+    </div>
+
+    <div class="super-riders-card">
+
+        <div class="super-riders-card-header">
+            <div>
+                <h2>Rider Records</h2>
+                <p>SuperAdmin can monitor riders, but rider account creation is handled by Admin.</p>
+            </div>
+        </div>
+
+        <form asp-controller="SuperAdmin"
+              asp-action="Riders"
+              method="get"
+              class="super-riders-filter">
+
+            <div class="rider-filter-group rider-filter-search">
+                <label>Search</label>
+                <input type="text"
+                       name="search"
+                       value="@search"
+                       placeholder="Search name, email, phone, location, or vehicle..." />
+            </div>
+
+            <div class="rider-filter-group">
+                <label>Status</label>
+                <select name="status">
+                    <option value="">All Status</option>
+                    <option value="Active" selected="@(status == "Active")">Active</option>
+                    <option value="Inactive" selected="@(status == "Inactive")">Inactive</option>
+                    <option value="Available" selected="@(status == "Available")">Available</option>
+                    <option value="Unavailable" selected="@(status == "Unavailable")">Unavailable</option>
+                    <option value="Busy" selected="@(status == "Busy")">Busy</option>
+                    <option value="PendingPasswordSetup" selected="@(status == "PendingPasswordSetup")">Pending Password Setup</option>
+                </select>
+            </div>
+
+            <div class="rider-filter-group">
+                <label>Vehicle</label>
+                <select name="vehicle">
+                    <option value="">All Vehicles</option>
+                    <option value="Motorcycle" selected="@(vehicle == "Motorcycle")">Motorcycle</option>
+                    <option value="Bicycle" selected="@(vehicle == "Bicycle")">Bicycle</option>
+                    <option value="Car" selected="@(vehicle == "Car")">Car</option>
+                    <option value="Van" selected="@(vehicle == "Van")">Van</option>
+                </select>
+            </div>
+
+            <button type="submit" class="rider-filter-btn">
+                Filter
+            </button>
+
+            <a asp-controller="SuperAdmin"
+               asp-action="Riders"
+               class="rider-reset-btn">
+                Reset
+            </a>
+        </form>
+
+        @if (!Model.Any())
+        {
+            <div class="super-riders-empty">
+                <h4>No riders found</h4>
+                <p>No rider records matched your current filters.</p>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table super-riders-table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Rider</th>
+                            <th>Phone</th>
+                            <th>Assigned Location</th>
+                            <th>Vehicle</th>
+                            <th>Status</th>
+                            <th>Date Created</th>
+                            <th class="text-end">Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @foreach (var rider in Model)
+                        {
+                            var vehicleType = string.IsNullOrWhiteSpace(rider.VehicleType)
+                                ? "N/A"
+                                : rider.VehicleType;
+
+                            var statusText = string.IsNullOrWhiteSpace(rider.Status)
+                                ? "N/A"
+                                : rider.Status;
+
+                            var initial = string.IsNullOrWhiteSpace(rider.FullName)
+                                ? "R"
+                                : rider.FullName.Substring(0, 1).ToUpper();
+
+                            var modalId = $"riderDetailsModal_{rider.UserId}";
+
+                            <tr>
+                                <td>
+                                    <div class="rider-user-cell">
+                                        <div class="rider-avatar">
+                                            @initial
+                                        </div>
+
+                                        <div>
+                                            <strong>@rider.FullName</strong>
+                                            <span>@(rider.User?.Email ?? "No email")</span>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <span class="rider-text">
+                                        @rider.PhoneNumber
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <span class="rider-location-text">
+                                        @rider.AssignedLocation
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <span class="rider-text">
+                                        @vehicleType
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <span class="rider-status-badge">
+                                        @statusText
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <span class="rider-text">
+                                        @rider.CreatedAt.ToString("yyyy-MM-dd")
+                                    </span>
+                                </td>
+
+                                <td class="text-end">
+                                    <button type="button"
+                                            class="rider-view-btn"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#@modalId">
+                                        View
+                                    </button>
+                                </td>
+                            </tr>
+
+                            <div class="modal fade"
+                                 id="@modalId"
+                                 tabindex="-1"
+                                 aria-hidden="true">
+
+                                <div class="modal-dialog modal-dialog-centered modal-lg">
+                                    <div class="modal-content rider-details-modal">
+
+                                        <div class="modal-header rider-details-modal-header">
+                                            <div>
+                                                <h5>Rider Account Details</h5>
+                                                <p>@rider.FullName</p>
+                                            </div>
+
+                                            <button type="button"
+                                                    class="btn-close btn-close-white"
+                                                    data-bs-dismiss="modal">
+                                            </button>
+                                        </div>
+
+                                        <div class="modal-body rider-details-modal-body">
+
+                                            <div class="rider-profile-summary">
+                                                <div class="rider-profile-avatar">
+                                                    @initial
+                                                </div>
+
+                                                <div>
+                                                    <h4>@rider.FullName</h4>
+                                                    <p>@(rider.User?.Email ?? "No email")</p>
+
+                                                    <div class="rider-profile-badges">
+                                                        <span class="rider-status-badge">
+                                                            @statusText
+                                                        </span>
+
+                                                        <span class="rider-vehicle-badge">
+                                                            @vehicleType
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="rider-detail-grid">
+
+                                                <div class="rider-detail-item">
+                                                    <span>Full Name</span>
+                                                    <strong>@rider.FullName</strong>
+                                                </div>
+
+                                                <div class="rider-detail-item">
+                                                    <span>Email Address</span>
+                                                    <strong>@(rider.User?.Email ?? "No email")</strong>
+                                                </div>
+
+                                                <div class="rider-detail-item">
+                                                    <span>Phone Number</span>
+                                                    <strong>@rider.PhoneNumber</strong>
+                                                </div>
+
+                                                <div class="rider-detail-item">
+                                                    <span>Vehicle Type</span>
+                                                    <strong>@vehicleType</strong>
+                                                </div>
+
+                                                <div class="rider-detail-item">
+                                                    <span>Status</span>
+                                                    <strong>@statusText</strong>
+                                                </div>
+
+                                                <div class="rider-detail-item">
+                                                    <span>Date Created</span>
+                                                    <strong>@rider.CreatedAt.ToString("yyyy-MM-dd HH:mm")</strong>
+                                                </div>
+
+                                                <div class="rider-detail-item full-width">
+                                                    <span>Assigned Service Location</span>
+                                                    <strong>@rider.AssignedLocation</strong>
+                                                </div>
+
+                                            </div>
+
+                                            <div class="rider-modal-note">
+                                                <strong>SuperAdmin Monitoring Note</strong>
+                                                <p>
+                                                    This page is for monitoring rider records only. Rider creation,
+                                                    assignment, and operational handling are managed by Admin.
+                                                </p>
+                                            </div>
+
+                                        </div>
+
+                                        <div class="modal-footer rider-details-modal-footer">
+                                            <button type="button"
+                                                    class="rider-modal-close-btn"
+                                                    data-bs-dismiss="modal">
+                                                Close
+                                            </button>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="rider-pagination">
+                <div class="rider-pagination-info">
+                    Page @currentPage of @(totalPages == 0 ? 1 : totalPages)
+                </div>
+
+                <div class="rider-pagination-actions">
+                    @if (currentPage > 1)
+                    {
+                        <a asp-controller="SuperAdmin"
+                           asp-action="Riders"
+                           asp-route-search="@search"
+                           asp-route-status="@status"
+                           asp-route-vehicle="@vehicle"
+                           asp-route-page="@(currentPage - 1)"
+                           class="rider-pagination-btn">
+                            Previous
+                        </a>
+                    }
+                    else
+                    {
+                        <span class="rider-pagination-btn disabled">
+                            Previous
+                        </span>
+                    }
+
+                    @if (currentPage < totalPages)
+                    {
+                        <a asp-controller="SuperAdmin"
+                           asp-action="Riders"
+                           asp-route-search="@search"
+                           asp-route-status="@status"
+                           asp-route-vehicle="@vehicle"
+                           asp-route-page="@(currentPage + 1)"
+                           class="rider-pagination-btn">
+                            Next
+                        </a>
+                    }
+                    else
+                    {
+                        <span class="rider-pagination-btn disabled">
+                            Next
+                        </span>
+                    }
+                </div>
+            </div>
+        }
+
+    </div>
+
+</div>

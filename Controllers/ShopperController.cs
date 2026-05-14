@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using BuyZaar.Services;
 
 namespace BuyZaar.Controllers
 {
@@ -13,12 +14,17 @@ namespace BuyZaar.Controllers
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly AppDbContext _context;
+        private readonly PayMongoService _payMongoService;
 
-        public ShopperController(UserManager<ApplicationUser> userManager, AppDbContext context)
-        {
-            _userManager = userManager;
-            _context = context;
-        }
+       public ShopperController(
+    UserManager<ApplicationUser> userManager,
+    AppDbContext context,
+    PayMongoService payMongoService)
+{
+    _userManager = userManager;
+    _context = context;
+    _payMongoService = payMongoService;
+}
 
         public async Task<IActionResult> Index()
         {
@@ -478,21 +484,53 @@ public async Task<IActionResult> PlaceOrder(CheckoutViewModel model)
 
         await _context.SaveChangesAsync();
 
-        var payment = new Payment
-        {
-            OrderId = order.Id,
-            Amount = order.TotalAmount,
-            PaymentMethod = "COD",
-            PaymentStatus = "Pending",
-            ReferenceNumber = $"PAY-{DateTime.Now:yyyyMMddHHmmss}-{order.Id}",
-            CreatedAt = DateTime.Now
-        };
+       var selectedPaymentMethod = string.IsNullOrWhiteSpace(model.PaymentMethod)
+    ? "COD"
+    : model.PaymentMethod;
+
+var payment = new Payment
+{
+    OrderId = order.Id,
+    Amount = order.TotalAmount,
+    PaymentMethod = selectedPaymentMethod,
+    PaymentStatus = selectedPaymentMethod == "PayMongo" ? "Pending Payment" : "Pending",
+    ReferenceNumber = $"PAY-{DateTime.Now:yyyyMMddHHmmss}-{order.Id}",
+    CreatedAt = DateTime.Now
+};
 
         _context.Payments.Add(payment);
 
         await _context.SaveChangesAsync();
 
         await transaction.CommitAsync();
+
+        if (selectedPaymentMethod == "PayMongo")
+{
+    var successUrl = Url.Action(
+        "PayMongoSuccess",
+        "Shopper",
+        new { orderId = order.Id },
+        Request.Scheme
+    )!;
+
+    var failedUrl = Url.Action(
+        "PayMongoFailed",
+        "Shopper",
+        new { orderId = order.Id },
+        Request.Scheme
+    )!;
+
+    var checkoutUrl = await _payMongoService.CreateCheckoutSessionAsync(
+        order.Id,
+        order.TotalAmount,
+        $"Payment for BuyZaar Order #{order.Id}",
+        successUrl,
+        failedUrl
+    );
+
+    if (!string.IsNullOrWhiteSpace(checkoutUrl))
+        return Redirect(checkoutUrl);
+}
 
         TempData["SuccessMessage"] = "Order created successfully.";
         return RedirectToAction("OrderSuccess", new { id = order.Id });
@@ -649,6 +687,16 @@ public async Task<IActionResult> ApplySeller()
 {
     ViewBag.ActiveRole = "Shopper";
 
+    var settings = await GetSystemSettingsAsync();
+
+    if (!settings.AllowSellerRegistration)
+    {
+        TempData["ApplicationMessage"] =
+            "Seller registration is currently disabled by the SuperAdmin.";
+
+        return RedirectToAction("Index");
+    }
+
     var user = await _userManager.GetUserAsync(User);
     if (user == null)
         return RedirectToAction("Login", "Account");
@@ -682,6 +730,16 @@ public async Task<IActionResult> ApplySeller()
 public async Task<IActionResult> ApplySeller(SellerApplicationViewModel model)
 {
     ViewBag.ActiveRole = "Shopper";
+
+    var settings = await GetSystemSettingsAsync();
+
+    if (!settings.AllowSellerRegistration)
+    {
+        TempData["ApplicationMessage"] =
+            "Seller registration is currently disabled by the SuperAdmin.";
+
+        return RedirectToAction("Index");
+    }
 
     if (!ModelState.IsValid)
         return View(model);
@@ -901,6 +959,141 @@ public async Task<IActionResult> CancelOrder(int orderId)
 
     TempData["SuccessMessage"] = $"Order #{order.Id} has been cancelled.";
     return RedirectToAction("MyOrders", new { status = "Returns" });
+}
+
+private async Task<SystemSetting> GetSystemSettingsAsync()
+{
+    var settings = await _context.SystemSettings.FirstOrDefaultAsync();
+
+    if (settings == null)
+    {
+        settings = new SystemSetting
+        {
+            AllowShopperRegistration = true,
+            AllowSellerRegistration = true,
+            AllowRiderRegistration = true,
+            UpdatedAt = DateTime.Now
+        };
+
+        _context.SystemSettings.Add(settings);
+        await _context.SaveChangesAsync();
+    }
+
+    return settings;
+}
+
+public async Task<IActionResult> PayMongoSuccess(int orderId)
+{
+    var user = await _userManager.GetUserAsync(User);
+
+    if (user == null)
+        return RedirectToAction("Login", "Account");
+
+    var order = await _context.Orders
+        .FirstOrDefaultAsync(o => o.Id == orderId && o.ShopperId == user.Id);
+
+    if (order == null)
+        return NotFound();
+
+    var payment = await _context.Payments
+        .FirstOrDefaultAsync(p => p.OrderId == order.Id);
+
+    if (payment != null)
+    {
+        payment.PaymentStatus = "Paid";
+        payment.PaidAt = DateTime.Now;
+    }
+
+   order.Status = "To Ship";
+
+await _context.SaveChangesAsync();
+
+await CreateMarketplaceFinancialRecordsAsync(order.Id);
+
+    TempData["SuccessMessage"] = "Payment successful. Your order has been placed.";
+    return RedirectToAction("OrderSuccess", new { id = order.Id });
+}
+
+public async Task<IActionResult> PayMongoFailed(int orderId)
+{
+    var user = await _userManager.GetUserAsync(User);
+
+    if (user == null)
+        return RedirectToAction("Login", "Account");
+
+    var order = await _context.Orders
+        .FirstOrDefaultAsync(o => o.Id == orderId && o.ShopperId == user.Id);
+
+    if (order == null)
+        return NotFound();
+
+    var payment = await _context.Payments
+        .FirstOrDefaultAsync(p => p.OrderId == order.Id);
+
+    if (payment != null)
+        payment.PaymentStatus = "Failed";
+
+    await _context.SaveChangesAsync();
+
+    TempData["ErrorMessage"] = "Payment was cancelled or failed.";
+    return RedirectToAction("MyOrders", new { status = "To Pay" });
+}
+
+private async Task CreateMarketplaceFinancialRecordsAsync(int orderId)
+{
+    var order = await _context.Orders
+        .Include(o => o.OrderItems)
+            .ThenInclude(oi => oi.Product)
+        .FirstOrDefaultAsync(o => o.Id == orderId);
+
+    if (order == null)
+        return;
+
+    var existingPayouts = await _context.SellerPayouts
+        .AnyAsync(p => p.OrderId == order.Id);
+
+    if (existingPayouts)
+        return;
+
+    var commissionRate = await _context.CommissionRates
+        .Where(c => c.IsActive)
+        .OrderByDescending(c => c.CreatedAt)
+        .FirstOrDefaultAsync();
+
+    var rate = commissionRate?.RatePercentage ?? 10m;
+
+    foreach (var item in order.OrderItems)
+    {
+        if (item.Product == null || string.IsNullOrWhiteSpace(item.Product.SellerId))
+            continue;
+
+        var productTotal = item.Price * item.Quantity;
+        var commissionAmount = productTotal * (rate / 100m);
+        var sellerEarnings = productTotal - commissionAmount;
+
+        _context.SellerPayouts.Add(new SellerPayout
+        {
+            SellerId = item.Product.SellerId,
+            OrderId = order.Id,
+            ProductTotal = productTotal,
+            CommissionAmount = commissionAmount,
+            SellerEarnings = sellerEarnings,
+            CommissionRate = rate,
+            Status = "Pending",
+            CreatedAt = DateTime.Now
+        });
+
+        _context.PlatformEarnings.Add(new PlatformEarning
+        {
+            OrderId = order.Id,
+            ProductTotal = productTotal,
+            CommissionAmount = commissionAmount,
+            CommissionRate = rate,
+            CreatedAt = DateTime.Now
+        });
+    }
+
+    await _context.SaveChangesAsync();
 }
     }
 }

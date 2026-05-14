@@ -1,0 +1,253 @@
+@model BuyZaar.Models.SystemSetting
+
+@{
+    Layout = "~/Views/Shared/_SuperAdminLayout.cshtml";
+    ViewData["Title"] = "System Settings";
+}
+
+@section Styles {
+    <link rel="stylesheet"
+          href="~/css/superadmin-settings.css"
+          asp-append-version="true" />
+}
+
+<div class="settings-page">
+
+    <div class="settings-hero">
+        <div>
+            <h1>System Settings</h1>
+            <p>Manage platform configuration, registration access, maintenance mode, security controls, payment setup, and marketplace rules.</p>
+        </div>
+
+        <span class="settings-badge">
+            SuperAdmin Only
+        </span>
+    </div>
+
+    @if (TempData["SettingsMessage"] != null)
+    {
+        <div class="alert alert-success settings-alert">
+            @TempData["SettingsMessage"]
+        </div>
+    }
+
+    <div class="settings-grid">
+
+        <div class="settings-card">
+            <div class="settings-card-header">
+                <h3>Registration Controls</h3>
+                <p>Enable or disable new account registration by user type.</p>
+            </div>
+
+            <form asp-controller="SuperAdmin"
+                  asp-action="Settings"
+                  method="post">
+
+                @Html.AntiForgeryToken()
+
+                <input type="hidden" asp-for="Id" />
+
+                <div class="settings-toggle-list">
+
+                    <div class="settings-toggle-item">
+                        <div>
+                            <strong>Shopper Registration</strong>
+                            <span>Allow customers to create shopper accounts and buy products.</span>
+                        </div>
+
+                        <label class="settings-switch">
+                            <input asp-for="AllowShopperRegistration" />
+                            <span class="settings-slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="settings-toggle-item">
+                        <div>
+                            <strong>Seller Registration</strong>
+                            <span>Allow shoppers to apply and register as sellers.</span>
+                        </div>
+
+                        <label class="settings-switch">
+                            <input asp-for="AllowSellerRegistration" />
+                            <span class="settings-slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="settings-toggle-item">
+                        <div>
+                            <strong>Rider Registration</strong>
+                            <span>Allow riders to apply for delivery access once rider application is implemented.</span>
+                        </div>
+
+                        <label class="settings-switch">
+                            <input asp-for="AllowRiderRegistration" />
+                            <span class="settings-slider"></span>
+                        </label>
+                    </div>
+
+                </div>
+
+                <div class="settings-form-footer">
+                    <div>
+                        <strong>Last Updated</strong>
+                        <span>@Model.UpdatedAt.ToString("MMMM dd, yyyy hh:mm tt")</span>
+                    </div>
+
+                    <button type="submit"
+                            class="settings-save-btn">
+                        Save Registration Settings
+                    </button>
+                </div>
+
+            </form>
+        </div>
+
+        <div class="settings-card">
+            <div class="settings-card-header">
+                <h3>Maintenance Mode</h3>
+                <p>Temporarily restrict normal user access during updates or fixes.</p>
+            </div>
+
+            <form asp-controller="SuperAdmin"
+                  asp-action="Settings"
+                  method="post">
+
+                @Html.AntiForgeryToken()
+
+                <input type="hidden" asp-for="Id" />
+
+                <input type="hidden" asp-for="AllowShopperRegistration" />
+                <input type="hidden" asp-for="AllowSellerRegistration" />
+                <input type="hidden" asp-for="AllowRiderRegistration" />
+
+                <div class="settings-toggle-list">
+
+                    <div class="settings-toggle-item">
+                        <div>
+                            <strong>Enable Maintenance Mode</strong>
+                            <span>When enabled, normal users will be blocked from using the platform.</span>
+                        </div>
+
+                        <label class="settings-switch">
+                            <input asp-for="MaintenanceMode" />
+                            <span class="settings-slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="settings-form-group">
+                        <label>Maintenance Message</label>
+                        <textarea asp-for="MaintenanceMessage"
+                                  rows="4"
+                                  placeholder="Enter maintenance message shown to users..."></textarea>
+                    </div>
+
+                </div>
+
+                <div class="settings-form-footer">
+                    <div>
+                        <strong>Current Status</strong>
+                        @if (Model.MaintenanceMode)
+                        {
+                            <span class="settings-inline-danger">Maintenance Mode is ON</span>
+                        }
+                        else
+                        {
+                            <span class="settings-inline-success">Platform is Active</span>
+                        }
+                    </div>
+
+                    <button type="submit"
+                            class="settings-save-btn">
+                        Save Maintenance Settings
+                    </button>
+                </div>
+
+            </form>
+        </div>
+
+        <div class="settings-card">
+            <div class="settings-card-header">
+                <h3>Security Settings</h3>
+                <p>SuperAdmin security and account protection controls.</p>
+            </div>
+
+            <div class="settings-list">
+                <div class="settings-item">
+                    <div>
+                        <strong>Admin Account Protection</strong>
+                        <span>Restrict sensitive account actions to SuperAdmin only.</span>
+                    </div>
+                    <span class="settings-status active">Active</span>
+                </div>
+
+                <div class="settings-item">
+                    <div>
+                        <strong>Audit Logging</strong>
+                        <span>Record important SuperAdmin actions and system changes.</span>
+                    </div>
+                    <span class="settings-status active">Active</span>
+                </div>
+
+                <div class="settings-item">
+                    <div>
+                        <strong>Role-Based Access</strong>
+                        <span>Separate access between SuperAdmin, Admin, Seller, Rider, and Shopper.</span>
+                    </div>
+                    <span class="settings-status active">Active</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="settings-card">
+            <div class="settings-card-header">
+                <h3>Email & SMTP</h3>
+                <p>Email delivery settings for account setup and notifications.</p>
+            </div>
+
+            <div class="settings-list">
+                <div class="settings-item">
+                    <div>
+                        <strong>Admin Setup Email</strong>
+                        <span>Send secure password setup links to newly created admins.</span>
+                    </div>
+                    <span class="settings-status active">Active</span>
+                </div>
+
+                <div class="settings-item">
+                    <div>
+                        <strong>Notification Emails</strong>
+                        <span>Future email alerts for approvals, disputes, and security events.</span>
+                    </div>
+                    <span class="settings-status planned">Planned</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="settings-card">
+            <div class="settings-card-header">
+                <h3>Payment Gateway</h3>
+                <p>Reserved for future PayMongo configuration.</p>
+            </div>
+
+            <div class="settings-list">
+                <div class="settings-item">
+                    <div>
+                        <strong>PayMongo Integration</strong>
+                        <span>Configure API keys, webhook secrets, payment logs, and refunds later.</span>
+                    </div>
+                    <span class="settings-status pending">Not Configured</span>
+                </div>
+
+                <div class="settings-item">
+                    <div>
+                        <strong>Webhook Monitoring</strong>
+                        <span>Track incoming PayMongo payment events once enabled.</span>
+                    </div>
+                    <span class="settings-status planned">Planned</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>

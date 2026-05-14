@@ -27,9 +27,40 @@ namespace BuyZaar.Controllers
             _context = context;
         }
 
-        [HttpGet]
-        public IActionResult Register()
+        private async Task<SystemSetting> GetSystemSettingsAsync()
         {
+            var settings = await _context.SystemSettings.FirstOrDefaultAsync();
+
+            if (settings == null)
+            {
+                settings = new SystemSetting
+                {
+                    AllowShopperRegistration = true,
+                    AllowSellerRegistration = true,
+                    AllowRiderRegistration = true,
+                    UpdatedAt = DateTime.Now
+                };
+
+                _context.SystemSettings.Add(settings);
+                await _context.SaveChangesAsync();
+            }
+
+            return settings;
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Register()
+        {
+            var settings = await GetSystemSettingsAsync();
+
+            if (!settings.AllowShopperRegistration)
+            {
+                TempData["RegistrationDisabledMessage"] =
+                    "Shopper registration is currently disabled by the SuperAdmin.";
+
+                return RedirectToAction(nameof(Login));
+            }
+
             return View();
         }
 
@@ -37,10 +68,21 @@ namespace BuyZaar.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
+            var settings = await GetSystemSettingsAsync();
+
+            if (!settings.AllowShopperRegistration)
+            {
+                TempData["RegistrationDisabledMessage"] =
+                    "Shopper registration is currently disabled by the SuperAdmin.";
+
+                return RedirectToAction(nameof(Login));
+            }
+
             if (!ModelState.IsValid)
                 return View(model);
 
             var existingEmail = await _userManager.FindByEmailAsync(model.Email);
+
             if (existingEmail != null)
             {
                 ModelState.AddModelError(nameof(model.Email), "Email is already registered.");
@@ -48,6 +90,7 @@ namespace BuyZaar.Controllers
             }
 
             var existingUsername = await _userManager.FindByNameAsync(model.UserName);
+
             if (existingUsername != null)
             {
                 ModelState.AddModelError(nameof(model.UserName), "Username is already taken.");
@@ -74,7 +117,11 @@ namespace BuyZaar.Controllers
                 var confirmationLink = Url.Action(
                     "ConfirmEmail",
                     "Account",
-                    new { userId = user.Id, token = token },
+                    new
+                    {
+                        userId = user.Id,
+                        token
+                    },
                     protocol: Request.Scheme
                 );
 
@@ -144,9 +191,7 @@ namespace BuyZaar.Controllers
         public IActionResult SetupPassword(string userId, string token)
         {
             if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(token))
-            {
                 return Content("Invalid password setup link.");
-            }
 
             var model = new SetupPasswordViewModel
             {
@@ -162,16 +207,12 @@ namespace BuyZaar.Controllers
         public async Task<IActionResult> SetupPassword(SetupPasswordViewModel model)
         {
             if (!ModelState.IsValid)
-            {
                 return View(model);
-            }
 
             var user = await _userManager.FindByIdAsync(model.UserId);
 
             if (user == null)
-            {
                 return Content("User not found.");
-            }
 
             var result = await _userManager.ResetPasswordAsync(
                 user,

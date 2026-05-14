@@ -1,0 +1,248 @@
+@model IEnumerable<BuyZaar.Models.SuperAdminAuditLog>
+
+@{
+    Layout = "~/Views/Shared/_SuperAdminLayout.cshtml";
+    ViewData["Title"] = "Audit Logs";
+
+    var search = ViewBag.Search as string;
+    var selectedAction = ViewBag.Action as string;
+    var selectedEntityType = ViewBag.EntityType as string;
+
+    var actions = ViewBag.Actions as List<string> ?? new List<string>();
+    var entityTypes = ViewBag.EntityTypes as List<string> ?? new List<string>();
+
+    var totalLogs = ViewBag.TotalLogs as int? ?? 0;
+    var currentPage = ViewBag.CurrentPage as int? ?? 1;
+    var totalPages = ViewBag.TotalPages as int? ?? 1;
+}
+
+<link rel="stylesheet"
+      href="~/css/superadmin-audit.css"
+      asp-append-version="true" />
+
+<div class="audit-page">
+
+    <div class="audit-hero">
+        <div>
+            <h1>Audit Logs</h1>
+            <p>
+                Track SuperAdmin actions, account changes,
+                product moderation, and system activities.
+            </p>
+        </div>
+
+        <span class="audit-count">
+            @totalLogs Log(s)
+        </span>
+    </div>
+
+    @if (TempData["AuditMessage"] != null)
+    {
+        <div class="alert alert-success mb-3">
+            @TempData["AuditMessage"]
+        </div>
+    }
+
+    @if (TempData["AuditError"] != null)
+    {
+        <div class="alert alert-danger mb-3">
+            @TempData["AuditError"]
+        </div>
+    }
+
+    <div class="audit-card">
+
+        <div class="audit-card-header">
+            <div>
+                <h2>System Activity Timeline</h2>
+                <p>
+                    Review recorded actions performed inside
+                    the SuperAdmin panel.
+                </p>
+            </div>
+<a href="/SuperAdmin/TestAuditLogGet" class="audit-filter-btn">
+    Create Test Audit Log
+</a>
+        </div>
+
+        <form asp-controller="SuperAdmin"
+              asp-action="AuditLogs"
+              method="get"
+              class="audit-filter">
+
+            <div class="audit-filter-group audit-search">
+                <label>Search</label>
+
+                <input type="text"
+                       name="search"
+                       value="@search"
+                       placeholder="Search action, superadmin, entity, or description..." />
+            </div>
+
+            <div class="audit-filter-group">
+                <label>Action</label>
+
+                <select name="action">
+                    <option value="">All Actions</option>
+
+                    @foreach (var actionItem in actions)
+                    {
+                        <option value="@actionItem"
+                                selected="@(selectedAction == actionItem)">
+                            @actionItem
+                        </option>
+                    }
+                </select>
+            </div>
+
+            <div class="audit-filter-group">
+                <label>Entity Type</label>
+
+                <select name="entityType">
+                    <option value="">All Entities</option>
+
+                    @foreach (var entity in entityTypes)
+                    {
+                        <option value="@entity"
+                                selected="@(selectedEntityType == entity)">
+                            @entity
+                        </option>
+                    }
+                </select>
+            </div>
+
+            <button type="submit" class="audit-filter-btn">
+                Filter
+            </button>
+
+            <a asp-controller="SuperAdmin"
+               asp-action="AuditLogs"
+               class="audit-reset-btn">
+                Reset
+            </a>
+        </form>
+
+        @if (Model == null || !Model.Any())
+        {
+            <div class="audit-empty">
+                <h4>No audit logs found</h4>
+                <p>No activity matched your current filters.</p>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table audit-table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Action</th>
+                            <th>Performed By</th>
+                            <th>Entity</th>
+                            <th>Description</th>
+                            <th>Date & Time</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @foreach (var log in Model)
+                        {
+                            var actionClass = string.IsNullOrWhiteSpace(log.Action)
+                                ? "unknown-action"
+                                : log.Action.ToLower().Replace(" ", "-");
+
+                            <tr>
+                                <td>
+                                    <span class="audit-action-badge @actionClass">
+                                        @log.Action
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <div class="audit-admin-cell">
+                                        <strong>
+                                            @(log.SuperAdmin?.FullName ?? "Unknown SuperAdmin")
+                                        </strong>
+
+                                        <span>
+                                            @(log.SuperAdmin?.Email ?? "No email available")
+                                        </span>
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <div class="audit-entity-cell">
+                                        <strong>@log.EntityType</strong>
+                                        <span>Record ID: @log.EntityId</span>
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <div class="audit-description">
+                                        @(string.IsNullOrWhiteSpace(log.Description)
+                                            ? "No description provided."
+                                            : log.Description)
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <div class="audit-date-cell">
+                                        <strong>@log.CreatedAt.ToString("yyyy-MM-dd")</strong>
+                                        <span>@log.CreatedAt.ToString("hh:mm tt")</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="audit-pagination">
+                <div class="audit-pagination-info">
+                    Page @currentPage of @(totalPages == 0 ? 1 : totalPages)
+                </div>
+
+                <div class="audit-pagination-actions">
+                    @if (currentPage > 1)
+                    {
+                        <a asp-controller="SuperAdmin"
+                           asp-action="AuditLogs"
+                           asp-route-search="@search"
+                           asp-route-action="@selectedAction"
+                           asp-route-entityType="@selectedEntityType"
+                           asp-route-page="@(currentPage - 1)"
+                           class="audit-pagination-btn">
+                            Previous
+                        </a>
+                    }
+                    else
+                    {
+                        <span class="audit-pagination-btn disabled">
+                            Previous
+                        </span>
+                    }
+
+                    @if (currentPage < totalPages)
+                    {
+                        <a asp-controller="SuperAdmin"
+                           asp-action="AuditLogs"
+                           asp-route-search="@search"
+                           asp-route-action="@selectedAction"
+                           asp-route-entityType="@selectedEntityType"
+                           asp-route-page="@(currentPage + 1)"
+                           class="audit-pagination-btn">
+                            Next
+                        </a>
+                    }
+                    else
+                    {
+                        <span class="audit-pagination-btn disabled">
+                            Next
+                        </span>
+                    }
+                </div>
+            </div>
+        }
+
+    </div>
+
+</div>

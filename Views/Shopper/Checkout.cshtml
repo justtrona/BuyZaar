@@ -4,6 +4,8 @@
     Layout = "_DashboardLayout";
     ViewBag.ActiveRole = "Shopper";
     ViewData["Title"] = "Checkout";
+
+    var totalAmount = Model.Subtotal + Model.ShippingFee;
 }
 
 <link rel="stylesheet" href="~/css/checkout.css" asp-append-version="true" />
@@ -11,8 +13,15 @@
 <div class="checkout-page">
     <div class="checkout-header">
         <h1>Checkout</h1>
-        <p>Review your order and enter your receiver and delivery details.</p>
+        <p>Review your order, delivery details, and payment method.</p>
     </div>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["ErrorMessage"]
+        </div>
+    }
 
     <form asp-controller="Shopper" asp-action="PlaceOrder" method="post">
         @Html.AntiForgeryToken()
@@ -23,11 +32,13 @@
         <input type="hidden" asp-for="Price" />
         <input type="hidden" asp-for="Quantity" />
         <input type="hidden" asp-for="Subtotal" />
+        <input type="hidden" asp-for="ShippingFee" />
         <input type="hidden" asp-for="SelectedVariant" />
         <input type="hidden" asp-for="SelectedSize" />
         <input type="hidden" asp-for="DeliveryAddress" />
 
         <div class="checkout-grid">
+
             <div class="checkout-card">
                 <h2>Receiver Details</h2>
 
@@ -54,61 +65,92 @@
                 <div class="address-grid">
                     <div>
                         <label asp-for="HouseNo" class="section-label">House No.</label>
-                        <input asp-for="HouseNo" class="form-control" placeholder="Ex. 123" required />
+                        <input asp-for="HouseNo"
+                               class="form-control"
+                               placeholder="Ex. 123"
+                               required />
                     </div>
 
                     <div>
                         <label asp-for="Street" class="section-label">Street</label>
-                        <input asp-for="Street" class="form-control" placeholder="Ex. Mabini Street" required />
+                        <input asp-for="Street"
+                               class="form-control"
+                               placeholder="Ex. Mabini Street"
+                               required />
                     </div>
 
                     <div>
                         <label asp-for="Province" class="section-label">Province</label>
-                        <select asp-for="Province" id="provinceSelect" class="form-control" required>
+                        <select asp-for="Province"
+                                id="provinceSelect"
+                                class="form-control"
+                                required>
                             <option value="">Select Province</option>
                         </select>
                     </div>
 
                     <div>
                         <label asp-for="CityMunicipality" class="section-label">City / Municipality</label>
-                        <select asp-for="CityMunicipality" id="citySelect" class="form-control" required disabled>
+                        <select asp-for="CityMunicipality"
+                                id="citySelect"
+                                class="form-control"
+                                required
+                                disabled>
                             <option value="">Select City / Municipality</option>
                         </select>
                     </div>
 
                     <div>
                         <label asp-for="Barangay" class="section-label">Barangay</label>
-                        <select asp-for="Barangay" id="barangaySelect" class="form-control" required disabled>
+                        <select asp-for="Barangay"
+                                id="barangaySelect"
+                                class="form-control"
+                                required
+                                disabled>
                             <option value="">Select Barangay</option>
                         </select>
                     </div>
 
                     <div>
                         <label asp-for="Landmark" class="section-label">Landmark</label>
-                        <input asp-for="Landmark" class="form-control" placeholder="Ex. Near church" />
+                        <input asp-for="Landmark"
+                               class="form-control"
+                               placeholder="Ex. Near church" />
                     </div>
                 </div>
 
+                <h2 class="mt-4">Payment Method</h2>
+
                 <div class="payment-options">
-                    <div class="payment-option">
-                        <input type="radio" checked disabled />
+
+                    <label class="payment-option">
+                        <input asp-for="PaymentMethod"
+                               type="radio"
+                               value="COD"
+                               checked />
+
                         <div>
                             <strong>Cash on Delivery</strong>
                             <span>Pay when your order arrives.</span>
                         </div>
-                    </div>
+                    </label>
 
-                    <div class="payment-option">
-                        <input type="radio" disabled />
+                    <label class="payment-option">
+                        <input asp-for="PaymentMethod"
+                               type="radio"
+                               value="PayMongo" />
+
                         <div>
                             <strong>Online Payment</strong>
-                            <span>Coming soon.</span>
+                            <span>Pay securely using PayMongo.</span>
                         </div>
-                    </div>
+                    </label>
+
                 </div>
 
                 <div class="secure-note">
-                    Since this is Cash on Delivery, your order will go directly to To Ship.
+                    For Cash on Delivery, your order goes directly to To Ship.
+                    For Online Payment, you will be redirected to PayMongo checkout.
                 </div>
             </div>
 
@@ -134,20 +176,17 @@
                 </div>
 
                 <div class="summary-row">
-    <span>Shipping Fee</span>
-    <strong>
-        @(Model.ShippingFee == 0 ? "Free Shipping" : $"₱{Model.ShippingFee.ToString("N2")}")
-    </strong>
-</div>
-
-<div class="summary-row total">
-    <span>Total</span>
-    <strong>₱@((Model.Subtotal + Model.ShippingFee).ToString("N2"))</strong>
-</div>
+                    <span>Shipping Fee</span>
+                    <strong>
+                        @(Model.ShippingFee == 0
+                            ? "Free Shipping"
+                            : $"₱{Model.ShippingFee.ToString("N2")}")
+                    </strong>
+                </div>
 
                 <div class="summary-row total">
                     <span>Total</span>
-                    <strong>₱@Model.Subtotal.ToString("N2")</strong>
+                    <strong>₱@totalAmount.ToString("N2")</strong>
                 </div>
 
                 <div class="checkout-actions">
@@ -163,6 +202,7 @@
                     </a>
                 </div>
             </div>
+
         </div>
     </form>
 </div>

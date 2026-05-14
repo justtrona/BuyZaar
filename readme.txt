@@ -4,6 +4,10 @@ Password: SuperAdmin123!
 Email: testadmin102@buyzaar.com
 Password: testadmin102!
 
+Admin
+synckitvx@gmail.com
+Sync1124!
+
 Email: test101@buyzaar.com
 Password: test101
 

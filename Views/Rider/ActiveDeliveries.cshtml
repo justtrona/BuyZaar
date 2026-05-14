@@ -4,6 +4,9 @@
     Layout = "~/Views/Shared/_RiderLayout.cshtml";
     ViewBag.ActiveRole = "Rider";
     ViewData["Title"] = "Active Deliveries";
+
+    var paymentLookup = ViewBag.PaymentLookup as Dictionary<int, BuyZaar.Models.Payment>
+        ?? new Dictionary<int, BuyZaar.Models.Payment>();
 }
 
 @section Styles {
@@ -15,7 +18,7 @@
     <div class="rider-orders-header">
         <div>
             <h2>Active Deliveries</h2>
-            <p>Update delivery progress. Failed deliveries can be retried within 5 days.</p>
+            <p>Update delivery progress and review whether the order is COD or already paid online.</p>
         </div>
     </div>
 
@@ -45,6 +48,7 @@
                             <th>Contact</th>
                             <th>Address</th>
                             <th>Total</th>
+                            <th>Payment</th>
                             <th>Status</th>
                             <th>Accepted Date</th>
                             <th>Return Deadline</th>
@@ -55,6 +59,19 @@
                     <tbody>
                         @foreach (var order in Model)
                         {
+                            paymentLookup.TryGetValue(order.Id, out var payment);
+
+                            var paymentMethod = payment?.PaymentMethod ?? "COD";
+                            var paymentStatus = payment?.PaymentStatus ?? "Pending";
+
+                            var paymentText = paymentMethod == "PayMongo"
+                                ? "Online Payment"
+                                : "Cash on Delivery";
+
+                            var paymentClass = paymentStatus == "Paid"
+                                ? "paid"
+                                : "pending";
+
                             <tr>
                                 <td class="fw-bold">#@order.Id</td>
 
@@ -68,6 +85,16 @@
 
                                 <td>
                                     ₱@order.TotalAmount.ToString("N2")
+                                </td>
+
+                                <td>
+                                    <div>
+                                        <strong>@paymentText</strong>
+                                        <br />
+                                        <span class="payment-status-pill @paymentClass">
+                                            @paymentStatus
+                                        </span>
+                                    </div>
                                 </td>
 
                                 <td>

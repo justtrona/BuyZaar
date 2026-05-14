@@ -4,6 +4,9 @@
     Layout = "~/Views/Shared/_RiderLayout.cshtml";
     ViewBag.ActiveRole = "Rider";
     ViewData["Title"] = "Assigned Orders";
+
+    var paymentLookup = ViewBag.PaymentLookup as Dictionary<int, BuyZaar.Models.Payment>
+        ?? new Dictionary<int, BuyZaar.Models.Payment>();
 }
 
 @section Styles {
@@ -15,7 +18,7 @@
     <div class="rider-orders-header">
         <div>
             <h2>Assigned Delivery Orders</h2>
-            <p>Review assigned deliveries. View details before accepting or declining.</p>
+            <p>Review assigned deliveries, payment type, and delivery details before accepting or declining.</p>
         </div>
     </div>
 
@@ -45,6 +48,7 @@
                             <th>Contact</th>
                             <th>Address</th>
                             <th>Total</th>
+                            <th>Payment</th>
                             <th>Status</th>
                             <th>Assigned Date</th>
                             <th class="text-end">Actions</th>
@@ -55,6 +59,18 @@
                         @foreach (var order in Model)
                         {
                             var modalId = $"orderDetailsModal_{order.Id}";
+                            paymentLookup.TryGetValue(order.Id, out var payment);
+
+                            var paymentMethod = payment?.PaymentMethod ?? "COD";
+                            var paymentStatus = payment?.PaymentStatus ?? "Pending";
+
+                            var paymentText = paymentMethod == "PayMongo"
+                                ? "Online Payment"
+                                : "Cash on Delivery";
+
+                            var paymentClass = paymentStatus == "Paid"
+                                ? "paid"
+                                : "pending";
 
                             <tr>
                                 <td class="fw-bold">#@order.Id</td>
@@ -62,6 +78,16 @@
                                 <td>@order.ContactNumber</td>
                                 <td class="order-address">@order.DeliveryAddress</td>
                                 <td>₱@order.TotalAmount.ToString("N2")</td>
+
+                                <td>
+                                    <div>
+                                        <strong>@paymentText</strong>
+                                        <br />
+                                        <span class="payment-status-pill @paymentClass">
+                                            @paymentStatus
+                                        </span>
+                                    </div>
+                                </td>
 
                                 <td>
                                     <span class="delivery-status-pill">
@@ -117,6 +143,14 @@
         @foreach (var order in Model)
         {
             var modalId = $"orderDetailsModal_{order.Id}";
+            paymentLookup.TryGetValue(order.Id, out var payment);
+
+            var paymentMethod = payment?.PaymentMethod ?? "COD";
+            var paymentStatus = payment?.PaymentStatus ?? "Pending";
+
+            var paymentText = paymentMethod == "PayMongo"
+                ? "Online Payment via PayMongo"
+                : "Cash on Delivery";
 
             <div class="modal fade"
                  id="@modalId"
@@ -171,6 +205,16 @@
                                 <div>
                                     <span>Shipping Fee</span>
                                     <strong>₱@order.ShippingFee.ToString("N2")</strong>
+                                </div>
+
+                                <div>
+                                    <span>Payment Type</span>
+                                    <strong>@paymentText</strong>
+                                </div>
+
+                                <div>
+                                    <span>Payment Status</span>
+                                    <strong>@paymentStatus</strong>
                                 </div>
 
                                 <div>

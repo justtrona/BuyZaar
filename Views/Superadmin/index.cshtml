@@ -9,7 +9,15 @@
     var totalAdmins = ViewBag.TotalAdmins ?? 0;
 
     var totalProducts = ViewBag.TotalProducts ?? 0;
-    var totalOrders = ViewBag.TotalOrders ?? 0;
+    var visibleProducts = ViewBag.VisibleProducts ?? 0;
+    var hiddenProducts = ViewBag.HiddenProducts ?? 0;
+    var lowStockProducts = ViewBag.LowStockProducts ?? 0;
+    var outOfStockProducts = ViewBag.OutOfStockProducts ?? 0;
+
+    var completedOrders = ViewBag.CompletedOrders ?? 0;
+    var pendingOrders = ViewBag.PendingOrders ?? 0;
+    var cancelledOrders = ViewBag.CancelledOrders ?? 0;
+
     var totalPayments = ViewBag.TotalPayments ?? 0;
     var totalDeliveries = ViewBag.TotalDeliveries ?? 0;
 }
@@ -19,7 +27,7 @@
     <div class="superadmin-hero">
         <div>
             <h1>SuperAdmin Dashboard</h1>
-            <p>Monitor users, sellers, riders, products, orders, payments, deliveries, and system activity.</p>
+            <p>Monitor BuyZaar users, products, orders, payments, deliveries, and platform operations.</p>
         </div>
 
         <span class="superadmin-badge">
@@ -35,17 +43,10 @@
     }
 
     <div class="dashboard-kpi-grid">
-
         <div class="dashboard-kpi-card">
             <span>Total Users</span>
             <strong>@totalUsers</strong>
             <p>All registered accounts</p>
-        </div>
-
-        <div class="dashboard-kpi-card">
-            <span>Shoppers</span>
-            <strong>@totalShoppers</strong>
-            <p>Buyer accounts</p>
         </div>
 
         <div class="dashboard-kpi-card">
@@ -60,6 +61,11 @@
             <p>Delivery personnel</p>
         </div>
 
+        <div class="dashboard-kpi-card">
+            <span>Products</span>
+            <strong>@totalProducts</strong>
+            <p>Marketplace listings</p>
+        </div>
     </div>
 
     <div class="dashboard-analytics-grid">
@@ -78,12 +84,12 @@
         <div class="dashboard-chart-card">
             <div class="chart-card-header">
                 <div>
-                    <h3>Platform Overview</h3>
-                    <p>Products, orders, payments, and deliveries summary.</p>
+                    <h3>Order Overview</h3>
+                    <p>Pending, completed, cancelled, payment, and delivery records.</p>
                 </div>
             </div>
 
-            <canvas id="platformOverviewChart"></canvas>
+            <canvas id="orderOverviewChart"></canvas>
         </div>
 
     </div>
@@ -92,30 +98,68 @@
 
         <div class="dashboard-panel">
             <div class="dashboard-panel-header">
-                <h3>System Modules</h3>
-                <p>Quick access to SuperAdmin controls.</p>
+                <h3>Product Monitoring</h3>
+                <p>Marketplace product visibility and inventory health.</p>
+            </div>
+
+            <div class="summary-list">
+                <div>
+                    <span>Visible Products</span>
+                    <strong>@visibleProducts</strong>
+                </div>
+
+                <div>
+                    <span>Hidden Products</span>
+                    <strong>@hiddenProducts</strong>
+                </div>
+
+                <div>
+                    <span>Low Stock Products</span>
+                    <strong>@lowStockProducts</strong>
+                </div>
+
+                <div>
+                    <span>Out of Stock</span>
+                    <strong>@outOfStockProducts</strong>
+                </div>
+            </div>
+        </div>
+
+        <div class="dashboard-panel">
+            <div class="dashboard-panel-header">
+                <h3>Quick Actions</h3>
+                <p>Access SuperAdmin controls.</p>
             </div>
 
             <div class="superadmin-action-grid">
-
                 <a asp-controller="SuperAdmin" asp-action="CreateAdmin" class="superadmin-action-card">
                     <strong>Create Admin</strong>
-                    <span>Add admin accounts</span>
+                    <span>Add operational admin</span>
                 </a>
 
                 <a asp-controller="SuperAdmin" asp-action="Admins" class="superadmin-action-card">
                     <strong>Manage Admins</strong>
-                    <span>View and manage admins</span>
+                    <span>Activate or deactivate admins</span>
                 </a>
 
                 <a asp-controller="SuperAdmin" asp-action="Users" class="superadmin-action-card">
                     <strong>Manage Users</strong>
-                    <span>All platform users</span>
+                    <span>Monitor platform users</span>
+                </a>
+
+                <a asp-controller="SuperAdmin" asp-action="Sellers" class="superadmin-action-card">
+                    <strong>Manage Sellers</strong>
+                    <span>Monitor seller accounts</span>
+                </a>
+
+                <a asp-controller="SuperAdmin" asp-action="Riders" class="superadmin-action-card">
+                    <strong>View Riders</strong>
+                    <span>Monitor delivery personnel</span>
                 </a>
 
                 <a asp-controller="SuperAdmin" asp-action="Products" class="superadmin-action-card">
                     <strong>Products</strong>
-                    <span>Monitor product listings</span>
+                    <span>Review product listings</span>
                 </a>
 
                 <a asp-controller="SuperAdmin" asp-action="Orders" class="superadmin-action-card">
@@ -123,55 +167,10 @@
                     <span>Track order activity</span>
                 </a>
 
-                <a asp-controller="SuperAdmin" asp-action="Payments" class="superadmin-action-card">
-                    <strong>Payments</strong>
-                    <span>Monitor transactions</span>
-                </a>
-
-                <a asp-controller="SuperAdmin" asp-action="Deliveries" class="superadmin-action-card">
-                    <strong>Deliveries</strong>
-                    <span>Track delivery operations</span>
-                </a>
-
                 <a asp-controller="SuperAdmin" asp-action="AuditLogs" class="superadmin-action-card">
                     <strong>Audit Logs</strong>
                     <span>Review system actions</span>
                 </a>
-
-            </div>
-        </div>
-
-        <div class="dashboard-panel">
-            <div class="dashboard-panel-header">
-                <h3>Operational Summary</h3>
-                <p>Current platform totals.</p>
-            </div>
-
-            <div class="summary-list">
-                <div>
-                    <span>Total Products</span>
-                    <strong>@totalProducts</strong>
-                </div>
-
-                <div>
-                    <span>Total Orders</span>
-                    <strong>@totalOrders</strong>
-                </div>
-
-                <div>
-                    <span>Total Payments</span>
-                    <strong>@totalPayments</strong>
-                </div>
-
-                <div>
-                    <span>Total Deliveries</span>
-                    <strong>@totalDeliveries</strong>
-                </div>
-
-                <div>
-                    <span>Total Admins</span>
-                    <strong>@totalAdmins</strong>
-                </div>
             </div>
         </div>
 
@@ -183,10 +182,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script>
-        const userDistributionCtx = document.getElementById("userDistributionChart");
-        const platformOverviewCtx = document.getElementById("platformOverviewChart");
-
-        new Chart(userDistributionCtx, {
+        new Chart(document.getElementById("userDistributionChart"), {
             type: "doughnut",
             data: {
                 labels: ["Shoppers", "Sellers", "Riders", "Admins"],
@@ -208,6 +204,8 @@
             },
             options: {
                 responsive: true,
+                maintainAspectRatio: false,
+                cutout: "65%",
                 plugins: {
                     legend: {
                         position: "bottom"
@@ -216,24 +214,27 @@
             }
         });
 
-        new Chart(platformOverviewCtx, {
+        new Chart(document.getElementById("orderOverviewChart"), {
             type: "bar",
             data: {
-                labels: ["Products", "Orders", "Payments", "Deliveries"],
+                labels: ["Pending", "Completed", "Cancelled", "Payments", "Deliveries"],
                 datasets: [{
                     label: "Total Records",
                     data: [
-                        @totalProducts,
-                        @totalOrders,
+                        @pendingOrders,
+                        @completedOrders,
+                        @cancelledOrders,
                         @totalPayments,
                         @totalDeliveries
                     ],
                     backgroundColor: "#2563eb",
-                    borderRadius: 10
+                    borderRadius: 10,
+                    barThickness: 45
                 }]
             },
             options: {
                 responsive: true,
+                maintainAspectRatio: false,
                 scales: {
                     y: {
                         beginAtZero: true,

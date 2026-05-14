@@ -45,7 +45,7 @@
                     </a>
 
                     <div class="sidebar-group-title">
-                        Admin Management
+                        Admin Control
                     </div>
 
                     <a asp-controller="SuperAdmin"
@@ -61,79 +61,73 @@
                     </a>
 
                     <div class="sidebar-group-title">
-                        User Management
+                        Platform Users
                     </div>
 
                     <a asp-controller="SuperAdmin"
                        asp-action="Users"
                        class="sidebar-link @(currentAction == "Users" ? "active" : "")">
-                        Manage All Users
+                        All Users
                     </a>
 
                     <a asp-controller="SuperAdmin"
                        asp-action="Sellers"
                        class="sidebar-link @(currentAction == "Sellers" ? "active" : "")">
-                        Manage Sellers
+                        Sellers
                     </a>
 
                     <a asp-controller="SuperAdmin"
                        asp-action="Riders"
                        class="sidebar-link @(currentAction == "Riders" ? "active" : "")">
-                        View Riders
+                        Riders
                     </a>
 
                     <div class="sidebar-group-title">
-                        Product Monitoring
+                        Platform Monitoring
                     </div>
 
                     <a asp-controller="SuperAdmin"
                        asp-action="Products"
                        class="sidebar-link @(currentAction == "Products" ? "active" : "")">
-                        Monitor Products
+                        Products
                     </a>
-
-                    <div class="sidebar-group-title">
-                        Order Monitoring
-                    </div>
 
                     <a asp-controller="SuperAdmin"
                        asp-action="Orders"
                        class="sidebar-link @(currentAction == "Orders" ? "active" : "")">
-                        Monitor Orders
+                        Orders
                     </a>
+
+                    <div class="sidebar-group-title">
+                        Financial Oversight
+                    </div>
 
                     <a asp-controller="SuperAdmin"
                        asp-action="Payments"
                        class="sidebar-link @(currentAction == "Payments" ? "active" : "")">
-                        Monitor Payments
+                        Payments
                     </a>
 
                     <a asp-controller="SuperAdmin"
-                       asp-action="Deliveries"
-                       class="sidebar-link @(currentAction == "Deliveries" ? "active" : "")">
-                        Monitor Deliveries
+                       asp-action="Payouts"
+                       class="sidebar-link @(currentAction == "Payouts" ? "active" : "")">
+                        Seller Settlements
                     </a>
 
                     <div class="sidebar-group-title">
-                        Reports & Control
+                        System Oversight
                     </div>
 
                     <a asp-controller="SuperAdmin"
                        asp-action="Reports"
                        class="sidebar-link @(currentAction == "Reports" ? "active" : "")">
-                        Reports & Dashboard
+                        Reports
                     </a>
 
                     <a asp-controller="SuperAdmin"
                        asp-action="AuditLogs"
                        class="sidebar-link @(currentAction == "AuditLogs" ? "active" : "")">
                         Audit Logs
-                    </a>
-
-                    <a asp-controller="SuperAdmin"
-                       asp-action="RiderLocations"
-                       class="sidebar-link @(currentAction == "RiderLocations" ? "active" : "")">
-                        Rider Service Locations
                     </a>
 
                     <a asp-controller="SuperAdmin"

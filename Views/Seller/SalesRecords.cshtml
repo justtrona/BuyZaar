@@ -18,6 +18,9 @@
     string toDate = ViewBag.ToDate ?? "";
 
     var generatedDate = DateTime.Now;
+
+    var settlementLookup = ViewBag.SettlementLookup as Dictionary<int, BuyZaar.Models.SellerPayout>
+        ?? new Dictionary<int, BuyZaar.Models.SellerPayout>();
 }
 
 <link rel="stylesheet" href="~/css/salesrecords.css" asp-append-version="true" />
@@ -28,7 +31,7 @@
         <div>
             <span class="seller-label">Seller</span>
             <h1>Sales Records</h1>
-            <p>Track sales performance based on customer orders.</p>
+            <p>Track gross sales, BuyZaar commission deductions, and net seller earnings.</p>
         </div>
     </div>
 
@@ -43,12 +46,12 @@
 
     <div class="sales-stats-grid">
         <div class="sales-stat-card">
-            <span>Total Sales</span>
+            <span>Released Sales</span>
             <strong>₱@totalSales.ToString("N2")</strong>
         </div>
 
         <div class="sales-stat-card">
-            <span>Pending Sales</span>
+            <span>Pending Settlement</span>
             <strong>₱@pendingSales.ToString("N2")</strong>
         </div>
 
@@ -112,7 +115,7 @@
                 <strong>Buyer</strong>
                 <strong>Products</strong>
                 <strong>Items</strong>
-                <strong>Sales</strong>
+                <strong>Settlement</strong>
                 <strong>Status</strong>
                 <strong>Date</strong>
             </div>
@@ -126,9 +129,12 @@
                 var sellerSubtotal = sellerItems.Sum(i => i.Subtotal);
                 var itemCount = sellerItems.Sum(i => i.Quantity);
 
-                var isEarned = order.Status == "Delivered" ||
-                               order.Status == "Completed" ||
-                               order.DeliveryStatus == "Delivered";
+                settlementLookup.TryGetValue(order.Id, out var settlement);
+
+                var commissionRate = settlement?.CommissionRate ?? 0m;
+                var commissionAmount = settlement?.CommissionAmount ?? 0m;
+                var sellerEarnings = settlement?.SellerEarnings ?? 0m;
+                var settlementStatus = settlement?.Status ?? "Not Settled";
 
                 <div class="sales-table-row">
                     <div class="sales-order-cell">
@@ -155,14 +161,18 @@
                         <span>item(s)</span>
                     </div>
 
-                    <div class="sales-amount @(isEarned ? "earned" : "pending")">
-                        @if (isEarned)
+                    <div class="sales-amount @(settlementStatus == "Released" ? "earned" : "pending")">
+                        @if (settlement != null)
                         {
-                            <span>₱@sellerSubtotal.ToString("N2")</span>
+                            <span>Gross: ₱@sellerSubtotal.ToString("N2")</span>
+                            <span>Commission: @commissionRate.ToString("N2")% / ₱@commissionAmount.ToString("N2")</span>
+                            <strong>Net: ₱@sellerEarnings.ToString("N2")</strong>
+                            <small>@settlementStatus</small>
                         }
                         else
                         {
-                            <span>PENDING</span>
+                            <span>Not Settled</span>
+                            <small>No settlement record yet</small>
                         }
                     </div>
 
@@ -200,7 +210,7 @@
         <div class="print-report-info">
             <div>
                 <span>Report Type</span>
-                <strong>Seller Sales Report</strong>
+                <strong>Seller Settlement Sales Report</strong>
             </div>
 
             <div>
@@ -222,7 +232,7 @@
                     <th>Product</th>
                     <th>Items</th>
                     <th>Status</th>
-                    <th>Sales Status</th>
+                    <th>Settlement Details</th>
                     <th>Date</th>
                 </tr>
             </thead>
@@ -235,9 +245,12 @@
                     var sellerSubtotal = sellerItems.Sum(i => i.Subtotal);
                     var itemCount = sellerItems.Sum(i => i.Quantity);
 
-                    var isEarned = order.Status == "Delivered" ||
-                                   order.Status == "Completed" ||
-                                   order.DeliveryStatus == "Delivered";
+                    settlementLookup.TryGetValue(order.Id, out var settlement);
+
+                    var commissionRate = settlement?.CommissionRate ?? 0m;
+                    var commissionAmount = settlement?.CommissionAmount ?? 0m;
+                    var sellerEarnings = settlement?.SellerEarnings ?? 0m;
+                    var settlementStatus = settlement?.Status ?? "Not Settled";
 
                     var referenceNo = $"BZ-{order.Id}-{order.CreatedAt:yyMMddHHmm}";
 
@@ -264,15 +277,20 @@
                         </td>
 
                         <td>
-                            @if (isEarned)
+                            @if (settlement != null)
                             {
-                                <strong class="print-earned">Earned</strong>
-                                <span>₱@sellerSubtotal.ToString("N2")</span>
+                                <strong class="@(settlementStatus == "Released" ? "print-earned" : "print-pending")">
+                                    @settlementStatus
+                                </strong>
+
+                                <span>Gross Sales: ₱@sellerSubtotal.ToString("N2")</span>
+                                <span>Commission Deducted: @commissionRate.ToString("N2")% / ₱@commissionAmount.ToString("N2")</span>
+                                <span>Net Seller Earnings: ₱@sellerEarnings.ToString("N2")</span>
                             }
                             else
                             {
-                                <strong class="print-pending">Not Yet Earned</strong>
-                                <span>Pending delivery/completion</span>
+                                <strong class="print-pending">Not Settled</strong>
+                                <span>No settlement record yet</span>
                             }
                         </td>
 
@@ -288,17 +306,17 @@
         <div class="print-total-section">
             <div class="print-total-box">
                 <div>
-                    <span>Total Earned Sales</span>
+                    <span>Released Net Seller Earnings</span>
                     <strong class="earned-total">₱@totalSales.ToString("N2")</strong>
                 </div>
 
                 <div>
-                    <span>Pending Sales / Not Yet Earned</span>
+                    <span>Pending Net Seller Earnings</span>
                     <strong class="pending-total">₱@pendingSales.ToString("N2")</strong>
                 </div>
 
                 <div class="grand-total">
-                    <span>Net Earned Revenue</span>
+                    <span>Total Released Revenue</span>
                     <strong>₱@reportTotal.ToString("N2")</strong>
                 </div>
             </div>
@@ -306,7 +324,7 @@
 
         <div class="print-report-footer">
             <div class="print-footer-note">
-                This report is system-generated by BuyZaar. Pending sales are not included in net earned revenue until the order is delivered or completed.
+                This report is system-generated by BuyZaar. Gross sales are subject to BuyZaar platform commission deductions. Net seller earnings become released revenue only after SuperAdmin settlement release.
             </div>
 
             <div class="print-signature">
@@ -444,6 +462,7 @@
                             display: block;
                             color: #64748b;
                             font-size: 11px;
+                            margin-bottom: 2px;
                         }
 
                         .print-status {
@@ -476,7 +495,7 @@
                         }
 
                         .print-total-box {
-                            width: 390px;
+                            width: 430px;
                             border: 1px solid #d1d5db;
                             border-radius: 14px;
                             overflow: hidden;
@@ -525,7 +544,7 @@
                         }
 
                         .print-footer-note {
-                            max-width: 460px;
+                            max-width: 520px;
                             color: #64748b;
                             font-size: 12px;
                             line-height: 1.6;

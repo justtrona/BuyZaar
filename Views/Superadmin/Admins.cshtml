@@ -1,0 +1,402 @@
+@model IEnumerable<BuyZaar.Models.ApplicationUser>
+
+@{
+    Layout = "~/Views/Shared/_SuperAdminLayout.cshtml";
+    ViewData["Title"] = "Manage Admins";
+
+    var search = ViewBag.Search as string;
+    var status = ViewBag.Status as string;
+    var emailStatus = ViewBag.EmailStatus as string;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/superadmin-admins.css" asp-append-version="true" />
+}
+
+<div class="manage-admin-page">
+
+    <div class="manage-admin-hero">
+        <div>
+            <h1>Manage Admins</h1>
+            <p>View, monitor, activate, deactivate, and verify operational admin accounts.</p>
+        </div>
+
+        <span class="manage-admin-count">
+            @ViewBag.TotalAdmins Admin(s)
+        </span>
+    </div>
+
+    @if (TempData["AdminMessage"] != null)
+    {
+        <div class="alert alert-info manage-admin-alert">
+            @TempData["AdminMessage"]
+        </div>
+    }
+
+    <div class="manage-admin-card">
+
+        <div class="manage-admin-card-header">
+            <div>
+                <h2>Admin Records</h2>
+                <p>Admins are responsible for managing marketplace operations and monitoring platform activities.</p>
+            </div>
+
+            <a asp-controller="SuperAdmin"
+               asp-action="CreateAdmin"
+               class="create-admin-link">
+                + Create Admin
+            </a>
+        </div>
+
+        <form asp-controller="SuperAdmin"
+              asp-action="Admins"
+              method="get"
+              class="manage-admin-filter">
+
+            <div class="filter-group filter-search">
+                <label>Search</label>
+                <input type="text"
+                       name="search"
+                       value="@search"
+                       placeholder="Search name, email, username, or phone..." />
+            </div>
+
+            <div class="filter-group">
+                <label>Account Status</label>
+
+                <select name="status">
+                    <option value="">All Status</option>
+
+                    <option value="Active"
+                            selected="@(status == "Active")">
+                        Active
+                    </option>
+
+                    <option value="Deactivated"
+                            selected="@(status == "Deactivated")">
+                        Deactivated
+                    </option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label>Email Status</label>
+
+                <select name="emailStatus">
+                    <option value="">All Email Status</option>
+
+                    <option value="Verified"
+                            selected="@(emailStatus == "Verified")">
+                        Verified
+                    </option>
+
+                    <option value="Unverified"
+                            selected="@(emailStatus == "Unverified")">
+                        Unverified
+                    </option>
+                </select>
+            </div>
+
+            <button type="submit"
+                    class="admin-filter-btn">
+                Filter
+            </button>
+
+            <a asp-controller="SuperAdmin"
+               asp-action="Admins"
+               class="admin-reset-btn">
+                Reset
+            </a>
+
+        </form>
+
+        @if (!Model.Any())
+        {
+            <div class="manage-admin-empty">
+                <h4>No admins found</h4>
+                <p>No admin records matched your current filters.</p>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+
+                <table class="table manage-admin-table align-middle">
+
+                    <thead>
+                        <tr>
+                            <th>Admin</th>
+                            <th>Username</th>
+                            <th>Contact</th>
+                            <th>Email Status</th>
+                            <th>Account Status</th>
+                            <th>Created / Verified</th>
+                            <th class="text-end">Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        @foreach (var admin in Model)
+                        {
+                            var isDeactivated =
+                                admin.LockoutEnd != null &&
+                                admin.LockoutEnd > DateTimeOffset.Now;
+
+                            var statusClass = isDeactivated
+                                ? "deactivated"
+                                : "active";
+
+                            var statusText = isDeactivated
+                                ? "Deactivated"
+                                : "Active";
+
+                            var emailStatusClass = admin.EmailConfirmed
+                                ? "verified"
+                                : "unverified";
+
+                            var emailStatusText = admin.EmailConfirmed
+                                ? "Email Verified"
+                                : "Email Unverified";
+
+                            var verifiedStatusText = admin.IsVerified
+                                ? "Verified account"
+                                : "Not verified";
+
+                            var initial = string.IsNullOrWhiteSpace(admin.FullName)
+                                ? "A"
+                                : admin.FullName.Substring(0, 1).ToUpper();
+
+                            var modalId = $"adminDetailsModal_{admin.Id}";
+
+                            <tr>
+
+                                <td>
+                                    <div class="admin-user-cell">
+
+                                        <div class="admin-avatar">
+                                            @initial
+                                        </div>
+
+                                        <div>
+                                            <strong>@admin.FullName</strong>
+                                            <span>@admin.Email</span>
+                                        </div>
+
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <span class="admin-text">
+                                        @admin.UserName
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <span class="admin-text">
+                                        @(string.IsNullOrWhiteSpace(admin.PhoneNumber)
+                                            ? "No phone number"
+                                            : admin.PhoneNumber)
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <span class="admin-badge @emailStatusClass">
+                                        @emailStatusText
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <span class="admin-badge @statusClass">
+                                        @statusText
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <div class="admin-date-cell">
+
+                                        <strong>
+                                            @(admin.VerifiedAt?.ToString("yyyy-MM-dd") ?? "N/A")
+                                        </strong>
+
+                                        <span>
+                                            @verifiedStatusText
+                                        </span>
+
+                                    </div>
+                                </td>
+
+                                <td class="text-end">
+
+                                    <div class="admin-action-group">
+
+                                        <button type="button"
+                                                class="admin-view-btn"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#@modalId">
+                                            View
+                                        </button>
+
+                                        <form asp-controller="SuperAdmin"
+                                              asp-action="ToggleAdminActivation"
+                                              method="post"
+                                              onsubmit="return confirm('Are you sure you want to @(isDeactivated ? "activate" : "deactivate") this admin account?');">
+
+                                            @Html.AntiForgeryToken()
+
+                                            <input type="hidden"
+                                                   name="userId"
+                                                   value="@admin.Id" />
+
+                                            <button type="submit"
+                                                    class="admin-action-btn @(isDeactivated ? "activate" : "deactivate")">
+
+                                                @(isDeactivated
+                                                    ? "Activate"
+                                                    : "Deactivate")
+
+                                            </button>
+
+                                        </form>
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+
+                            <div class="modal fade"
+                                 id="@modalId"
+                                 tabindex="-1"
+                                 aria-labelledby="@($"{modalId}_Label")"
+                                 aria-hidden="true">
+
+                                <div class="modal-dialog modal-dialog-centered modal-lg">
+                                    <div class="modal-content admin-details-modal">
+
+                                        <div class="modal-header admin-details-modal-header">
+                                            <div>
+                                                <h5 class="modal-title" id="@($"{modalId}_Label")">
+                                                    Admin Account Details
+                                                </h5>
+                                                <p>@admin.FullName</p>
+                                            </div>
+
+                                            <button type="button"
+                                                    class="btn-close btn-close-white"
+                                                    data-bs-dismiss="modal"
+                                                    aria-label="Close">
+                                            </button>
+                                        </div>
+
+                                        <div class="modal-body admin-details-modal-body">
+
+                                            <div class="admin-profile-summary">
+
+                                                <div class="admin-profile-avatar">
+                                                    @initial
+                                                </div>
+
+                                                <div>
+                                                    <h4>@admin.FullName</h4>
+                                                    <p>@admin.Email</p>
+
+                                                    <div class="admin-profile-badges">
+                                                        <span class="admin-badge @statusClass">
+                                                            @statusText
+                                                        </span>
+
+                                                        <span class="admin-badge @emailStatusClass">
+                                                            @emailStatusText
+                                                        </span>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+
+                                            <div class="admin-detail-grid">
+
+                                                <div class="admin-detail-item">
+                                                    <span>Full Name</span>
+                                                    <strong>@admin.FullName</strong>
+                                                </div>
+
+                                                <div class="admin-detail-item">
+                                                    <span>Username</span>
+                                                    <strong>@admin.UserName</strong>
+                                                </div>
+
+                                                <div class="admin-detail-item">
+                                                    <span>Email Address</span>
+                                                    <strong>@admin.Email</strong>
+                                                </div>
+
+                                                <div class="admin-detail-item">
+                                                    <span>Phone Number</span>
+                                                    <strong>
+                                                        @(string.IsNullOrWhiteSpace(admin.PhoneNumber)
+                                                            ? "No phone number"
+                                                            : admin.PhoneNumber)
+                                                    </strong>
+                                                </div>
+
+                                                <div class="admin-detail-item">
+                                                    <span>Email Confirmed</span>
+                                                    <strong>@(admin.EmailConfirmed ? "Yes" : "No")</strong>
+                                                </div>
+
+                                                <div class="admin-detail-item">
+                                                    <span>Account Status</span>
+                                                    <strong>@statusText</strong>
+                                                </div>
+
+                                                <div class="admin-detail-item">
+                                                    <span>Verified Status</span>
+                                                    <strong>@verifiedStatusText</strong>
+                                                </div>
+
+                                                <div class="admin-detail-item">
+                                                    <span>Verified Date</span>
+                                                    <strong>@(admin.VerifiedAt?.ToString("yyyy-MM-dd HH:mm") ?? "N/A")</strong>
+                                                </div>
+
+                                                @* <div class="admin-detail-item full-width">
+                                                    <span>User ID</span>
+                                                    <strong>@admin.Id</strong>
+                                                </div> *@
+
+                                            </div>
+
+                                            <div class="admin-modal-note">
+                                                <strong>Admin Access Scope</strong>
+                                                <p>
+                                                    This account can access the Admin Panel and perform operational tasks
+                                                    based on the assigned Admin role.
+                                                </p>
+                                            </div>
+
+                                        </div>
+
+                                        <div class="modal-footer admin-details-modal-footer">
+                                            <button type="button"
+                                                    class="admin-modal-close-btn"
+                                                    data-bs-dismiss="modal">
+                                                Close
+                                            </button>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+        }
+
+    </div>
+
+</div>

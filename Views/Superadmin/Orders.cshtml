@@ -1,0 +1,435 @@
+@model IEnumerable<BuyZaar.Models.Order>
+
+@{
+    Layout = "~/Views/Shared/_SuperAdminLayout.cshtml";
+    ViewData["Title"] = "Monitor Orders";
+
+    var search = ViewBag.Search as string;
+    var orderStatus = ViewBag.OrderStatus as string;
+    var deliveryStatus = ViewBag.DeliveryStatus as string;
+
+    var currentPage = ViewBag.CurrentPage as int? ?? 1;
+    var totalPages = ViewBag.TotalPages as int? ?? 1;
+
+    var totalOrders = ViewBag.TotalOrders as int? ?? 0;
+    var pendingOrders = ViewBag.PendingOrders as int? ?? 0;
+    var completedOrders = ViewBag.CompletedOrders as int? ?? 0;
+    var cancelledOrders = ViewBag.CancelledOrders as int? ?? 0;
+    var returnedOrders = ViewBag.ReturnedOrders as int? ?? 0;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/superadmin-orders.css" asp-append-version="true" />
+}
+
+<div class="superadmin-orders-page">
+
+    <div class="superadmin-orders-hero">
+        <div>
+            <h1>Monitor Orders</h1>
+            <p>View marketplace orders, buyer details, seller products, riders, delivery status, and return activity.</p>
+        </div>
+
+        <span class="orders-count-pill">
+            @totalOrders Order(s)
+        </span>
+    </div>
+
+    <div class="orders-stat-grid">
+        <div class="orders-stat-card">
+            <span>Total Orders</span>
+            <strong>@totalOrders</strong>
+        </div>
+
+        <div class="orders-stat-card">
+            <span>Pending / Processing</span>
+            <strong>@pendingOrders</strong>
+        </div>
+
+        <div class="orders-stat-card">
+            <span>Completed</span>
+            <strong>@completedOrders</strong>
+        </div>
+
+        <div class="orders-stat-card danger">
+            <span>Cancelled</span>
+            <strong>@cancelledOrders</strong>
+        </div>
+
+        <div class="orders-stat-card warning">
+            <span>Returned</span>
+            <strong>@returnedOrders</strong>
+        </div>
+    </div>
+
+    <div class="orders-monitor-card">
+
+        <div class="orders-monitor-card-header">
+            <div>
+                <h2>Order Records</h2>
+                <p>SuperAdmin monitoring view for platform-wide orders.</p>
+            </div>
+        </div>
+
+        <form asp-controller="SuperAdmin"
+              asp-action="Orders"
+              method="get"
+              class="orders-monitor-filter">
+
+            <div class="orders-filter-group orders-filter-search">
+                <label>Search</label>
+                <input type="text"
+                       name="search"
+                       value="@search"
+                       placeholder="Search order ID, receiver, buyer, seller, rider, contact, or address..." />
+            </div>
+
+            <div class="orders-filter-group">
+                <label>Order Status</label>
+                <select name="orderStatus">
+                    <option value="">All Order Status</option>
+                    <option value="Pending" selected="@(orderStatus == "Pending")">Pending</option>
+                    <option value="Processing" selected="@(orderStatus == "Processing")">Processing</option>
+                    <option value="Ready for Pickup" selected="@(orderStatus == "Ready for Pickup")">Ready for Pickup</option>
+                    <option value="To Receive" selected="@(orderStatus == "To Receive")">To Receive</option>
+                    <option value="Delivered" selected="@(orderStatus == "Delivered")">Delivered</option>
+                    <option value="Completed" selected="@(orderStatus == "Completed")">Completed</option>
+                    <option value="Cancelled" selected="@(orderStatus == "Cancelled")">Cancelled</option>
+                    <option value="Returns" selected="@(orderStatus == "Returns")">Returns</option>
+                </select>
+            </div>
+
+            <div class="orders-filter-group">
+                <label>Delivery Status</label>
+                <select name="deliveryStatus">
+                    <option value="">All Delivery Status</option>
+                    <option value="Pending Assignment" selected="@(deliveryStatus == "Pending Assignment")">Pending Assignment</option>
+                    <option value="Assigned" selected="@(deliveryStatus == "Assigned")">Assigned</option>
+                    <option value="Picked Up" selected="@(deliveryStatus == "Picked Up")">Picked Up</option>
+                    <option value="Out for Delivery" selected="@(deliveryStatus == "Out for Delivery")">Out for Delivery</option>
+                    <option value="Delivered" selected="@(deliveryStatus == "Delivered")">Delivered</option>
+                    <option value="Failed Delivery" selected="@(deliveryStatus == "Failed Delivery")">Failed Delivery</option>
+                    <option value="Return Pending" selected="@(deliveryStatus == "Return Pending")">Return Pending</option>
+                    <option value="Returned to Seller" selected="@(deliveryStatus == "Returned to Seller")">Returned to Seller</option>
+                </select>
+            </div>
+
+            <button type="submit" class="orders-filter-btn">
+                Filter
+            </button>
+
+            <a asp-controller="SuperAdmin"
+               asp-action="Orders"
+               class="orders-reset-btn">
+                Reset
+            </a>
+        </form>
+
+        @if (!Model.Any())
+        {
+            <div class="orders-empty-state">
+                <h4>No orders found</h4>
+                <p>No order records matched your filters.</p>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table orders-monitor-table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Order</th>
+                            <th>Buyer / Receiver</th>
+                            <th>Address</th>
+                            <th>Total</th>
+                            <th>Order Status</th>
+                            <th>Delivery Status</th>
+                            <th>Rider</th>
+                            <th>Date</th>
+                            <th class="text-end">Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @foreach (var order in Model)
+                        {
+                            var deliveryStatusText = string.IsNullOrWhiteSpace(order.DeliveryStatus)
+                                ? "Pending Assignment"
+                                : order.DeliveryStatus;
+
+                            var modalId = $"orderDetailsModal_{order.Id}";
+
+                            var orderStatusClass = (order.Status ?? "").Replace(" ", "-").ToLower();
+                            var deliveryStatusClass = deliveryStatusText.Replace(" ", "-").ToLower();
+
+                            <tr>
+                                <td>
+                                    <div class="order-id-cell">
+                                        <strong>#@order.Id</strong>
+                                        <span>@order.Status</span>
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <div class="buyer-cell">
+                                        <strong>@order.ReceiverName</strong>
+                                        <span>@order.ContactNumber</span>
+                                        <small>Buyer email not linked</small>
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <div class="order-address-cell">
+                                        @order.DeliveryAddress
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <strong class="order-total">
+                                        ₱@order.TotalAmount.ToString("N2")
+                                    </strong>
+                                </td>
+
+                                <td>
+                                    <span class="order-status-badge @orderStatusClass">
+                                        @order.Status
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <span class="delivery-status-badge @deliveryStatusClass">
+                                        @deliveryStatusText
+                                    </span>
+                                </td>
+
+                                <td>
+                                    @if (order.Rider != null)
+                                    {
+                                        <div class="rider-cell">
+                                            <strong>@order.Rider.FullName</strong>
+                                            <span>@order.Rider.Email</span>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span class="muted-pill">
+                                            No rider assigned
+                                        </span>
+                                    }
+                                </td>
+
+                                <td>
+                                    <span class="order-date">
+                                        @order.CreatedAt.ToString("yyyy-MM-dd")
+                                    </span>
+                                </td>
+
+                                <td class="text-end">
+                                    <button type="button"
+                                            class="order-view-btn"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#@modalId">
+                                        View
+                                    </button>
+                                </td>
+                            </tr>
+
+                            <div class="modal fade"
+                                 id="@modalId"
+                                 tabindex="-1"
+                                 aria-hidden="true">
+
+                                <div class="modal-dialog modal-dialog-centered modal-xl">
+                                    <div class="modal-content order-details-modal">
+
+                                        <div class="modal-header order-details-modal-header">
+                                            <div>
+                                                <h5>Order Details</h5>
+                                                <p>Order #@order.Id</p>
+                                            </div>
+
+                                            <button type="button"
+                                                    class="btn-close btn-close-white"
+                                                    data-bs-dismiss="modal"
+                                                    aria-label="Close">
+                                            </button>
+                                        </div>
+
+                                        <div class="modal-body order-details-modal-body">
+
+                                            <div class="order-modal-summary">
+                                                <div>
+                                                    <span>Order Total</span>
+                                                    <strong>₱@order.TotalAmount.ToString("N2")</strong>
+                                                </div>
+
+                                                <div>
+                                                    <span>Order Status</span>
+                                                    <strong>@order.Status</strong>
+                                                </div>
+
+                                                <div>
+                                                    <span>Delivery Status</span>
+                                                    <strong>@deliveryStatusText</strong>
+                                                </div>
+
+                                                <div>
+                                                    <span>Created Date</span>
+                                                    <strong>@order.CreatedAt.ToString("MMMM dd, yyyy")</strong>
+                                                </div>
+                                            </div>
+
+                                            <div class="order-detail-grid">
+
+                                                <div class="order-detail-card">
+                                                    <h4>Buyer / Receiver</h4>
+
+                                                    <div class="detail-row">
+                                                        <span>Receiver Name</span>
+                                                        <strong>@order.ReceiverName</strong>
+                                                    </div>
+
+                                                    <div class="detail-row">
+                                                        <span>Contact Number</span>
+                                                        <strong>@order.ContactNumber</strong>
+                                                    </div>
+
+                                                    <div class="detail-row">
+                                                        <span>Buyer Email</span>
+                                                        <strong>Buyer email not linked</strong>
+                                                    </div>
+
+                                                    <div class="detail-row">
+                                                        <span>Delivery Address</span>
+                                                        <strong>@order.DeliveryAddress</strong>
+                                                    </div>
+                                                </div>
+
+                                                <div class="order-detail-card">
+                                                    <h4>Rider Assignment</h4>
+
+                                                    @if (order.Rider != null)
+                                                    {
+                                                        <div class="detail-row">
+                                                            <span>Rider Name</span>
+                                                            <strong>@order.Rider.FullName</strong>
+                                                        </div>
+
+                                                        <div class="detail-row">
+                                                            <span>Rider Email</span>
+                                                            <strong>@order.Rider.Email</strong>
+                                                        </div>
+                                                    }
+                                                    else
+                                                    {
+                                                        <div class="order-modal-note">
+                                                            No rider has been assigned to this order.
+                                                        </div>
+                                                    }
+                                                </div>
+
+                                            </div>
+
+                                            <div class="order-items-section">
+                                                <h4>Ordered Products</h4>
+
+                                                <div class="order-items-list">
+                                                    @foreach (var item in order.OrderItems)
+                                                    {
+                                                        var product = item.Product;
+                                                        var seller = product?.Seller;
+
+                                                        <div class="order-item-card">
+                                                            <div>
+                                                                <strong>@(product?.Name ?? "Deleted product")</strong>
+                                                                <span>
+                                                                    Seller:
+                                                                    @(seller?.FullName ?? "Unknown seller")
+                                                                </span>
+                                                            </div>
+
+                                                            <div class="order-item-meta">
+                                                                <span>Qty: @item.Quantity</span>
+                                                                <strong>₱@item.Price.ToString("N2")</strong>
+                                                            </div>
+                                                        </div>
+                                                    }
+                                                </div>
+                                            </div>
+
+                                            @if (!string.IsNullOrWhiteSpace(order.CancellationReason))
+                                            {
+                                                <div class="order-warning-note">
+                                                    <strong>Cancellation Reason</strong>
+                                                    <p>@order.CancellationReason</p>
+                                                </div>
+                                            }
+
+                                        </div>
+
+                                        <div class="modal-footer order-details-modal-footer">
+                                            <button type="button"
+                                                    class="order-modal-close-btn"
+                                                    data-bs-dismiss="modal">
+                                                Close
+                                            </button>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="orders-pagination">
+                <div class="orders-pagination-info">
+                    Page @currentPage of @(totalPages == 0 ? 1 : totalPages)
+                </div>
+
+                <div class="orders-pagination-actions">
+                    @if (currentPage > 1)
+                    {
+                        <a asp-controller="SuperAdmin"
+                           asp-action="Orders"
+                           asp-route-search="@search"
+                           asp-route-orderStatus="@orderStatus"
+                           asp-route-deliveryStatus="@deliveryStatus"
+                           asp-route-page="@(currentPage - 1)"
+                           class="orders-pagination-btn">
+                            Previous
+                        </a>
+                    }
+                    else
+                    {
+                        <span class="orders-pagination-btn disabled">
+                            Previous
+                        </span>
+                    }
+
+                    @if (currentPage < totalPages)
+                    {
+                        <a asp-controller="SuperAdmin"
+                           asp-action="Orders"
+                           asp-route-search="@search"
+                           asp-route-orderStatus="@orderStatus"
+                           asp-route-deliveryStatus="@deliveryStatus"
+                           asp-route-page="@(currentPage + 1)"
+                           class="orders-pagination-btn">
+                            Next
+                        </a>
+                    }
+                    else
+                    {
+                        <span class="orders-pagination-btn disabled">
+                            Next
+                        </span>
+                    }
+                </div>
+            </div>
+        }
+
+    </div>
+
+</div>

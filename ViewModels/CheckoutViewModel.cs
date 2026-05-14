@@ -37,6 +37,7 @@ namespace BuyZaar.ViewModels
         public string DeliveryAddress { get; set; } = string.Empty;
 
         public decimal ShippingFee { get; set; }
+        public string PaymentMethod { get; set; } = "COD";
 
 public decimal GrandTotal => Subtotal + ShippingFee;
     }

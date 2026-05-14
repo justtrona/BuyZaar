@@ -1,0 +1,226 @@
+@{
+    Layout = "~/Views/Shared/_SuperAdminLayout.cshtml";
+    ViewData["Title"] = "Payments";
+
+    var totalPayments = ViewBag.TotalPayments ?? 0;
+    var paidPayments = ViewBag.PaidPayments ?? 0;
+    var pendingPayments = ViewBag.PendingPayments ?? 0;
+    var failedPayments = ViewBag.FailedPayments ?? 0;
+
+    var totalCommission = ViewBag.TotalPlatformCommission ?? 0m;
+
+    var pendingSettlements = ViewBag.PendingSettlements ?? 0;
+    var releasedSettlements = ViewBag.ReleasedSettlements ?? 0;
+
+    var paymentGateway = ViewBag.PaymentGateway ?? "PayMongo";
+    var paymentStatus = ViewBag.PaymentStatus ?? "Configured";
+}
+
+@section Styles {
+    <link rel="stylesheet"
+          href="~/css/superadmin-payments.css"
+          asp-append-version="true" />
+}
+
+<div class="superadmin-payments-page">
+
+    <div class="payments-hero">
+
+        <div>
+            <h1>Payments & Financial Operations</h1>
+
+            <p>
+                Monitor BuyZaar payment transactions,
+                platform commissions, settlement releases,
+                PayMongo payment activity, and financial operations.
+            </p>
+        </div>
+
+        <span class="payments-status-badge configured">
+            @paymentStatus
+        </span>
+
+    </div>
+
+    <div class="payments-kpi-grid">
+
+        <div class="payments-kpi-card">
+            <span>Total Payments</span>
+            <strong>@totalPayments</strong>
+            <p>Recorded payment transactions</p>
+        </div>
+
+        <div class="payments-kpi-card success">
+            <span>Paid Payments</span>
+            <strong>@paidPayments</strong>
+            <p>Successfully completed payments</p>
+        </div>
+
+        <div class="payments-kpi-card warning">
+            <span>Pending Payments</span>
+            <strong>@pendingPayments</strong>
+            <p>Awaiting payment completion</p>
+        </div>
+
+        <div class="payments-kpi-card danger">
+            <span>Failed Payments</span>
+            <strong>@failedPayments</strong>
+            <p>Failed or cancelled transactions</p>
+        </div>
+
+    </div>
+
+    <div class="payments-grid">
+
+        <div class="payments-card">
+
+            <div class="payments-card-header">
+                <div>
+                    <h3>Payment Gateway Overview</h3>
+
+                    <p>
+                        Monitor PayMongo integration,
+                        transaction activity, and financial health.
+                    </p>
+                </div>
+            </div>
+
+            <div class="payments-summary-list">
+
+                <div class="payments-summary-item">
+                    <span>Gateway</span>
+                    <strong>@paymentGateway</strong>
+                </div>
+
+                <div class="payments-summary-item">
+                    <span>Integration Status</span>
+                    <strong class="text-success">@paymentStatus</strong>
+                </div>
+
+                <div class="payments-summary-item">
+                    <span>Total Platform Commission</span>
+                    <strong>
+                        ₱@totalCommission.ToString("N2")
+                    </strong>
+                </div>
+
+                <div class="payments-summary-item">
+                    <span>Released Settlements</span>
+                    <strong>@releasedSettlements</strong>
+                </div>
+
+                <div class="payments-summary-item">
+                    <span>Pending Settlements</span>
+                    <strong>@pendingSettlements</strong>
+                </div>
+
+                <div class="payments-summary-item">
+                    <span>Financial Status</span>
+                    <strong>Operational</strong>
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="payments-card">
+
+            <div class="payments-card-header">
+                <div>
+                    <h3>Financial Controls</h3>
+
+                    <p>
+                        Active and upcoming SuperAdmin
+                        financial oversight tools.
+                    </p>
+                </div>
+            </div>
+
+            <div class="payments-feature-list">
+
+                <div class="payments-feature-item active">
+                    ✓ Transaction Monitoring
+                </div>
+
+                <div class="payments-feature-item active">
+                    ✓ Seller Settlement Management
+                </div>
+
+                <div class="payments-feature-item active">
+                    ✓ Platform Commission Tracking
+                </div>
+
+                <div class="payments-feature-item active">
+                    ✓ Payment Status Monitoring
+                </div>
+
+                <div class="payments-feature-item">
+                    Refund Approval System
+                </div>
+
+                <div class="payments-feature-item">
+                    Fraud Detection Monitoring
+                </div>
+
+                <div class="payments-feature-item">
+                    Failed Payment Logs
+                </div>
+
+                <div class="payments-feature-item">
+                    PayMongo Webhook Logs
+                </div>
+
+                <div class="payments-feature-item">
+                    Financial Audit Trails
+                </div>
+
+                <div class="payments-feature-item">
+                    Automated Settlement Releases
+                </div>
+
+            </div>
+
+        </div>
+
+        @* <div class="payments-card payments-wide-card">
+
+            <div class="payments-card-header">
+                <div>
+                    <h3>Settlement Operations</h3>
+
+                    <p>
+                        Seller earnings distribution and
+                        platform commission overview.
+                    </p>
+                </div>
+            </div>
+
+            <div class="payments-settlement-grid">
+
+                <div class="settlement-box released">
+                    <span>Released</span>
+                    <strong>@releasedSettlements</strong>
+                    <p>Settlements released to sellers</p>
+                </div>
+
+                <div class="settlement-box pending">
+                    <span>Pending</span>
+                    <strong>@pendingSettlements</strong>
+                    <p>Awaiting SuperAdmin approval</p>
+                </div>
+
+                <div class="settlement-box commission">
+                    <span>Platform Revenue</span>
+                    <strong>
+                        ₱@totalCommission.ToString("N2")
+                    </strong>
+                    <p>Total platform commissions earned</p>
+                </div>
+
+            </div>
+
+        </div> *@
+
+    </div>
+
+</div>

@@ -121,6 +121,12 @@ namespace BuyZaar.Controllers
                 .OrderByDescending(o => o.AssignedAt)
                 .ToListAsync();
 
+
+var orderIds = orders.Select(o => o.Id).ToList();
+
+ViewBag.PaymentLookup = await _context.Payments
+    .Where(p => orderIds.Contains(p.OrderId))
+    .ToDictionaryAsync(p => p.OrderId, p => p);
             return View(orders);
         }
 
@@ -220,6 +226,12 @@ namespace BuyZaar.Controllers
                              o.DeliveryStatus == "Failed Delivery"))
                 .OrderByDescending(o => o.AcceptedAt)
                 .ToListAsync();
+
+                var orderIds = orders.Select(o => o.Id).ToList();
+
+ViewBag.PaymentLookup = await _context.Payments
+    .Where(p => orderIds.Contains(p.OrderId))
+    .ToDictionaryAsync(p => p.OrderId, p => p);
 
             return View(orders);
         }
@@ -396,11 +408,15 @@ namespace BuyZaar.Controllers
             var payment = await _context.Payments
                 .FirstOrDefaultAsync(p => p.OrderId == order.Id);
 
-            if (payment != null && payment.PaymentStatus == "Pending")
-            {
-                payment.PaymentStatus = "Paid";
-                payment.PaidAt = DateTime.Now;
-            }
+          if (payment != null && payment.PaymentStatus == "Pending")
+{
+    payment.PaymentStatus = "Paid";
+    payment.PaidAt = DateTime.Now;
+}
+
+await _context.SaveChangesAsync();
+
+await CreateMarketplaceFinancialRecordsAsync(order.Id);
 
             await _context.SaveChangesAsync();
 
@@ -495,5 +511,62 @@ namespace BuyZaar.Controllers
             TempData["Message"] = $"Order #{order.Id} is out for delivery again.";
             return RedirectToAction(nameof(ActiveDeliveries));
         }
+
+        private async Task CreateMarketplaceFinancialRecordsAsync(int orderId)
+{
+    var order = await _context.Orders
+        .Include(o => o.OrderItems)
+            .ThenInclude(oi => oi.Product)
+        .FirstOrDefaultAsync(o => o.Id == orderId);
+
+    if (order == null)
+        return;
+
+    var alreadyExists = await _context.SellerPayouts
+        .AnyAsync(p => p.OrderId == order.Id);
+
+    if (alreadyExists)
+        return;
+
+    var commissionRate = await _context.CommissionRates
+        .Where(c => c.IsActive)
+        .OrderByDescending(c => c.CreatedAt)
+        .FirstOrDefaultAsync();
+
+    var rate = commissionRate?.RatePercentage ?? 10m;
+
+    foreach (var item in order.OrderItems)
+    {
+        if (item.Product == null || string.IsNullOrWhiteSpace(item.Product.SellerId))
+            continue;
+
+        var productTotal = item.Price * item.Quantity;
+        var commissionAmount = productTotal * (rate / 100m);
+        var sellerEarnings = productTotal - commissionAmount;
+
+        _context.SellerPayouts.Add(new SellerPayout
+        {
+            SellerId = item.Product.SellerId,
+            OrderId = order.Id,
+            ProductTotal = productTotal,
+            CommissionAmount = commissionAmount,
+            SellerEarnings = sellerEarnings,
+            CommissionRate = rate,
+            Status = "Pending",
+            CreatedAt = DateTime.Now
+        });
+
+        _context.PlatformEarnings.Add(new PlatformEarning
+        {
+            OrderId = order.Id,
+            ProductTotal = productTotal,
+            CommissionAmount = commissionAmount,
+            CommissionRate = rate,
+            CreatedAt = DateTime.Now
+        });
+    }
+
+    await _context.SaveChangesAsync();
+}
     }
 }

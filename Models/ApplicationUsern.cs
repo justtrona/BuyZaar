@@ -11,6 +11,7 @@ namespace BuyZaar.Models
 
         // ✅ Optional: track when user verified email
         public DateTime? VerifiedAt { get; set; }
+        public string? ShopName { get; set; }
 
         // Existing relationship
         public ICollection<SellerApplication>? SellerApplications { get; set; }

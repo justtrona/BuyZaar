@@ -1,0 +1,408 @@
+@{
+    Layout = "~/Views/Shared/_SuperAdminLayout.cshtml";
+    ViewData["Title"] = "Reports";
+
+    var totalUsers = ViewBag.TotalUsers ?? 0;
+    var totalShoppers = ViewBag.TotalShoppers ?? 0;
+    var totalSellers = ViewBag.TotalSellers ?? 0;
+    var totalRiders = ViewBag.TotalRiders ?? 0;
+    var totalAdmins = ViewBag.TotalAdmins ?? 0;
+
+    var totalProducts = ViewBag.TotalProducts ?? 0;
+    var visibleProducts = ViewBag.VisibleProducts ?? 0;
+    var hiddenProducts = ViewBag.HiddenProducts ?? 0;
+    var lowStockProducts = ViewBag.LowStockProducts ?? 0;
+    var outOfStockProducts = ViewBag.OutOfStockProducts ?? 0;
+
+    var totalOrders = ViewBag.TotalOrders ?? 0;
+    var pendingOrders = ViewBag.PendingOrders ?? 0;
+    var completedOrders = ViewBag.CompletedOrders ?? 0;
+    var cancelledOrders = ViewBag.CancelledOrders ?? 0;
+    var returnedOrders = ViewBag.ReturnedOrders ?? 0;
+
+    var totalPayments = ViewBag.TotalPayments ?? 0;
+    var paidPayments = ViewBag.PaidPayments ?? 0;
+    var pendingPayments = ViewBag.PendingPayments ?? 0;
+    var totalPlatformCommission = ViewBag.TotalPlatformCommission ?? 0m;
+    var pendingSettlements = ViewBag.PendingSettlements ?? 0;
+    var releasedSettlements = ViewBag.ReleasedSettlements ?? 0;
+}
+
+@section Styles {
+    <link rel="stylesheet"
+          href="~/css/superadmin-reports.css"
+          asp-append-version="true" />
+}
+
+<div class="reports-page">
+
+    <div class="reports-hero">
+        <div>
+            <h1>Platform Reports</h1>
+            <p>
+                Analyze BuyZaar platform performance, users,
+                marketplace products, operational activity,
+                payments, platform commissions, and seller settlements.
+            </p>
+        </div>
+
+        <span class="reports-badge">
+            SuperAdmin Analytics
+        </span>
+    </div>
+
+    <div class="reports-kpi-grid">
+
+        <div class="reports-kpi-card">
+            <span>Total Users</span>
+            <strong>@totalUsers</strong>
+            <p>Registered platform accounts</p>
+        </div>
+
+        <div class="reports-kpi-card">
+            <span>Total Sellers</span>
+            <strong>@totalSellers</strong>
+            <p>Approved seller accounts</p>
+        </div>
+
+        <div class="reports-kpi-card">
+            <span>Total Products</span>
+            <strong>@totalProducts</strong>
+            <p>Marketplace listings</p>
+        </div>
+
+        <div class="reports-kpi-card">
+            <span>Total Orders</span>
+            <strong>@totalOrders</strong>
+            <p>Marketplace order records</p>
+        </div>
+
+    </div>
+
+    <div class="reports-analytics-layout">
+
+        <div class="reports-chart-card">
+            <div class="reports-card-header">
+                <h3>User Distribution</h3>
+                <p>Shoppers, sellers, riders, and admins.</p>
+            </div>
+
+            <canvas id="usersChart"></canvas>
+        </div>
+
+        <div class="reports-card">
+            <div class="reports-card-header">
+                <h3>User Analytics</h3>
+                <p>Breakdown of platform users.</p>
+            </div>
+
+            <div class="reports-summary-list">
+                <div class="reports-summary-item">
+                    <span>Shoppers</span>
+                    <strong>@totalShoppers</strong>
+                </div>
+
+                <div class="reports-summary-item">
+                    <span>Sellers</span>
+                    <strong>@totalSellers</strong>
+                </div>
+
+                <div class="reports-summary-item">
+                    <span>Riders</span>
+                    <strong>@totalRiders</strong>
+                </div>
+
+                <div class="reports-summary-item">
+                    <span>Admins</span>
+                    <strong>@totalAdmins</strong>
+                </div>
+            </div>
+        </div>
+
+        <div class="reports-chart-card">
+            <div class="reports-card-header">
+                <h3>Product Visibility</h3>
+                <p>Visible, hidden, low stock, and out of stock products.</p>
+            </div>
+
+            <canvas id="productsChart"></canvas>
+        </div>
+
+        <div class="reports-card">
+            <div class="reports-card-header">
+                <h3>Product Analytics</h3>
+                <p>Marketplace inventory visibility.</p>
+            </div>
+
+            <div class="reports-summary-list">
+                <div class="reports-summary-item">
+                    <span>Visible Products</span>
+                    <strong>@visibleProducts</strong>
+                </div>
+
+                <div class="reports-summary-item">
+                    <span>Hidden Products</span>
+                    <strong>@hiddenProducts</strong>
+                </div>
+
+                <div class="reports-summary-item">
+                    <span>Low Stock</span>
+                    <strong>@lowStockProducts</strong>
+                </div>
+
+                <div class="reports-summary-item">
+                    <span>Out of Stock</span>
+                    <strong>@outOfStockProducts</strong>
+                </div>
+            </div>
+        </div>
+
+        <div class="reports-chart-card">
+            <div class="reports-card-header">
+                <h3>Order Overview</h3>
+                <p>Pending, completed, cancelled, and returned orders.</p>
+            </div>
+
+            <canvas id="ordersChart"></canvas>
+        </div>
+
+        <div class="reports-card">
+            <div class="reports-card-header">
+                <h3>Order Analytics</h3>
+                <p>Operational order performance.</p>
+            </div>
+
+            <div class="reports-summary-list">
+                <div class="reports-summary-item">
+                    <span>Pending Orders</span>
+                    <strong>@pendingOrders</strong>
+                </div>
+
+                <div class="reports-summary-item">
+                    <span>Completed Orders</span>
+                    <strong>@completedOrders</strong>
+                </div>
+
+                <div class="reports-summary-item">
+                    <span>Cancelled Orders</span>
+                    <strong>@cancelledOrders</strong>
+                </div>
+
+                <div class="reports-summary-item">
+                    <span>Returned Orders</span>
+                    <strong>@returnedOrders</strong>
+                </div>
+            </div>
+        </div>
+
+        <div class="reports-chart-card">
+            <div class="reports-card-header">
+                <h3>Financial Overview</h3>
+                <p>PayMongo payments, platform commissions, and seller settlement status.</p>
+            </div>
+
+            <canvas id="paymentsChart"></canvas>
+        </div>
+
+        <div class="reports-card">
+            <div class="reports-card-header">
+                <h3>Financial Analytics</h3>
+                <p>Payment gateway, settlement, and commission analytics.</p>
+            </div>
+
+            <div class="reports-summary-list">
+
+                <div class="reports-summary-item">
+                    <span>Total Payments</span>
+                    <strong>@totalPayments</strong>
+                </div>
+
+                <div class="reports-summary-item">
+                    <span>Paid Payments</span>
+                    <strong>@paidPayments</strong>
+                </div>
+
+                <div class="reports-summary-item">
+                    <span>Pending Payments</span>
+                    <strong>@pendingPayments</strong>
+                </div>
+
+                <div class="reports-summary-item">
+                    <span>Platform Commission</span>
+                    <strong>₱@totalPlatformCommission.ToString("N2")</strong>
+                </div>
+
+                <div class="reports-summary-item">
+                    <span>Pending Settlements</span>
+                    <strong>@pendingSettlements</strong>
+                </div>
+
+                <div class="reports-summary-item">
+                    <span>Released Settlements</span>
+                    <strong>@releasedSettlements</strong>
+                </div>
+
+                <div class="reports-summary-item">
+                    <span>Gateway</span>
+                    <strong>PayMongo</strong>
+                </div>
+
+                <div class="reports-summary-item">
+                    <span>Status</span>
+                    <strong>Configured</strong>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        new Chart(document.getElementById("usersChart"), {
+            type: "doughnut",
+            data: {
+                labels: ["Shoppers", "Sellers", "Riders", "Admins"],
+                datasets: [{
+                    data: [
+                        @totalShoppers,
+                        @totalSellers,
+                        @totalRiders,
+                        @totalAdmins
+                    ],
+                    backgroundColor: [
+                        "#2563eb",
+                        "#16a34a",
+                        "#f59e0b",
+                        "#7c3aed"
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: "65%",
+                plugins: {
+                    legend: {
+                        position: "bottom"
+                    }
+                }
+            }
+        });
+
+        new Chart(document.getElementById("productsChart"), {
+            type: "bar",
+            data: {
+                labels: ["Visible", "Hidden", "Low Stock", "Out of Stock"],
+                datasets: [{
+                    data: [
+                        @visibleProducts,
+                        @hiddenProducts,
+                        @lowStockProducts,
+                        @outOfStockProducts
+                    ],
+                    backgroundColor: "#2563eb",
+                    borderRadius: 10,
+                    barThickness: 38
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+
+        new Chart(document.getElementById("ordersChart"), {
+            type: "bar",
+            data: {
+                labels: ["Pending", "Completed", "Cancelled", "Returned"],
+                datasets: [{
+                    data: [
+                        @pendingOrders,
+                        @completedOrders,
+                        @cancelledOrders,
+                        @returnedOrders
+                    ],
+                    backgroundColor: "#16a34a",
+                    borderRadius: 10,
+                    barThickness: 38
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+
+        new Chart(document.getElementById("paymentsChart"), {
+            type: "bar",
+            data: {
+                labels: [
+                    "Paid Payments",
+                    "Pending Payments",
+                    "Released Settlements",
+                    "Pending Settlements"
+                ],
+                datasets: [{
+                    data: [
+                        @paidPayments,
+                        @pendingPayments,
+                        @releasedSettlements,
+                        @pendingSettlements
+                    ],
+                    backgroundColor: "#7c3aed",
+                    borderRadius: 10,
+                    barThickness: 38
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+    </script>
+}

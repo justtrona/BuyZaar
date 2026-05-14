@@ -1,0 +1,403 @@
+@model IEnumerable<BuyZaar.Models.ApplicationUser>
+
+@{
+    Layout = "~/Views/Shared/_SuperAdminLayout.cshtml";
+    ViewData["Title"] = "Manage Sellers";
+
+    var search = ViewBag.Search as string;
+    var status = ViewBag.Status as string;
+    var emailStatus = ViewBag.EmailStatus as string;
+
+    var currentPage = ViewBag.CurrentPage as int? ?? 1;
+    var totalPages = ViewBag.TotalPages as int? ?? 1;
+    var totalSellers = ViewBag.TotalSellers as int? ?? 0;
+
+    var sellerShopNames = ViewBag.SellerShopNames as Dictionary<string, string>
+        ?? new Dictionary<string, string>();
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/superadmin-sellers.css" asp-append-version="true" />
+}
+
+<div class="seller-management-page">
+
+    <div class="seller-management-hero">
+        <div>
+            <h1>Manage Sellers</h1>
+            <p>Monitor seller accounts, shop information, verification status, activity, and marketplace access.</p>
+        </div>
+
+        <span class="seller-management-count">
+            @totalSellers Seller(s)
+        </span>
+    </div>
+
+    @if (TempData["SellerMessage"] != null)
+    {
+        <div class="alert alert-info seller-management-alert">
+            @TempData["SellerMessage"]
+        </div>
+    }
+
+    <div class="seller-management-card">
+
+        <div class="seller-management-card-header">
+            <div>
+                <h2>Seller Records</h2>
+                <p>Review seller accounts and manage their access to BuyZaar marketplace operations.</p>
+            </div>
+        </div>
+
+        <form asp-controller="SuperAdmin"
+              asp-action="Sellers"
+              method="get"
+              class="seller-management-filter">
+
+            <div class="seller-filter-group seller-filter-search">
+                <label>Search</label>
+                <input type="text"
+                       name="search"
+                       value="@search"
+                       placeholder="Search seller name, shop name, email, username, or phone..." />
+            </div>
+
+            <div class="seller-filter-group">
+                <label>Account Status</label>
+                <select name="status">
+                    <option value="">All Status</option>
+                    <option value="Active" selected="@(status == "Active")">Active</option>
+                    <option value="Deactivated" selected="@(status == "Deactivated")">Deactivated</option>
+                </select>
+            </div>
+
+            <div class="seller-filter-group">
+                <label>Email Status</label>
+                <select name="emailStatus">
+                    <option value="">All Email Status</option>
+                    <option value="Verified" selected="@(emailStatus == "Verified")">Verified</option>
+                    <option value="Unverified" selected="@(emailStatus == "Unverified")">Unverified</option>
+                </select>
+            </div>
+
+            <button type="submit" class="seller-filter-btn">
+                Filter
+            </button>
+
+            <a asp-controller="SuperAdmin"
+               asp-action="Sellers"
+               class="seller-reset-btn">
+                Reset
+            </a>
+        </form>
+
+        @if (!Model.Any())
+        {
+            <div class="seller-empty-state">
+                <h4>No sellers found</h4>
+                <p>No seller records matched your filters.</p>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table seller-management-table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Seller</th>
+                            <th>Shop Name</th>
+                            <th>Username</th>
+                            <th>Phone</th>
+                            <th>Email Status</th>
+                            <th>Account Status</th>
+                            <th>Verified</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @foreach (var seller in Model)
+                        {
+                            var shopName = sellerShopNames.ContainsKey(seller.Id)
+                                ? sellerShopNames[seller.Id]
+                                : "No shop name";
+
+                            var isDeactivated =
+                                seller.LockoutEnd != null &&
+                                seller.LockoutEnd > DateTimeOffset.Now;
+
+                            var statusClass = isDeactivated ? "deactivated" : "active";
+                            var statusText = isDeactivated ? "Deactivated" : "Active";
+
+                            var emailClass = seller.EmailConfirmed ? "verified" : "unverified";
+                            var emailText = seller.EmailConfirmed ? "Email Verified" : "Email Unverified";
+
+                            var initial = string.IsNullOrWhiteSpace(seller.FullName)
+                                ? "S"
+                                : seller.FullName.Substring(0, 1).ToUpper();
+
+                            var modalId = $"sellerDetailsModal_{seller.Id}";
+
+                            <tr>
+                                <td>
+                                    <div class="seller-user-cell">
+                                        <div class="seller-avatar">
+                                            @initial
+                                        </div>
+
+                                        <div>
+                                            <strong>@(string.IsNullOrWhiteSpace(seller.FullName) ? "Unnamed Seller" : seller.FullName)</strong>
+                                            <span>@seller.Email</span>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <span class="seller-shop-text">
+                                        @shopName
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <span class="seller-text">
+                                        @seller.UserName
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <span class="seller-text">
+                                        @(string.IsNullOrWhiteSpace(seller.PhoneNumber)
+                                            ? "No phone number"
+                                            : seller.PhoneNumber)
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <span class="seller-badge @emailClass">
+                                        @emailText
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <span class="seller-badge @statusClass">
+                                        @statusText
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <div class="seller-date-cell">
+                                        <strong>
+                                            @(seller.VerifiedAt?.ToString("yyyy-MM-dd") ?? "N/A")
+                                        </strong>
+                                        <span>
+                                            @(seller.IsVerified ? "Verified account" : "Not verified")
+                                        </span>
+                                    </div>
+                                </td>
+
+                                <td class="text-end">
+                                    <div class="seller-action-group">
+                                        <button type="button"
+                                                class="seller-view-btn"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#@modalId">
+                                            View
+                                        </button>
+
+                                        <form asp-controller="SuperAdmin"
+                                              asp-action="ToggleSellerActivation"
+                                              method="post"
+                                              onsubmit="return confirm('Are you sure you want to @(isDeactivated ? "activate" : "deactivate") this seller account?');">
+
+                                            @Html.AntiForgeryToken()
+
+                                            <input type="hidden"
+                                                   name="userId"
+                                                   value="@seller.Id" />
+
+                                            <button type="submit"
+                                                    class="seller-action-btn @(isDeactivated ? "activate" : "deactivate")">
+                                                @(isDeactivated ? "Activate" : "Deactivate")
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <div class="modal fade"
+                                 id="@modalId"
+                                 tabindex="-1"
+                                 aria-hidden="true">
+
+                                <div class="modal-dialog modal-dialog-centered modal-lg">
+                                    <div class="modal-content seller-details-modal">
+
+                                        <div class="modal-header seller-details-modal-header">
+                                            <div>
+                                                <h5>Seller Account Details</h5>
+                                                <p>@(string.IsNullOrWhiteSpace(seller.FullName) ? "Unnamed Seller" : seller.FullName)</p>
+                                            </div>
+
+                                            <button type="button"
+                                                    class="btn-close btn-close-white"
+                                                    data-bs-dismiss="modal"
+                                                    aria-label="Close">
+                                            </button>
+                                        </div>
+
+                                        <div class="modal-body seller-details-modal-body">
+
+                                            <div class="seller-profile-summary">
+                                                <div class="seller-profile-avatar">
+                                                    @initial
+                                                </div>
+
+                                                <div>
+                                                    <h4>@(string.IsNullOrWhiteSpace(seller.FullName) ? "Unnamed Seller" : seller.FullName)</h4>
+                                                    <p>@seller.Email</p>
+
+                                                    <div class="seller-profile-shop">
+                                                        @shopName
+                                                    </div>
+
+                                                    <div class="seller-profile-badges">
+                                                        <span class="seller-badge @statusClass">
+                                                            @statusText
+                                                        </span>
+
+                                                        <span class="seller-badge @emailClass">
+                                                            @emailText
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="seller-detail-grid">
+
+                                                <div class="seller-detail-item">
+                                                    <span>Full Name</span>
+                                                    <strong>@(string.IsNullOrWhiteSpace(seller.FullName) ? "N/A" : seller.FullName)</strong>
+                                                </div>
+
+                                                <div class="seller-detail-item">
+                                                    <span>Shop Name</span>
+                                                    <strong>@shopName</strong>
+                                                </div>
+
+                                                <div class="seller-detail-item">
+                                                    <span>Username</span>
+                                                    <strong>@seller.UserName</strong>
+                                                </div>
+
+                                                <div class="seller-detail-item">
+                                                    <span>Email Address</span>
+                                                    <strong>@seller.Email</strong>
+                                                </div>
+
+                                                <div class="seller-detail-item">
+                                                    <span>Phone Number</span>
+                                                    <strong>
+                                                        @(string.IsNullOrWhiteSpace(seller.PhoneNumber)
+                                                            ? "No phone number"
+                                                            : seller.PhoneNumber)
+                                                    </strong>
+                                                </div>
+
+                                                <div class="seller-detail-item">
+                                                    <span>Email Confirmed</span>
+                                                    <strong>@(seller.EmailConfirmed ? "Yes" : "No")</strong>
+                                                </div>
+
+                                                <div class="seller-detail-item">
+                                                    <span>Account Status</span>
+                                                    <strong>@statusText</strong>
+                                                </div>
+
+                                                <div class="seller-detail-item">
+                                                    <span>Verified Status</span>
+                                                    <strong>@(seller.IsVerified ? "Verified account" : "Not verified")</strong>
+                                                </div>
+
+                                                <div class="seller-detail-item">
+                                                    <span>Verified Date</span>
+                                                    <strong>@(seller.VerifiedAt?.ToString("yyyy-MM-dd HH:mm") ?? "N/A")</strong>
+                                                </div>
+
+                                            </div>
+
+                                            <div class="seller-modal-note">
+                                                <strong>Seller Access Scope</strong>
+                                                <p>
+                                                    This account can access seller-side marketplace features such as product listing,
+                                                    order processing, and shop management once approved and active.
+                                                </p>
+                                            </div>
+
+                                        </div>
+
+                                        <div class="modal-footer seller-details-modal-footer">
+                                            <button type="button"
+                                                    class="seller-modal-close-btn"
+                                                    data-bs-dismiss="modal">
+                                                Close
+                                            </button>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="seller-pagination">
+                <div class="seller-pagination-info">
+                    Page @currentPage of @(totalPages == 0 ? 1 : totalPages)
+                </div>
+
+                <div class="seller-pagination-actions">
+                    @if (currentPage > 1)
+                    {
+                        <a asp-controller="SuperAdmin"
+                           asp-action="Sellers"
+                           asp-route-search="@search"
+                           asp-route-status="@status"
+                           asp-route-emailStatus="@emailStatus"
+                           asp-route-page="@(currentPage - 1)"
+                           class="seller-pagination-btn">
+                            Previous
+                        </a>
+                    }
+                    else
+                    {
+                        <span class="seller-pagination-btn disabled">
+                            Previous
+                        </span>
+                    }
+
+                    @if (currentPage < totalPages)
+                    {
+                        <a asp-controller="SuperAdmin"
+                           asp-action="Sellers"
+                           asp-route-search="@search"
+                           asp-route-status="@status"
+                           asp-route-emailStatus="@emailStatus"
+                           asp-route-page="@(currentPage + 1)"
+                           class="seller-pagination-btn">
+                            Next
+                        </a>
+                    }
+                    else
+                    {
+                        <span class="seller-pagination-btn disabled">
+                            Next
+                        </span>
+                    }
+                </div>
+            </div>
+        }
+
+    </div>
+
+</div>

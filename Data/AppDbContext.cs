@@ -20,9 +20,18 @@ namespace BuyZaar.Data
         public DbSet<OrderItem> OrderItems { get; set; }    
         public DbSet<ShopProfile> ShopProfiles { get; set; }
         public DbSet<RiderProfile> RiderProfiles { get; set; }
+        public DbSet<PayMongoWebhookLog> PayMongoWebhookLogs { get; set; }
 
 public DbSet<Payment> Payments { get; set; }
         public DbSet<AuditLog> AuditLogs { get; set; }
+public DbSet<SuperAdminAuditLog> SuperAdminAuditLogs { get; set; }
+        public DbSet<SystemSetting> SystemSettings { get; set; }
+
+        public DbSet<CommissionRate> CommissionRates { get; set; }
+public DbSet<SellerPayout> SellerPayouts { get; set; }
+public DbSet<PlatformEarning> PlatformEarnings { get; set; }
+public DbSet<PaymentTransaction> PaymentTransactions { get; set; }
+public DbSet<Refund> Refunds { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

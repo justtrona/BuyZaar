@@ -1,50 +1,219 @@
 ﻿@model BuyZaar.ViewModels.CreateAdminViewModel
 
 @{
+    Layout = "~/Views/Shared/_SuperAdminLayout.cshtml";
     ViewData["Title"] = "Create Admin";
 }
 
-<h2>Create Admin</h2>
+@section Styles {
+    <link rel="stylesheet" href="~/css/superadmin-createrider.css" asp-append-version="true" />
+}
 
-<form asp-action="CreateAdmin" method="post">
-    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+<div class="create-admin-page">
 
-    <div class="mb-3">
-        <label asp-for="FullName" class="form-label"></label>
-        <input asp-for="FullName" class="form-control" />
-        <span asp-validation-for="FullName" class="text-danger"></span>
+    <div class="create-admin-hero">
+        <div>
+            <h1>Create Admin Account</h1>
+            <p>Create an operational admin account and send a secure password setup link through email.</p>
+        </div>
+
+        <span class="create-admin-badge">
+            SuperAdmin
+        </span>
     </div>
 
-    <div class="mb-3">
-        <label asp-for="Email" class="form-label"></label>
-        <input asp-for="Email" class="form-control" />
-        <span asp-validation-for="Email" class="text-danger"></span>
+    <div class="create-admin-layout">
+
+        <div class="create-admin-card">
+
+            <div class="create-admin-card-header">
+                <h2>Admin Account Details</h2>
+                <p>Enter the official admin information. The new admin will set their own password through email.</p>
+            </div>
+
+            <form asp-action="CreateAdmin" method="post">
+                @Html.AntiForgeryToken()
+
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger create-admin-alert"></div>
+
+                <div class="create-admin-grid">
+
+                    <div class="create-admin-group">
+                        <label asp-for="FullName"></label>
+                        <input asp-for="FullName"
+                               class="form-control"
+                               placeholder="Ex. Juan Dela Cruz" />
+                        <span asp-validation-for="FullName" class="text-danger"></span>
+                    </div>
+
+                    <div class="create-admin-group">
+                        <label asp-for="Email"></label>
+                        <input asp-for="Email"
+                               class="form-control"
+                               placeholder="admin@buyzaar.com" />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+
+                    <div class="create-admin-group">
+                        <label asp-for="UserName"></label>
+                        <input asp-for="UserName"
+                               class="form-control"
+                               placeholder="Ex. admin.juan" />
+                        <span asp-validation-for="UserName" class="text-danger"></span>
+                    </div>
+
+                    <div class="create-admin-group">
+                        <label asp-for="PhoneNumber"></label>
+                        <input asp-for="PhoneNumber"
+                               class="form-control"
+                               placeholder="09XXXXXXXXX" />
+                        <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                    </div>
+
+                </div>
+
+                <div class="admin-info-card">
+                    <h4>Account Setup Process</h4>
+                    <ul>
+                        <li>The admin account will be created with verified status.</li>
+                        <li>A secure password setup link will be sent to the admin email.</li>
+                        <li>The admin must open the email link to create their own password.</li>
+                        <li>The setup link should only be used by the assigned admin.</li>
+                    </ul>
+                </div>
+
+                <div class="create-admin-actions">
+                    <button type="submit" class="btn create-admin-btn">
+                        Create Admin Account
+                    </button>
+
+                    <a asp-controller="SuperAdmin"
+                       asp-action="Index"
+                       class="btn cancel-admin-btn">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+
+        </div>
+
+        <aside class="create-admin-side-panel">
+
+            <div class="side-panel-card">
+                <h3>Admin Responsibilities</h3>
+                <p>Admins help manage daily marketplace operations.</p>
+
+                <div class="side-panel-list">
+                    <div>
+                        <strong>Seller Applications</strong>
+                        <span>Review and approve seller account requests.</span>
+                    </div>
+
+                    <div>
+                        <strong>Orders & Deliveries</strong>
+                        <span>Monitor orders, cancellations, returns, and rider assignments.</span>
+                    </div>
+
+                    <div>
+                        <strong>Product Monitoring</strong>
+                        <span>Review product listings and hide inappropriate items.</span>
+                    </div>
+
+                    <div>
+                        <strong>Payments</strong>
+                        <span>Monitor transaction status and payment records.</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="side-panel-card warning">
+                <h3>Security Reminder</h3>
+                <p>
+                    Only create admin accounts for verified BuyZaar personnel.
+                    Admin users can access sensitive operational records.
+                </p>
+            </div>
+
+            <div class="side-panel-card">
+                <h3>Default Access</h3>
+
+                <div class="access-badge-list">
+                    <span>Admin Role</span>
+                    <span>Email Setup</span>
+                    <span>Verified Account</span>
+                    <span>Operational Access</span>
+                </div>
+            </div>
+
+        </aside>
+
     </div>
 
-    <div class="mb-3">
-        <label asp-for="UserName" class="form-label"></label>
-        <input asp-for="UserName" class="form-control" />
-        <span asp-validation-for="UserName" class="text-danger"></span>
-    </div>
+    @if (TempData["AdminCreated"]?.ToString() == "true")
+    {
+        <div class="modal fade" id="adminCreatedModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content admin-created-modal">
 
-    <div class="mb-3">
-        <label asp-for="Password" class="form-label"></label>
-        <input asp-for="Password" class="form-control" />
-        <span asp-validation-for="Password" class="text-danger"></span>
-    </div>
+                    <div class="modal-body">
+                        <div class="admin-created-icon">
+                            ✓
+                        </div>
 
-    <div class="mb-3">
-        <label asp-for="ConfirmPassword" class="form-label"></label>
-        <input asp-for="ConfirmPassword" class="form-control" />
-        <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
-    </div>
+                        <h3>Admin Created Successfully</h3>
 
-    <button type="submit" class="btn btn-success">Create Admin</button>
-    <a asp-action="Index" class="btn btn-secondary">Back</a>
-</form>
+                        <p>
+                            The admin account for
+                            <strong>@TempData["CreatedAdminName"]</strong>
+                            has been created.
+                        </p>
+
+                        <div class="admin-created-email">
+                            @TempData["CreatedAdminEmail"]
+                        </div>
+
+                        <p class="admin-created-note">
+                            A password setup link has been sent to their email.
+                        </p>
+
+                        <div class="admin-created-actions">
+                            <a asp-controller="SuperAdmin"
+                               asp-action="Admins"
+                               class="btn admin-created-view-btn">
+                                View Admins
+                            </a>
+
+                            <button type="button"
+                                    class="btn admin-created-cancel-btn"
+                                    data-bs-dismiss="modal">
+                                Close
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    }
+
+</div>
 
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    @if (TempData["AdminCreated"]?.ToString() == "true")
+    {
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                const modalElement = document.getElementById("adminCreatedModal");
+
+                if (modalElement) {
+                    const modal = new bootstrap.Modal(modalElement);
+                    modal.show();
+                }
+            });
+        </script>
     }
 }

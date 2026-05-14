@@ -1,0 +1,495 @@
+@model IEnumerable<BuyZaar.Models.Product>
+
+@{
+    Layout = "~/Views/Shared/_SuperAdminLayout.cshtml";
+    ViewData["Title"] = "Manage Products";
+
+    var search = ViewBag.Search as string;
+    var stockStatus = ViewBag.StockStatus as string;
+    var visibility = ViewBag.Visibility as string;
+
+    var currentPage = ViewBag.CurrentPage as int? ?? 1;
+    var totalPages = ViewBag.TotalPages as int? ?? 1;
+
+    var totalProducts = ViewBag.TotalProducts as int? ?? 0;
+    var visibleProducts = ViewBag.VisibleProducts as int? ?? 0;
+    var hiddenProducts = ViewBag.HiddenProducts as int? ?? 0;
+    var lowStockProducts = ViewBag.LowStockProducts as int? ?? 0;
+}
+
+@section Styles {
+    <link rel="stylesheet"
+          href="~/css/superadmin-products.css"
+          asp-append-version="true" />
+}
+
+<div class="products-page">
+
+    <div class="products-hero">
+        <div>
+            <h1>Manage Products</h1>
+            <p>
+                Monitor all marketplace products, visibility status,
+                inventory levels, and seller listings.
+            </p>
+        </div>
+
+        <div class="products-stats">
+            <div class="products-stat-card">
+                <strong>@totalProducts</strong>
+                <span>Total Products</span>
+            </div>
+
+            <div class="products-stat-card">
+                <strong>@visibleProducts</strong>
+                <span>Visible</span>
+            </div>
+
+            <div class="products-stat-card">
+                <strong>@hiddenProducts</strong>
+                <span>Hidden</span>
+            </div>
+
+            <div class="products-stat-card warning">
+                <strong>@lowStockProducts</strong>
+                <span>Low Stock</span>
+            </div>
+        </div>
+    </div>
+
+    @if (TempData["ProductMessage"] != null)
+    {
+        <div class="alert alert-info products-alert">
+            @TempData["ProductMessage"]
+        </div>
+    }
+
+    <div class="products-card">
+
+        <div class="products-card-header">
+            <div>
+                <h2>Marketplace Products</h2>
+                <p>
+                    Review seller products and control visibility
+                    across the BuyZaar marketplace.
+                </p>
+            </div>
+        </div>
+
+        <form asp-controller="SuperAdmin"
+              asp-action="Products"
+              method="get"
+              class="products-filter">
+
+            <div class="products-filter-group products-search-group">
+                <label>Search</label>
+                <input type="text"
+                       name="search"
+                       value="@search"
+                       placeholder="Search product, seller, or shop..." />
+            </div>
+
+            <div class="products-filter-group">
+                <label>Stock Status</label>
+                <select name="stockStatus">
+                    <option value="">All Stock</option>
+                    <option value="InStock" selected="@(stockStatus == "InStock")">In Stock</option>
+                    <option value="LowStock" selected="@(stockStatus == "LowStock")">Low Stock</option>
+                    <option value="OutOfStock" selected="@(stockStatus == "OutOfStock")">Out of Stock</option>
+                </select>
+            </div>
+
+            <div class="products-filter-group">
+                <label>Visibility</label>
+                <select name="visibility">
+                    <option value="">All Visibility</option>
+                    <option value="Visible" selected="@(visibility == "Visible")">Visible</option>
+                    <option value="Hidden" selected="@(visibility == "Hidden")">Hidden</option>
+                </select>
+            </div>
+
+            <button type="submit" class="products-filter-btn">
+                Filter
+            </button>
+
+            <a asp-controller="SuperAdmin"
+               asp-action="Products"
+               class="products-reset-btn">
+                Reset
+            </a>
+        </form>
+
+        @if (!Model.Any())
+        {
+            <div class="products-empty">
+                <h4>No products found</h4>
+                <p>No products matched the selected filters.</p>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table products-table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Seller</th>
+                            <th>Price</th>
+                            <th>Stock</th>
+                            <th>Visibility</th>
+                            <th>Created</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @foreach (var product in Model)
+                        {
+                            var isHidden = product.IsHiddenByAdmin;
+
+                            var visibilityClass = isHidden ? "hidden" : "visible";
+                            var visibilityText = isHidden ? "Hidden" : "Visible";
+
+                            var stockClass =
+                                product.Stock <= 0
+                                    ? "out"
+                                    : product.Stock <= 5
+                                        ? "low"
+                                        : "good";
+
+                            var modalId = $"productModal_{product.Id}";
+                            var hideModalId = $"hideProductModal_{product.Id}";
+
+                            var image =
+                                product.Images?.FirstOrDefault()?.ImagePath
+                                ?? "/images/no-image.png";
+
+                            <tr>
+                                <td>
+                                    <div class="product-cell">
+                                        <div class="product-image">
+                                            <img src="@image"
+                                                 alt="@product.Name" />
+                                        </div>
+
+                                        <div>
+                                            <strong>@product.Name</strong>
+                                            <span>
+                                                @(string.IsNullOrWhiteSpace(product.Description)
+                                                    ? "No description"
+                                                    : product.Description.Length > 80
+                                                        ? product.Description.Substring(0, 80) + "..."
+                                                        : product.Description)
+                                            </span>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <div class="seller-info">
+                                        <strong>
+                                            @(product.Seller?.FullName ?? "Unknown Seller")
+                                        </strong>
+
+                                        <span>
+                                            @(product.Seller?.ShopName ?? "No Shop")
+                                        </span>
+                                    </div>
+                                </td>
+
+                                <td>
+                                    ₱@product.Price.ToString("N2")
+                                </td>
+
+                                <td>
+                                    <span class="stock-badge @stockClass">
+                                        @product.Stock Stocks
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <span class="visibility-badge @visibilityClass">
+                                        @visibilityText
+                                    </span>
+                                </td>
+
+                                <td>
+                                    @product.CreatedAt.ToString("yyyy-MM-dd")
+                                </td>
+
+                                <td class="text-end">
+                                    <div class="products-actions">
+                                        <button type="button"
+                                                class="view-product-btn"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#@modalId">
+                                            View
+                                        </button>
+
+                                        @if (isHidden)
+                                        {
+                                            <form asp-controller="SuperAdmin"
+                                                  asp-action="ShowProduct"
+                                                  method="post">
+                                                @Html.AntiForgeryToken()
+
+                                                <input type="hidden"
+                                                       name="productId"
+                                                       value="@product.Id" />
+
+                                                <button type="submit"
+                                                        class="show-product-btn">
+                                                    Show
+                                                </button>
+                                            </form>
+                                        }
+                                        else
+                                        {
+                                            <button type="button"
+                                                    class="hide-product-btn"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#@hideModalId">
+                                                Hide
+                                            </button>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <div class="modal fade"
+                                 id="@modalId"
+                                 tabindex="-1"
+                                 aria-hidden="true">
+
+                                <div class="modal-dialog modal-dialog-centered modal-xl">
+                                    <div class="modal-content product-modal">
+
+                                        <div class="modal-header product-modal-header">
+                                            <div>
+                                                <h5>Product Details</h5>
+                                                <p>@product.Name</p>
+                                            </div>
+
+                                            <button type="button"
+                                                    class="btn-close btn-close-white"
+                                                    data-bs-dismiss="modal">
+                                            </button>
+                                        </div>
+
+                                        <div class="modal-body product-modal-body">
+                                            <div class="product-modal-layout">
+
+                                                <div class="product-modal-image">
+                                                    <img src="@image"
+                                                         alt="@product.Name" />
+                                                </div>
+
+                                                <div class="product-modal-info">
+                                                    <div class="product-modal-top">
+                                                        <h3>@product.Name</h3>
+
+                                                        <div class="product-modal-badges">
+                                                            <span class="visibility-badge @visibilityClass">
+                                                                @visibilityText
+                                                            </span>
+
+                                                            <span class="stock-badge @stockClass">
+                                                                @product.Stock Stocks
+                                                            </span>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="product-details-grid">
+                                                        <div class="product-detail-item">
+                                                            <span>Seller</span>
+                                                            <strong>
+                                                                @(product.Seller?.FullName ?? "Unknown Seller")
+                                                            </strong>
+                                                        </div>
+
+                                                        <div class="product-detail-item">
+                                                            <span>Shop Name</span>
+                                                            <strong>
+                                                                @(product.Seller?.ShopName ?? "No Shop")
+                                                            </strong>
+                                                        </div>
+
+                                                        <div class="product-detail-item">
+                                                            <span>Price</span>
+                                                            <strong>
+                                                                ₱@product.Price.ToString("N2")
+                                                            </strong>
+                                                        </div>
+
+                                                        <div class="product-detail-item">
+                                                            <span>Stocks</span>
+                                                            <strong>
+                                                                @product.Stock
+                                                            </strong>
+                                                        </div>
+
+                                                        <div class="product-detail-item">
+                                                            <span>Created</span>
+                                                            <strong>
+                                                                @product.CreatedAt.ToString("MMMM dd, yyyy")
+                                                            </strong>
+                                                        </div>
+
+                                                        <div class="product-detail-item">
+                                                            <span>Visibility</span>
+                                                            <strong>
+                                                                @visibilityText
+                                                            </strong>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="product-description">
+                                                        <h4>Description</h4>
+                                                        <p>
+                                                            @(string.IsNullOrWhiteSpace(product.Description)
+                                                                ? "No description available."
+                                                                : product.Description)
+                                                        </p>
+                                                    </div>
+
+                                                    @if (isHidden)
+                                                    {
+                                                        <div class="product-hidden-note">
+                                                            <strong>Hidden Reason</strong>
+                                                            <p>
+                                                                @(string.IsNullOrWhiteSpace(product.AdminHiddenReason)
+                                                                    ? "No reason provided."
+                                                                    : product.AdminHiddenReason)
+                                                            </p>
+                                                        </div>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="modal fade"
+                                 id="@hideModalId"
+                                 tabindex="-1"
+                                 aria-hidden="true">
+
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content hide-product-modal">
+
+                                        <div class="modal-header hide-product-modal-header">
+                                            <div>
+                                                <h5>Hide Product</h5>
+                                                <p>@product.Name</p>
+                                            </div>
+
+                                            <button type="button"
+                                                    class="btn-close btn-close-white"
+                                                    data-bs-dismiss="modal"
+                                                    aria-label="Close">
+                                            </button>
+                                        </div>
+
+                                        <form asp-controller="SuperAdmin"
+                                              asp-action="HideProduct"
+                                              method="post">
+                                            @Html.AntiForgeryToken()
+
+                                            <div class="modal-body hide-product-modal-body">
+                                                <input type="hidden"
+                                                       name="productId"
+                                                       value="@product.Id" />
+
+                                                <p class="hide-product-warning">
+                                                    This product will be hidden from shoppers, search results, and public marketplace pages.
+                                                </p>
+
+                                                <div class="hide-reason-group">
+                                                    <label>Reason for hiding</label>
+
+                                                    <select name="reason" required>
+                                                        <option value="">Select reason</option>
+                                                        <option value="Counterfeit or fake product">Counterfeit</option>
+                                                        <option value="Inappropriate product content">Inappropriate</option>
+                                                        <option value="Duplicate product listing">Duplicate</option>
+                                                        <option value="Scam or suspicious listing">Scam</option>
+                                                        <option value="Policy violation">Policy Violation</option>
+                                                        <option value="Other marketplace moderation reason">Other</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+
+                                            <div class="modal-footer hide-product-modal-footer">
+                                                <button type="button"
+                                                        class="hide-product-cancel-btn"
+                                                        data-bs-dismiss="modal">
+                                                    Cancel
+                                                </button>
+
+                                                <button type="submit"
+                                                        class="hide-product-confirm-btn">
+                                                    Hide Product
+                                                </button>
+                                            </div>
+                                        </form>
+
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="products-pagination">
+                <div class="products-pagination-info">
+                    Page @currentPage of @(totalPages == 0 ? 1 : totalPages)
+                </div>
+
+                <div class="products-pagination-actions">
+                    @if (currentPage > 1)
+                    {
+                        <a asp-controller="SuperAdmin"
+                           asp-action="Products"
+                           asp-route-search="@search"
+                           asp-route-stockStatus="@stockStatus"
+                           asp-route-visibility="@visibility"
+                           asp-route-page="@(currentPage - 1)"
+                           class="products-pagination-btn">
+                            Previous
+                        </a>
+                    }
+                    else
+                    {
+                        <span class="products-pagination-btn disabled">
+                            Previous
+                        </span>
+                    }
+
+                    @if (currentPage < totalPages)
+                    {
+                        <a asp-controller="SuperAdmin"
+                           asp-action="Products"
+                           asp-route-search="@search"
+                           asp-route-stockStatus="@stockStatus"
+                           asp-route-visibility="@visibility"
+                           asp-route-page="@(currentPage + 1)"
+                           class="products-pagination-btn">
+                            Next
+                        </a>
+                    }
+                    else
+                    {
+                        <span class="products-pagination-btn disabled">
+                            Next
+                        </span>
+                    }
+                </div>
+            </div>
+        }
+
+    </div>
+
+</div>

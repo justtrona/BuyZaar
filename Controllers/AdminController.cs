@@ -250,44 +250,54 @@ namespace BuyZaar.Controllers
             return View(application);
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ApproveSeller(int id)
+      [HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> ApproveSeller(int id)
+{
+    var application = await _context.SellerApplications
+        .Include(sa => sa.User)
+        .Include(sa => sa.Documents)
+        .FirstOrDefaultAsync(sa => sa.Id == id);
+
+    if (application == null)
+        return NotFound();
+
+    if (application.Status != "Pending")
+    {
+        TempData["Message"] = "This application has already been processed.";
+        return RedirectToAction(nameof(SellerApplications));
+    }
+
+    application.Status = "Approved";
+
+    // SAVE SHOP NAME TO USER ACCOUNT
+    if (application.User != null)
+    {
+        application.User.ShopName = application.ShopName;
+
+        application.User.IsVerified = true;
+        application.User.VerifiedAt = DateTime.UtcNow;
+
+        await _userManager.UpdateAsync(application.User);
+
+        if (!await _userManager.IsInRoleAsync(application.User, "Seller"))
         {
-            var application = await _context.SellerApplications
-                .Include(sa => sa.User)
-                .Include(sa => sa.Documents)
-                .FirstOrDefaultAsync(sa => sa.Id == id);
-
-            if (application == null)
-                return NotFound();
-
-            if (application.Status != "Pending")
-            {
-                TempData["Message"] = "This application has already been processed.";
-                return RedirectToAction(nameof(SellerApplications));
-            }
-
-            application.Status = "Approved";
-
-            if (application.User != null &&
-                !await _userManager.IsInRoleAsync(application.User, "Seller"))
-            {
-                await _userManager.AddToRoleAsync(application.User, "Seller");
-            }
-
-            await _context.SaveChangesAsync();
-
-            await LogAdminAction(
-                "Approve Seller Application",
-                "SellerApplication",
-                application.Id.ToString(),
-                $"Admin approved seller application for user: {application.User?.Email}"
-            );
-
-            TempData["Message"] = "Seller application approved successfully.";
-            return RedirectToAction(nameof(SellerApplications));
+            await _userManager.AddToRoleAsync(application.User, "Seller");
         }
+    }
+
+    await _context.SaveChangesAsync();
+
+    await LogAdminAction(
+        "Approve Seller Application",
+        "SellerApplication",
+        application.Id.ToString(),
+        $"Admin approved seller application for user: {application.User?.Email}"
+    );
+
+    TempData["Message"] = "Seller application approved successfully.";
+    return RedirectToAction(nameof(SellerApplications));
+}
 
         [HttpPost]
         [ValidateAntiForgeryToken]

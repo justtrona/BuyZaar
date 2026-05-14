@@ -1,0 +1,318 @@
+@model IEnumerable<BuyZaar.Models.ApplicationUser>
+
+@{
+    Layout = "~/Views/Shared/_SuperAdminLayout.cshtml";
+    ViewData["Title"] = "Manage All Users";
+
+    var search = ViewBag.Search as string;
+    var role = ViewBag.Role as string;
+    var status = ViewBag.Status as string;
+    var emailStatus = ViewBag.EmailStatus as string;
+
+    var currentPage = ViewBag.CurrentPage as int? ?? 1;
+    var totalPages = ViewBag.TotalPages as int? ?? 1;
+    var totalUsers = ViewBag.TotalUsers as int? ?? 0;
+
+    var userRoles = ViewBag.UserRoles as Dictionary<string, IList<string>>
+        ?? new Dictionary<string, IList<string>>();
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/superadmin-users.css" asp-append-version="true" />
+}
+
+<div class="manage-users-page">
+
+    <div class="manage-users-hero">
+        <div>
+            <h1>Manage All Users</h1>
+            <p>View, filter, activate, and deactivate BuyZaar platform accounts.</p>
+        </div>
+
+        <span class="manage-users-count">
+            @totalUsers User(s)
+        </span>
+    </div>
+
+    @if (TempData["UserMessage"] != null)
+    {
+        <div class="alert alert-info manage-users-alert">
+            @TempData["UserMessage"]
+        </div>
+    }
+
+    <div class="manage-users-card">
+
+        <div class="manage-users-card-header">
+            <div>
+                <h2>User Records</h2>
+                <p>Search and monitor shoppers, sellers, riders, admins, and SuperAdmin accounts.</p>
+            </div>
+        </div>
+
+        <form asp-controller="SuperAdmin"
+              asp-action="Users"
+              method="get"
+              class="manage-users-filter">
+
+            <div class="filter-group filter-search">
+                <label>Search</label>
+                <input type="text"
+                       name="search"
+                       value="@search"
+                       placeholder="Search name, email, username, or phone..." />
+            </div>
+
+            <div class="filter-group">
+                <label>Role</label>
+                <select name="role">
+                    <option value="">All Roles</option>
+                    <option value="Shopper" selected="@(role == "Shopper")">Shopper</option>
+                    <option value="Seller" selected="@(role == "Seller")">Seller</option>
+                    <option value="Rider" selected="@(role == "Rider")">Rider</option>
+                    <option value="Admin" selected="@(role == "Admin")">Admin</option>
+                    <option value="SuperAdmin" selected="@(role == "SuperAdmin")">SuperAdmin</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label>Account Status</label>
+                <select name="status">
+                    <option value="">All Status</option>
+                    <option value="Active" selected="@(status == "Active")">Active</option>
+                    <option value="Deactivated" selected="@(status == "Deactivated")">Deactivated</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label>Email Status</label>
+                <select name="emailStatus">
+                    <option value="">All Email</option>
+                    <option value="Verified" selected="@(emailStatus == "Verified")">Verified</option>
+                    <option value="Unverified" selected="@(emailStatus == "Unverified")">Unverified</option>
+                </select>
+            </div>
+
+            <button type="submit" class="users-filter-btn">
+                Filter
+            </button>
+
+            <a asp-controller="SuperAdmin"
+               asp-action="Users"
+               class="users-reset-btn">
+                Reset
+            </a>
+        </form>
+
+        @if (!Model.Any())
+        {
+            <div class="manage-users-empty">
+                <h4>No users found</h4>
+                <p>No user records matched your filters.</p>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table manage-users-table align-middle">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Username</th>
+                            <th>Phone</th>
+                            <th>Role</th>
+                            <th>Email Status</th>
+                            <th>Account Status</th>
+                            <th>Verified</th>
+                            <th class="text-end">Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @foreach (var user in Model)
+                        {
+                            var roles = userRoles.ContainsKey(user.Id)
+                                ? userRoles[user.Id]
+                                : new List<string>();
+
+                            var isSuperAdmin = roles.Contains("SuperAdmin");
+
+                            var isDeactivated =
+                                user.LockoutEnd != null &&
+                                user.LockoutEnd > DateTimeOffset.Now;
+
+                            var statusClass = isDeactivated ? "deactivated" : "active";
+                            var statusText = isDeactivated ? "Deactivated" : "Active";
+
+                            var initial = string.IsNullOrWhiteSpace(user.FullName)
+                                ? "U"
+                                : user.FullName.Substring(0, 1).ToUpper();
+
+                            <tr>
+                                <td>
+                                    <div class="user-cell">
+                                        <div class="user-avatar">
+                                            @initial
+                                        </div>
+
+                                        <div>
+                                            <strong>
+                                                @(string.IsNullOrWhiteSpace(user.FullName)
+                                                    ? "Unnamed User"
+                                                    : user.FullName)
+                                            </strong>
+
+                                            <span>@user.Email</span>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <span class="user-text">
+                                        @user.UserName
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <span class="user-text">
+                                        @(string.IsNullOrWhiteSpace(user.PhoneNumber)
+                                            ? "No phone number"
+                                            : user.PhoneNumber)
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <div class="role-badge-list">
+                                        @foreach (var userRole in roles)
+                                        {
+                                            <span class="role-badge @userRole.ToLower()">
+                                                @userRole
+                                            </span>
+                                        }
+
+                                        @if (!roles.Any())
+                                        {
+                                            <span class="role-badge none">
+                                                No Role
+                                            </span>
+                                        }
+                                    </div>
+                                </td>
+
+                                <td>
+                                    @if (user.EmailConfirmed)
+                                    {
+                                        <span class="user-badge verified">
+                                            Email Verified
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="user-badge unverified">
+                                            Email Unverified
+                                        </span>
+                                    }
+                                </td>
+
+                                <td>
+                                    <span class="user-badge @statusClass">
+                                        @statusText
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <div class="user-date-cell">
+                                        <strong>
+                                            @(user.VerifiedAt?.ToString("yyyy-MM-dd") ?? "N/A")
+                                        </strong>
+
+                                        <span>
+                                            @(user.IsVerified ? "Verified account" : "Not verified")
+                                        </span>
+                                    </div>
+                                </td>
+
+                                <td class="text-end">
+                                    @if (isSuperAdmin)
+                                    {
+                                        <span class="protected-note">
+                                            Protected
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <form asp-controller="SuperAdmin"
+                                              asp-action="ToggleUserActivation"
+                                              method="post"
+                                              onsubmit="return confirm('Are you sure you want to @(isDeactivated ? "activate" : "deactivate") this user account?');">
+
+                                            @Html.AntiForgeryToken()
+
+                                            <input type="hidden"
+                                                   name="userId"
+                                                   value="@user.Id" />
+
+                                            <button type="submit"
+                                                    class="user-action-btn @(isDeactivated ? "activate" : "deactivate")">
+                                                @(isDeactivated ? "Activate" : "Deactivate")
+                                            </button>
+                                        </form>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="users-pagination">
+                <div class="pagination-info">
+                    Page @currentPage of @(totalPages == 0 ? 1 : totalPages)
+                </div>
+
+                <div class="pagination-actions">
+                    @if (currentPage > 1)
+                    {
+                        <a asp-controller="SuperAdmin"
+                           asp-action="Users"
+                           asp-route-search="@search"
+                           asp-route-role="@role"
+                           asp-route-status="@status"
+                           asp-route-emailStatus="@emailStatus"
+                           asp-route-page="@(currentPage - 1)"
+                           class="pagination-btn">
+                            Previous
+                        </a>
+                    }
+                    else
+                    {
+                        <span class="pagination-btn disabled">
+                            Previous
+                        </span>
+                    }
+
+                    @if (currentPage < totalPages)
+                    {
+                        <a asp-controller="SuperAdmin"
+                           asp-action="Users"
+                           asp-route-search="@search"
+                           asp-route-role="@role"
+                           asp-route-status="@status"
+                           asp-route-emailStatus="@emailStatus"
+                           asp-route-page="@(currentPage + 1)"
+                           class="pagination-btn">
+                            Next
+                        </a>
+                    }
+                    else
+                    {
+                        <span class="pagination-btn disabled">
+                            Next
+                        </span>
+                    }
+                </div>
+            </div>
+        }
+
+    </div>
+</div>

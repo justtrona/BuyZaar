@@ -1,5 +1,6 @@
 using BuyZaar.Data;
 using BuyZaar.Models;
+using BuyZaar.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -29,7 +30,9 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
-builder.Services.AddTransient<BuyZaar.Services.EmailService>();
+builder.Services.AddTransient<EmailService>();
+
+builder.Services.AddHttpClient<PayMongoService>();
 
 var app = builder.Build();
 
@@ -67,7 +70,9 @@ using (var scope = app.Services.CreateScope())
             FullName = "Super Admin",
             Email = superAdminEmail,
             UserName = superAdminEmail,
-            EmailConfirmed = true
+            EmailConfirmed = true,
+            IsVerified = true,
+            VerifiedAt = DateTime.UtcNow
         };
 
         var result = await userManager.CreateAsync(user, "SuperAdmin123!");

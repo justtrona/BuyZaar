@@ -498,13 +498,20 @@ namespace BuyZaar.Controllers
             TempData["SuccessMessage"] = "Product deleted successfully.";
             return RedirectToAction("Products");
         }
-public async Task<IActionResult> SalesRecords(string? status, string? search, DateTime? fromDate, DateTime? toDate)
+public async Task<IActionResult> SalesRecords(
+    string? status,
+    string? search,
+    DateTime? fromDate,
+    DateTime? toDate)
 {
     ViewBag.ActiveRole = "Seller";
 
     var user = await _userManager.GetUserAsync(User);
+
     if (user == null)
         return RedirectToAction("Login", "Account");
+
+    var sellerId = user.Id;
 
     var query = _context.Orders
         .Include(o => o.OrderItems)
@@ -512,7 +519,7 @@ public async Task<IActionResult> SalesRecords(string? status, string? search, Da
                 .ThenInclude(p => p!.Images)
         .Where(o => o.OrderItems.Any(oi =>
             oi.Product != null &&
-            oi.Product.SellerId == user.Id))
+            oi.Product.SellerId == sellerId))
         .AsQueryable();
 
     if (!string.IsNullOrWhiteSpace(status))
@@ -556,35 +563,40 @@ public async Task<IActionResult> SalesRecords(string? status, string? search, Da
         .OrderByDescending(o => o.CreatedAt)
         .ToListAsync();
 
-    bool IsEarned(Order order)
-    {
-        return order.Status == "Delivered" ||
-               order.Status == "Completed" ||
-               order.DeliveryStatus == "Delivered";
-    }
+    var orderIds = orders.Select(o => o.Id).ToList();
 
-    ViewBag.TotalSales = orders
-        .Where(o => IsEarned(o))
-        .Sum(o => o.OrderItems
-            .Where(oi => oi.Product != null && oi.Product.SellerId == user.Id)
-            .Sum(oi => oi.Subtotal));
+    ViewBag.TotalSales = await _context.SellerPayouts
+        .Where(p =>
+            p.SellerId == sellerId &&
+            p.Status == "Released" &&
+            orderIds.Contains(p.OrderId))
+        .SumAsync(p => (decimal?)p.SellerEarnings) ?? 0m;
 
-    ViewBag.PendingSales = orders
-        .Where(o => !IsEarned(o) &&
-                    o.Status != "Cancelled" &&
-                    o.Status != "Returns" &&
-                    o.DeliveryStatus != "Returned to Seller")
-        .Sum(o => o.OrderItems
-            .Where(oi => oi.Product != null && oi.Product.SellerId == user.Id)
-            .Sum(oi => oi.Subtotal));
+    ViewBag.PendingSales = await _context.SellerPayouts
+        .Where(p =>
+            p.SellerId == sellerId &&
+            p.Status == "Pending" &&
+            orderIds.Contains(p.OrderId))
+        .SumAsync(p => (decimal?)p.SellerEarnings) ?? 0m;
 
     ViewBag.TotalOrders = orders.Count;
 
     ViewBag.TotalItemsSold = orders
-        .Where(o => IsEarned(o))
+        .Where(o =>
+            o.Status == "Delivered" ||
+            o.Status == "Completed" ||
+            o.DeliveryStatus == "Delivered")
         .Sum(o => o.OrderItems
-            .Where(oi => oi.Product != null && oi.Product.SellerId == user.Id)
+            .Where(oi =>
+                oi.Product != null &&
+                oi.Product.SellerId == sellerId)
             .Sum(oi => oi.Quantity));
+
+    ViewBag.SettlementLookup = await _context.SellerPayouts
+        .Where(p =>
+            p.SellerId == sellerId &&
+            orderIds.Contains(p.OrderId))
+        .ToDictionaryAsync(p => p.OrderId, p => p);
 
     ViewBag.Status = status;
     ViewBag.Search = search;

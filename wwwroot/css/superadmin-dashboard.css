@@ -445,6 +445,66 @@ body {
     font-weight: 900;
 }
 
+
+/* CHARTS */
+
+.dashboard-chart-card {
+    background: #ffffff;
+    border-radius: 24px;
+    padding: 22px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+    height: 420px;
+    position: relative;
+}
+
+.dashboard-chart-card canvas {
+    width: 100% !important;
+    height: 300px !important;
+    max-height: 300px;
+}
+
+.dashboard-analytics-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 22px;
+    margin-top: 24px;
+}
+
+.chart-card-header {
+    margin-bottom: 20px;
+}
+
+.chart-card-header h3 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 900;
+    color: #0f172a;
+}
+
+.chart-card-header p {
+    margin-top: 6px;
+    color: #64748b;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 1100px) {
+
+    .dashboard-analytics-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .dashboard-chart-card {
+        height: auto;
+    }
+
+    .dashboard-chart-card canvas {
+        height: 260px !important;
+    }
+}
 /* RESPONSIVE */
 @media (max-width: 1100px) {
     .dashboard-sidebar {

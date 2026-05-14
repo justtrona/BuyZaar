@@ -1,0 +1,289 @@
+@model IEnumerable<BuyZaar.Models.SellerPayout>
+
+@{
+    Layout = "~/Views/Shared/_SuperAdminLayout.cshtml";
+    ViewData["Title"] = "Seller Settlements";
+
+    var search = ViewBag.Search as string;
+    var status = ViewBag.Status as string;
+
+    var totalPayouts = ViewBag.TotalPayouts as int? ?? 0;
+    var pendingPayouts = ViewBag.PendingPayouts as int? ?? 0;
+    var releasedPayouts = ViewBag.ReleasedPayouts as int? ?? 0;
+
+    var totalSellerEarnings = ViewBag.TotalSellerEarnings as decimal? ?? 0m;
+    var totalPlatformCommission = ViewBag.TotalPlatformCommission as decimal? ?? 0m;
+
+    var currentPage = ViewBag.CurrentPage as int? ?? 1;
+    var totalPages = ViewBag.TotalPages as int? ?? 1;
+}
+
+@section Styles {
+    <link rel="stylesheet"
+          href="~/css/superadmin-settlements.css"
+          asp-append-version="true" />
+}
+
+<div class="settlements-page">
+
+    <div class="settlements-hero">
+        <div>
+            <h1>Seller Settlements</h1>
+            <p>
+                Review seller earnings, platform commissions, and settlement release status
+                after successful paid orders.
+            </p>
+        </div>
+
+        <span class="settlements-badge">
+            Financial Oversight
+        </span>
+    </div>
+
+    @if (TempData["PayoutMessage"] != null)
+    {
+        <div class="alert alert-info settlements-alert">
+            @TempData["PayoutMessage"]
+        </div>
+    }
+
+    <div class="settlements-kpi-grid">
+
+        <div class="settlements-kpi-card">
+            <span>Total Records</span>
+            <strong>@totalPayouts</strong>
+            <p>Generated settlement entries</p>
+        </div>
+
+        <div class="settlements-kpi-card warning">
+            <span>Pending</span>
+            <strong>@pendingPayouts</strong>
+            <p>Awaiting manual release</p>
+        </div>
+
+        <div class="settlements-kpi-card success">
+            <span>Released</span>
+            <strong>@releasedPayouts</strong>
+            <p>Marked as settled</p>
+        </div>
+
+        <div class="settlements-kpi-card">
+            <span>Platform Commission</span>
+            <strong>₱@totalPlatformCommission.ToString("N2")</strong>
+            <p>Total BuyZaar earnings</p>
+        </div>
+
+    </div>
+
+    <div class="settlements-card">
+
+        <div class="settlements-card-header">
+            <div>
+                <h2>Settlement Records</h2>
+                <p>Track seller earnings and platform commission per completed payment.</p>
+            </div>
+
+            <div class="settlements-total-box">
+                <span>Total Seller Earnings</span>
+                <strong>₱@totalSellerEarnings.ToString("N2")</strong>
+            </div>
+        </div>
+
+        <form asp-controller="SuperAdmin"
+              asp-action="Payouts"
+              method="get"
+              class="settlements-filter">
+
+            <div class="settlements-filter-group settlements-search-group">
+                <label>Search</label>
+                <input type="text"
+                       name="search"
+                       value="@search"
+                       placeholder="Search seller name, email, or order ID..." />
+            </div>
+
+            <div class="settlements-filter-group">
+                <label>Status</label>
+                <select name="status">
+                    <option value="">All Status</option>
+                    <option value="Pending" selected="@(status == "Pending")">Pending</option>
+                    <option value="Released" selected="@(status == "Released")">Released</option>
+                </select>
+            </div>
+
+            <button type="submit" class="settlements-filter-btn">
+                Filter
+            </button>
+
+            <a asp-controller="SuperAdmin"
+               asp-action="Payouts"
+               class="settlements-reset-btn">
+                Reset
+            </a>
+
+        </form>
+
+        @if (!Model.Any())
+        {
+            <div class="settlements-empty">
+                <h4>No settlement records found</h4>
+                <p>Seller settlement records will appear here after paid/completed orders.</p>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table settlements-table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Order</th>
+                            <th>Seller</th>
+                            <th>Product Total</th>
+                            <th>Commission Rate</th>
+                            <th>Platform Commission</th>
+                            <th>Seller Earnings</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                            <th class="text-end">Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @foreach (var payout in Model)
+                        {
+                            var statusClass = payout.Status == "Released"
+                                ? "released"
+                                : "pending";
+
+                            <tr>
+                                <td>
+                                    <div class="settlement-order-cell">
+                                        <strong>#@payout.OrderId</strong>
+                                        <span>Order Settlement</span>
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <div class="settlement-seller-cell">
+                                        <strong>@(payout.Seller?.FullName ?? "Unknown Seller")</strong>
+                                        <span>@(payout.Seller?.Email ?? payout.SellerId)</span>
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <strong>₱@payout.ProductTotal.ToString("N2")</strong>
+                                </td>
+
+                                <td>
+                                    @payout.CommissionRate.ToString("N2")%
+                                </td>
+
+                                <td>
+                                    <strong class="commission-text">
+                                        ₱@payout.CommissionAmount.ToString("N2")
+                                    </strong>
+                                </td>
+
+                                <td>
+                                    <strong class="earnings-text">
+                                        ₱@payout.SellerEarnings.ToString("N2")
+                                    </strong>
+                                </td>
+
+                                <td>
+                                    <span class="settlement-status @statusClass">
+                                        @payout.Status
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <div class="settlement-date-cell">
+                                        <strong>@payout.CreatedAt.ToString("yyyy-MM-dd")</strong>
+                                        <span>
+                                            @(payout.ReleasedAt?.ToString("yyyy-MM-dd HH:mm") ?? "Not released")
+                                        </span>
+                                    </div>
+                                </td>
+
+                                <td class="text-end">
+                                    @if (payout.Status == "Released")
+                                    {
+                                        <span class="settlement-action-disabled">
+                                            Released
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                  <form asp-controller="SuperAdmin"
+      asp-action="ReleasePayout"
+      method="post">
+
+    @Html.AntiForgeryToken()
+
+    <input type="hidden"
+           name="payoutId"
+           value="@payout.Id" />
+
+    <button type="submit"
+            class="settlement-release-btn">
+        Release
+    </button>
+</form>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="settlements-pagination">
+                <div class="settlements-pagination-info">
+                    Page @currentPage of @(totalPages == 0 ? 1 : totalPages)
+                </div>
+
+                <div class="settlements-pagination-actions">
+
+                    @if (currentPage > 1)
+                    {
+                        <a asp-controller="SuperAdmin"
+                           asp-action="Payouts"
+                           asp-route-search="@search"
+                           asp-route-status="@status"
+                           asp-route-page="@(currentPage - 1)"
+                           class="settlements-pagination-btn">
+                            Previous
+                        </a>
+                    }
+                    else
+                    {
+                        <span class="settlements-pagination-btn disabled">
+                            Previous
+                        </span>
+                    }
+
+                    @if (currentPage < totalPages)
+                    {
+                        <a asp-controller="SuperAdmin"
+                           asp-action="Payouts"
+                           asp-route-search="@search"
+                           asp-route-status="@status"
+                           asp-route-page="@(currentPage + 1)"
+                           class="settlements-pagination-btn">
+                            Next
+                        </a>
+                    }
+                    else
+                    {
+                        <span class="settlements-pagination-btn disabled">
+                            Next
+                        </span>
+                    }
+
+                </div>
+            </div>
+        }
+
+    </div>
+
+</div>

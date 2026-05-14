@@ -74,6 +74,9 @@ namespace BuyZaar.Migrations
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("longtext");
 
+                    b.Property<string>("ShopName")
+                        .HasColumnType("longtext");
+
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("tinyint(1)");
 
@@ -190,6 +193,31 @@ namespace BuyZaar.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Categories");
+                });
+
+            modelBuilder.Entity("BuyZaar.Models.CommissionRate", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<decimal>("RatePercentage")
+                        .HasColumnType("decimal(65,30)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("CommissionRates");
                 });
 
             modelBuilder.Entity("BuyZaar.Models.Order", b =>
@@ -340,6 +368,40 @@ namespace BuyZaar.Migrations
                     b.ToTable("OrderItems");
                 });
 
+            modelBuilder.Entity("BuyZaar.Models.PayMongoWebhookLog", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("EventType")
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<string>("Message")
+                        .HasColumnType("longtext");
+
+                    b.Property<int?>("OrderId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Payload")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("PayMongoWebhookLogs");
+                });
+
             modelBuilder.Entity("BuyZaar.Models.Payment", b =>
                 {
                     b.Property<int>("Id")
@@ -392,6 +454,85 @@ namespace BuyZaar.Migrations
                     b.HasIndex("OrderId");
 
                     b.ToTable("Payments");
+                });
+
+            modelBuilder.Entity("BuyZaar.Models.PaymentTransaction", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("CheckoutUrl")
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<int>("OrderId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("PaidAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<int>("PaymentId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Provider")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("ProviderReferenceId")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("RawResponse")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderId");
+
+                    b.HasIndex("PaymentId");
+
+                    b.ToTable("PaymentTransactions");
+                });
+
+            modelBuilder.Entity("BuyZaar.Models.PlatformEarning", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("CommissionAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("CommissionRate")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<int>("OrderId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("ProductTotal")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderId");
+
+                    b.ToTable("PlatformEarnings");
                 });
 
             modelBuilder.Entity("BuyZaar.Models.Product", b =>
@@ -477,6 +618,49 @@ namespace BuyZaar.Migrations
                     b.HasIndex("ProductId");
 
                     b.ToTable("ProductImages");
+                });
+
+            modelBuilder.Entity("BuyZaar.Models.Refund", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AdminNote")
+                        .HasColumnType("longtext");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("OrderId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PaymentId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime>("RequestedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime?>("ReviewedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderId");
+
+                    b.HasIndex("PaymentId");
+
+                    b.ToTable("Refunds");
                 });
 
             modelBuilder.Entity("BuyZaar.Models.RiderProfile", b =>
@@ -606,6 +790,52 @@ namespace BuyZaar.Migrations
                     b.ToTable("SellerApplicationDocument");
                 });
 
+            modelBuilder.Entity("BuyZaar.Models.SellerPayout", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("CommissionAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("CommissionRate")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<int>("OrderId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("ProductTotal")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("ReleasedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<decimal>("SellerEarnings")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("SellerId")
+                        .IsRequired()
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderId");
+
+                    b.HasIndex("SellerId");
+
+                    b.ToTable("SellerPayouts");
+                });
+
             modelBuilder.Entity("BuyZaar.Models.ShopProfile", b =>
                 {
                     b.Property<int>("Id")
@@ -677,6 +907,74 @@ namespace BuyZaar.Migrations
                     b.HasIndex("SellerId");
 
                     b.ToTable("ShopProfiles");
+                });
+
+            modelBuilder.Entity("BuyZaar.Models.SuperAdminAuditLog", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("EntityId")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("EntityType")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("SuperAdminId")
+                        .IsRequired()
+                        .HasColumnType("varchar(255)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SuperAdminId");
+
+                    b.ToTable("SuperAdminAuditLogs");
+                });
+
+            modelBuilder.Entity("BuyZaar.Models.SystemSetting", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("AllowRiderRegistration")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("AllowSellerRegistration")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("AllowShopperRegistration")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("MaintenanceMessage")
+                        .HasColumnType("longtext");
+
+                    b.Property<bool>("MaintenanceMode")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("SystemSettings");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -890,6 +1188,36 @@ namespace BuyZaar.Migrations
                     b.Navigation("Order");
                 });
 
+            modelBuilder.Entity("BuyZaar.Models.PaymentTransaction", b =>
+                {
+                    b.HasOne("BuyZaar.Models.Order", "Order")
+                        .WithMany()
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BuyZaar.Models.Payment", "Payment")
+                        .WithMany()
+                        .HasForeignKey("PaymentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Order");
+
+                    b.Navigation("Payment");
+                });
+
+            modelBuilder.Entity("BuyZaar.Models.PlatformEarning", b =>
+                {
+                    b.HasOne("BuyZaar.Models.Order", "Order")
+                        .WithMany()
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Order");
+                });
+
             modelBuilder.Entity("BuyZaar.Models.Product", b =>
                 {
                     b.HasOne("BuyZaar.Models.ApplicationUser", "Seller")
@@ -910,6 +1238,25 @@ namespace BuyZaar.Migrations
                         .IsRequired();
 
                     b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("BuyZaar.Models.Refund", b =>
+                {
+                    b.HasOne("BuyZaar.Models.Order", "Order")
+                        .WithMany()
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BuyZaar.Models.Payment", "Payment")
+                        .WithMany()
+                        .HasForeignKey("PaymentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Order");
+
+                    b.Navigation("Payment");
                 });
 
             modelBuilder.Entity("BuyZaar.Models.RiderProfile", b =>
@@ -945,6 +1292,25 @@ namespace BuyZaar.Migrations
                     b.Navigation("SellerApplication");
                 });
 
+            modelBuilder.Entity("BuyZaar.Models.SellerPayout", b =>
+                {
+                    b.HasOne("BuyZaar.Models.Order", "Order")
+                        .WithMany()
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BuyZaar.Models.ApplicationUser", "Seller")
+                        .WithMany()
+                        .HasForeignKey("SellerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Order");
+
+                    b.Navigation("Seller");
+                });
+
             modelBuilder.Entity("BuyZaar.Models.ShopProfile", b =>
                 {
                     b.HasOne("BuyZaar.Models.ApplicationUser", "Seller")
@@ -954,6 +1320,17 @@ namespace BuyZaar.Migrations
                         .IsRequired();
 
                     b.Navigation("Seller");
+                });
+
+            modelBuilder.Entity("BuyZaar.Models.SuperAdminAuditLog", b =>
+                {
+                    b.HasOne("BuyZaar.Models.ApplicationUser", "SuperAdmin")
+                        .WithMany()
+                        .HasForeignKey("SuperAdminId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("SuperAdmin");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
