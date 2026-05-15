@@ -1,5 +1,4 @@
 @model IEnumerable<BuyZaar.Models.SuperAdminAuditLog>
-
 @{
     Layout = "~/Views/Shared/_SuperAdminLayout.cshtml";
     ViewData["Title"] = "Audit Logs";
@@ -22,6 +21,8 @@
 
 <div class="audit-page">
 
+    
+
     <div class="audit-hero">
         <div>
             <h1>Audit Logs</h1>
@@ -35,6 +36,13 @@
             @totalLogs Log(s)
         </span>
     </div>
+
+
+@* <div class="alert alert-warning mb-3">
+    ViewBag.TotalLogs: @ViewBag.TotalLogs |
+    Model Count: @(Model == null ? 0 : Model.Count())
+</div> *@
+
 
     @if (TempData["AuditMessage"] != null)
     {
@@ -60,9 +68,6 @@
                     the SuperAdmin panel.
                 </p>
             </div>
-<a href="/SuperAdmin/TestAuditLogGet" class="audit-filter-btn">
-    Create Test Audit Log
-</a>
         </div>
 
         <form asp-controller="SuperAdmin"
@@ -76,7 +81,7 @@
                 <input type="text"
                        name="search"
                        value="@search"
-                       placeholder="Search action, superadmin, entity, or description..." />
+                       placeholder="Search action, superadmin ID, entity, or description..." />
             </div>
 
             <div class="audit-filter-group">
@@ -111,7 +116,8 @@
                 </select>
             </div>
 
-            <button type="submit" class="audit-filter-btn">
+            <button type="submit"
+                    class="audit-filter-btn">
                 Filter
             </button>
 
@@ -160,11 +166,11 @@
                                 <td>
                                     <div class="audit-admin-cell">
                                         <strong>
-                                            @(log.SuperAdmin?.FullName ?? "Unknown SuperAdmin")
+                                            Super Admin
                                         </strong>
 
                                         <span>
-                                            @(log.SuperAdmin?.Email ?? "No email available")
+                                            @log.SuperAdminId
                                         </span>
                                     </div>
                                 </td>

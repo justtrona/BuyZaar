@@ -431,7 +431,14 @@ public async Task<IActionResult> PlaceOrder(CheckoutViewModel model)
     if (model.Quantity < 1)
         model.Quantity = 1;
 
-    using var transaction = await _context.Database.BeginTransactionAsync();
+    var selectedPaymentMethod = string.IsNullOrWhiteSpace(model.PaymentMethod)
+        ? "COD"
+        : model.PaymentMethod;
+
+    int createdOrderId;
+    decimal createdOrderAmount;
+
+    await using var transaction = await _context.Database.BeginTransactionAsync();
 
     try
     {
@@ -443,7 +450,6 @@ public async Task<IActionResult> PlaceOrder(CheckoutViewModel model)
 
         if (product.Stock < model.Quantity)
         {
-            await transaction.RollbackAsync();
             TempData["ErrorMessage"] = "Not enough stock available.";
             return RedirectToAction("ViewDetails", new { id = model.ProductId });
         }
@@ -459,7 +465,7 @@ public async Task<IActionResult> PlaceOrder(CheckoutViewModel model)
             DeliveryAddress = model.DeliveryAddress.Trim(),
             ShippingFee = shippingFee,
             TotalAmount = subtotal + shippingFee,
-            Status = "To Ship",
+            Status = selectedPaymentMethod == "PayMongo" ? "Pending Payment" : "To Ship",
             CreatedAt = DateTime.Now
         };
 
@@ -484,83 +490,88 @@ public async Task<IActionResult> PlaceOrder(CheckoutViewModel model)
 
         await _context.SaveChangesAsync();
 
-       var selectedPaymentMethod = string.IsNullOrWhiteSpace(model.PaymentMethod)
-    ? "COD"
-    : model.PaymentMethod;
-
-var payment = new Payment
-{
-    OrderId = order.Id,
-    Amount = order.TotalAmount,
-    PaymentMethod = selectedPaymentMethod,
-    PaymentStatus = selectedPaymentMethod == "PayMongo" ? "Pending Payment" : "Pending",
-    ReferenceNumber = $"PAY-{DateTime.Now:yyyyMMddHHmmss}-{order.Id}",
-    CreatedAt = DateTime.Now
-};
+        var payment = new Payment
+        {
+            OrderId = order.Id,
+            Amount = order.TotalAmount,
+            PaymentMethod = selectedPaymentMethod,
+            PaymentStatus = selectedPaymentMethod == "PayMongo" ? "Pending Payment" : "Pending",
+            ReferenceNumber = $"PAY-{DateTime.Now:yyyyMMddHHmmss}-{order.Id}",
+            CreatedAt = DateTime.Now
+        };
 
         _context.Payments.Add(payment);
 
         await _context.SaveChangesAsync();
 
+        createdOrderId = order.Id;
+        createdOrderAmount = order.TotalAmount;
+
         await transaction.CommitAsync();
-
-        if (selectedPaymentMethod == "PayMongo")
-{
-    var successUrl = Url.Action(
-        "PayMongoSuccess",
-        "Shopper",
-        new { orderId = order.Id },
-        Request.Scheme
-    )!;
-
-    var failedUrl = Url.Action(
-        "PayMongoFailed",
-        "Shopper",
-        new { orderId = order.Id },
-        Request.Scheme
-    )!;
-
-    var checkoutUrl = await _payMongoService.CreateCheckoutSessionAsync(
-        order.Id,
-        order.TotalAmount,
-        $"Payment for BuyZaar Order #{order.Id}",
-        successUrl,
-        failedUrl
-    );
-
-    if (!string.IsNullOrWhiteSpace(checkoutUrl))
-        return Redirect(checkoutUrl);
-}
-
-        TempData["SuccessMessage"] = "Order created successfully.";
-        return RedirectToAction("OrderSuccess", new { id = order.Id });
     }
     catch
     {
         await transaction.RollbackAsync();
+
         TempData["ErrorMessage"] = "Something went wrong while placing your order.";
         return View("Checkout", model);
     }
+
+    if (selectedPaymentMethod == "PayMongo")
+    {
+        var successUrl = Url.Action(
+            "PayMongoSuccess",
+            "Shopper",
+            new { orderId = createdOrderId },
+            Request.Scheme
+        )!;
+
+        var failedUrl = Url.Action(
+            "PayMongoFailed",
+            "Shopper",
+            new { orderId = createdOrderId },
+            Request.Scheme
+        )!;
+
+        var checkoutUrl = await _payMongoService.CreateCheckoutSessionAsync(
+            createdOrderId,
+            createdOrderAmount,
+            $"Payment for BuyZaar Order #{createdOrderId}",
+            successUrl,
+            failedUrl
+        );
+
+        if (!string.IsNullOrWhiteSpace(checkoutUrl))
+            return Redirect(checkoutUrl);
+    }
+
+    TempData["SuccessMessage"] = "Order created successfully.";
+    return RedirectToAction("OrderSuccess", new { id = createdOrderId });
 }
-        public async Task<IActionResult> OrderSuccess(int id)
-        {
-            ViewBag.ActiveRole = "Shopper";
 
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null)
-                return RedirectToAction("Login", "Account");
+[HttpGet]
+public async Task<IActionResult> OrderSuccess(int id)
+{
+    ViewBag.ActiveRole = "Shopper";
 
-            var order = await _context.Orders
-                .Include(o => o.OrderItems)
-                    .ThenInclude(oi => oi.Product)
-                        .ThenInclude(p => p!.Images)
-                .FirstOrDefaultAsync(o => o.Id == id && o.ShopperId == user.Id);
+    var user = await _userManager.GetUserAsync(User);
+    if (user == null)
+        return RedirectToAction("Login", "Account");
 
-            if (order == null)
-                return NotFound();
+    var order = await _context.Orders
+        .Include(o => o.OrderItems)
+            .ThenInclude(oi => oi.Product)
+                .ThenInclude(p => p!.Images)
+        .FirstOrDefaultAsync(o => o.Id == id && o.ShopperId == user.Id);
 
-            return View(order);
-        }
+    if (order == null)
+    {
+        TempData["ErrorMessage"] = "Order was not found.";
+        return RedirectToAction("MyOrders");
+    }
+
+    return View(order);
+}
 public async Task<IActionResult> MyOrders(string? status)
 {
     ViewBag.ActiveRole = "Shopper";

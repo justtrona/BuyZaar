@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
 
 namespace BuyZaar.Controllers
 {
@@ -164,8 +163,8 @@ namespace BuyZaar.Controllers
                 "
             );
 
-await LogSuperAdminAuditAsync(                "Create Admin",
-                "Admin",
+await LogSuperAdminAuditAsync(
+    "Create Admin",                "Admin",
                 adminUser.Id,
                 $"Created admin account for {adminUser.FullName} ({adminUser.Email}).");
 
@@ -895,22 +894,29 @@ ViewBag.ReleasedSettlements = await _context.SellerPayouts
             return View();
         }
 
-       public async Task<IActionResult> AuditLogs(
+public async Task<IActionResult> AuditLogs(
     string? search,
     string? action,
     string? entityType,
     int page = 1)
 {
-    const int pageSize = 15;
+    const int pageSize = 10;
 
-    var logsQuery = _context.SuperAdminAuditLogs
-        .Include(a => a.SuperAdmin)
+    var totalLogs = await _context.SuperAdminAuditLogs.CountAsync();
+
+    var totalPages = totalLogs == 0
+        ? 1
+        : (int)Math.Ceiling(totalLogs / (double)pageSize);
+
+    if (page < 1)
+        page = 1;
+
+    if (page > totalPages)
+        page = totalPages;
+
+    var logs = await _context.SuperAdminAuditLogs
         .OrderByDescending(a => a.CreatedAt)
-        .AsQueryable();
-
-    var totalLogs = await logsQuery.CountAsync();
-
-    var logs = await logsQuery
+        .Skip((page - 1) * pageSize)
         .Take(pageSize)
         .ToListAsync();
 
@@ -918,8 +924,8 @@ ViewBag.ReleasedSettlements = await _context.SellerPayouts
     ViewBag.Action = action;
     ViewBag.EntityType = entityType;
     ViewBag.TotalLogs = totalLogs;
-    ViewBag.CurrentPage = 1;
-    ViewBag.TotalPages = totalLogs == 0 ? 1 : (int)Math.Ceiling(totalLogs / (double)pageSize);
+    ViewBag.CurrentPage = page;
+    ViewBag.TotalPages = totalPages;
 
     ViewBag.Actions = await _context.SuperAdminAuditLogs
         .Select(a => a.Action)
@@ -933,32 +939,7 @@ ViewBag.ReleasedSettlements = await _context.SellerPayouts
         .OrderBy(e => e)
         .ToListAsync();
 
-TempData.Remove("AuditError");
     return View(logs);
-}
-
-
-
-        [HttpGet]
-public async Task<IActionResult> Settings()
-{
-    var settings = await _context.SystemSettings.FirstOrDefaultAsync();
-
-    if (settings == null)
-    {
-        settings = new SystemSetting
-        {
-            AllowShopperRegistration = true,
-            AllowSellerRegistration = true,
-            AllowRiderRegistration = true,
-            UpdatedAt = DateTime.Now
-        };
-
-        _context.SystemSettings.Add(settings);
-        await _context.SaveChangesAsync();
-    }
-
-    return View(settings);
 }
 
 [HttpPost]
@@ -990,6 +971,28 @@ public async Task<IActionResult> Settings(SystemSetting model)
 
     return RedirectToAction(nameof(Settings));
 }
+
+[HttpGet]
+public async Task<IActionResult> Settings()
+{
+    var settings = await _context.SystemSettings.FirstOrDefaultAsync();
+
+    if (settings == null)
+    {
+        settings = new SystemSetting
+        {
+            AllowShopperRegistration = true,
+            AllowSellerRegistration = true,
+            AllowRiderRegistration = true,
+            UpdatedAt = DateTime.Now
+        };
+
+        _context.SystemSettings.Add(settings);
+        await _context.SaveChangesAsync();
+    }
+
+    return View(settings);
+}
 private async Task LogSuperAdminAuditAsync(
     string action,
     string entityType,
@@ -999,7 +1002,7 @@ private async Task LogSuperAdminAuditAsync(
     var superAdminId = _userManager.GetUserId(User);
 
     if (string.IsNullOrWhiteSpace(superAdminId))
-        throw new Exception("SuperAdmin ID not found.");
+        return;
 
     var auditLog = new SuperAdminAuditLog
     {
@@ -1014,8 +1017,6 @@ private async Task LogSuperAdminAuditAsync(
     _context.SuperAdminAuditLogs.Add(auditLog);
     await _context.SaveChangesAsync();
 }
-
-
 
    public async Task<IActionResult> Payouts(string? search, string? status, int page = 1)
 {
@@ -1108,40 +1109,6 @@ await LogSuperAdminAuditAsync(        "Release Settlement",
     return RedirectToAction(nameof(Payouts));
 }
 
-[HttpPost]
-[ValidateAntiForgeryToken]
-public async Task<IActionResult> TestAuditLog()
-{
-    await LogSuperAdminAuditAsync(
-        "Test Audit Log",
-        "System",
-        "TEST",
-        "This is a test audit log created from the SuperAdmin Audit Logs page.");
-
-    var latestLog = await _context.AuditLogs
-        .OrderByDescending(a => a.CreatedAt)
-        .FirstOrDefaultAsync();
-
-    TempData["AuditMessage"] = latestLog == null
-        ? "Test clicked, but no audit log was saved."
-        : $"Test audit log saved successfully. Latest action: {latestLog.Action}";
-
-    return RedirectToAction(nameof(AuditLogs));
-}
-
-[HttpGet]
-public async Task<IActionResult> TestAuditLogGet()
-{
-    await LogSuperAdminAuditAsync(
-        "Test Audit Log",
-        "System",
-        "TEST",
-        "This is a test audit log created from the SuperAdmin Audit Logs page.");
-
-    TempData["AuditMessage"] = "Test audit log created successfully.";
-
-    return RedirectToAction(nameof(AuditLogs));
-}
 // [ValidateAntiForgeryToken]
 // public async Task<IActionResult> GenerateMissingSettlements()
 // {

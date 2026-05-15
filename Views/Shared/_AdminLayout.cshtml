@@ -7,6 +7,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8" />
+
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0" />
 
@@ -23,9 +24,28 @@
 </head>
 
 <body>
+    <div class="mobile-overlay" id="mobileOverlay"></div>
+
     <div class="dashboard-layout">
 
-        <aside class="dashboard-sidebar">
+        <aside class="dashboard-sidebar" id="adminSidebar">
+            <div class="sidebar-mobile-header">
+                <div class="sidebar-mobile-brand">
+                    <img src="~/images/icon_logo.png"
+                         alt="BuyZaar Logo" />
+                    <div>
+                        <strong>BuyZaar</strong>
+                        <span>Admin Panel</span>
+                    </div>
+                </div>
+
+                <button type="button"
+                        class="sidebar-close-btn"
+                        id="sidebarCloseBtn">
+                    ✕
+                </button>
+            </div>
+
             <div class="sidebar-main">
 
                 <div class="sidebar-logo">
@@ -44,9 +64,7 @@
                         Dashboard
                     </a>
 
-                    <div class="sidebar-group-title">
-                        User Management
-                    </div>
+                    <div class="sidebar-group-title">User Management</div>
 
                     <a asp-controller="Admin"
                        asp-action="Users"
@@ -60,9 +78,7 @@
                         Seller Applications
                     </a>
 
-                    <div class="sidebar-group-title">
-                        Product Management
-                    </div>
+                    <div class="sidebar-group-title">Product Management</div>
 
                     <a asp-controller="Admin"
                        asp-action="Products"
@@ -70,9 +86,7 @@
                         Manage Products
                     </a>
 
-                    <div class="sidebar-group-title">
-                        Order Management
-                    </div>
+                    <div class="sidebar-group-title">Order Management</div>
 
                     <a asp-controller="Admin"
                        asp-action="Orders"
@@ -104,9 +118,7 @@
                         Manage Payments
                     </a>
 
-                    <div class="sidebar-group-title">
-                        Monitoring
-                    </div>
+                    <div class="sidebar-group-title">Monitoring</div>
 
                     <a asp-controller="Admin"
                        asp-action="Reports"
@@ -139,9 +151,7 @@
                 <div class="sidebar-user">
 
                     <div class="sidebar-avatar">
-                        @((User.Identity?.Name ?? "A")
-                            .Substring(0, 1)
-                            .ToUpper())
+                        @((User.Identity?.Name ?? "A").Substring(0, 1).ToUpper())
                     </div>
 
                     <div class="sidebar-user-info">
@@ -173,19 +183,30 @@
 
         <main class="dashboard-main">
 
-            <div class="dashboard-topbar">
-                <div>
-                    <h4>@ViewData["Title"]</h4>
-                    <p>Manage BuyZaar system operations</p>
-                </div>
+         <div class="dashboard-topbar">
 
-                <div class="dashboard-topbar-actions">
-                    <button class="notification-btn">
-                        🔔
-                        <span class="notification-badge">3</span>
-                    </button>
-                </div>
-            </div>
+    <div class="dashboard-topbar-left">
+
+       <button type="button"
+        class="mobile-menu-btn"
+        id="mobileMenuBtn">
+    ☰
+</button>
+        <div class="dashboard-topbar-title">
+            <h4>@ViewData["Title"]</h4>
+            <p>Manage BuyZaar system operations</p>
+        </div>
+
+    </div>
+
+    <div class="dashboard-topbar-actions">
+        <button class="notification-btn">
+            🔔
+            <span class="notification-badge">3</span>
+        </button>
+    </div>
+
+</div>
 
             <div class="dashboard-content">
                 @RenderBody()
@@ -195,6 +216,28 @@
     </div>
 
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+   <script>
+    const sidebar = document.getElementById("adminSidebar");
+    const menuBtn = document.getElementById("mobileMenuBtn");
+    const overlay = document.getElementById("mobileOverlay");
+    const closeBtn = document.getElementById("sidebarCloseBtn");
+
+    menuBtn?.addEventListener("click", function () {
+        sidebar.classList.add("show");
+        overlay.classList.add("show");
+        document.body.classList.add("sidebar-open");
+    });
+
+    function closeSidebar() {
+        sidebar.classList.remove("show");
+        overlay.classList.remove("show");
+        document.body.classList.remove("sidebar-open");
+    }
+
+    overlay?.addEventListener("click", closeSidebar);
+    closeBtn?.addEventListener("click", closeSidebar);
+</script>
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>

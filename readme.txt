@@ -1,4 +1,4 @@
-Email: superadmin@buyzaar.com
+Email: superadmin@buyzaar.com superadmin@buyzaar.com
 Password: SuperAdmin123!
 
 Email: testadmin102@buyzaar.com

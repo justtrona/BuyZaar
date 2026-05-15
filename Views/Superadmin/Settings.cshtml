@@ -146,6 +146,7 @@
                 <div class="settings-form-footer">
                     <div>
                         <strong>Current Status</strong>
+
                         @if (Model.MaintenanceMode)
                         {
                             <span class="settings-inline-danger">Maintenance Mode is ON</span>
@@ -172,20 +173,27 @@
             </div>
 
             <div class="settings-list">
+
                 <div class="settings-item">
                     <div>
                         <strong>Admin Account Protection</strong>
                         <span>Restrict sensitive account actions to SuperAdmin only.</span>
                     </div>
-                    <span class="settings-status active">Active</span>
+
+                    <span class="settings-status active">
+                        Active
+                    </span>
                 </div>
 
                 <div class="settings-item">
                     <div>
-                        <strong>Audit Logging</strong>
-                        <span>Record important SuperAdmin actions and system changes.</span>
+                        <strong>SuperAdmin Audit Logging</strong>
+                        <span>Record SuperAdmin actions such as user activation, seller changes, product moderation, settings updates, and settlements.</span>
                     </div>
-                    <span class="settings-status active">Active</span>
+
+                    <span class="settings-status active">
+                        Active
+                    </span>
                 </div>
 
                 <div class="settings-item">
@@ -193,8 +201,12 @@
                         <strong>Role-Based Access</strong>
                         <span>Separate access between SuperAdmin, Admin, Seller, Rider, and Shopper.</span>
                     </div>
-                    <span class="settings-status active">Active</span>
+
+                    <span class="settings-status active">
+                        Active
+                    </span>
                 </div>
+
             </div>
         </div>
 
@@ -205,12 +217,16 @@
             </div>
 
             <div class="settings-list">
+
                 <div class="settings-item">
                     <div>
                         <strong>Admin Setup Email</strong>
                         <span>Send secure password setup links to newly created admins.</span>
                     </div>
-                    <span class="settings-status active">Active</span>
+
+                    <span class="settings-status active">
+                        Active
+                    </span>
                 </div>
 
                 <div class="settings-item">
@@ -218,33 +234,56 @@
                         <strong>Notification Emails</strong>
                         <span>Future email alerts for approvals, disputes, and security events.</span>
                     </div>
-                    <span class="settings-status planned">Planned</span>
+
+                    <span class="settings-status planned">
+                        Planned
+                    </span>
                 </div>
+
             </div>
         </div>
 
         <div class="settings-card">
             <div class="settings-card-header">
                 <h3>Payment Gateway</h3>
-                <p>Reserved for future PayMongo configuration.</p>
+                <p>PayMongo payment configuration, processing, webhook handling, and transaction monitoring.</p>
             </div>
 
             <div class="settings-list">
+
                 <div class="settings-item">
                     <div>
                         <strong>PayMongo Integration</strong>
-                        <span>Configure API keys, webhook secrets, payment logs, and refunds later.</span>
+                        <span>API keys are configured locally through development settings and are not displayed for security.</span>
                     </div>
-                    <span class="settings-status pending">Not Configured</span>
+
+                    <span class="settings-status active">
+                        Configured
+                    </span>
+                </div>
+
+                <div class="settings-item">
+                    <div>
+                        <strong>Payment Processing</strong>
+                        <span>Payments, platform commissions, and seller settlements are available in Financial Oversight.</span>
+                    </div>
+
+                    <span class="settings-status active">
+                        Active
+                    </span>
                 </div>
 
                 <div class="settings-item">
                     <div>
                         <strong>Webhook Monitoring</strong>
-                        <span>Track incoming PayMongo payment events once enabled.</span>
+                        <span>Track incoming PayMongo payment events, payment confirmations, and transaction logs through active webhook handlers.</span>
                     </div>
-                    <span class="settings-status planned">Planned</span>
+
+                    <span class="settings-status active">
+                        Active
+                    </span>
                 </div>
+
             </div>
         </div>
 

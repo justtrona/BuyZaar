@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BuyZaar.Models
 {
+    [Table("SuperAdminAuditLogs")]
     public class SuperAdminAuditLog
     {
         public int Id { get; set; }

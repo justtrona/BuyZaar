@@ -13,61 +13,128 @@
 
 <link rel="stylesheet" href="~/css/product.css" asp-append-version="true" />
 
+@section Styles {
+    <style>
+        .dashboard-topbar-actions {
+            display: none !important;
+        }
+    </style>
+}
+
 @section TopbarContent {
-    <form asp-controller="Shopper" asp-action="BrowseProducts" method="get" class="marketplace-topbar">
+    <div class="shoppee-mobile-topbar">
 
-        <input type="text"
-               name="search"
-               value="@searchValue"
-               class="form-control marketplace-search"
-               placeholder="Search products, categories, or descriptions..." />
+        <form asp-controller="Shopper"
+              asp-action="BrowseProducts"
+              method="get"
+              class="shoppee-searchbar">
 
-        <select name="category" class="form-control marketplace-select">
+            <input type="text"
+                   name="search"
+                   value="@searchValue"
+                   class="shoppee-search-input"
+                   placeholder="Search products..." />
+
+            <input type="hidden" name="category" value="@selectedCategory" />
+            <input type="hidden" name="sort" value="@selectedSort" />
+
+            <button type="submit"
+                    class="shoppee-search-btn">
+                🔍
+            </button>
+        </form>
+
+        <a asp-controller="Shopper"
+           asp-action="MyCart"
+           class="shoppee-icon-btn">
+            🛒
+            <span id="cartBadge" class="shoppee-badge">0</span>
+        </a>
+
+        <div class="dropdown">
+            <button class="shoppee-icon-btn"
+                    type="button"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false">
+                🔔
+                <span class="shoppee-badge">3</span>
+            </button>
+
+            <ul class="dropdown-menu dropdown-menu-end notification-dropdown">
+                <li class="dropdown-header">Notifications</li>
+
+                <li>
+                    <a class="dropdown-item" href="#">
+                        Order is being prepared
+                    </a>
+                </li>
+
+                <li>
+                    <a class="dropdown-item" href="#">
+                        Cart item reminder
+                    </a>
+                </li>
+
+                <li>
+                    <a class="dropdown-item" href="#">
+                        Seller application update
+                    </a>
+                </li>
+
+                <li>
+                    <hr class="dropdown-divider" />
+                </li>
+
+                <li>
+                    <a class="dropdown-item text-center" href="#">
+                        View All
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+    </div>
+
+    <form asp-controller="Shopper"
+          asp-action="BrowseProducts"
+          method="get"
+          class="shoppee-filterbar">
+
+        <input type="hidden" name="search" value="@searchValue" />
+
+        <select name="category"
+                class="form-control shoppee-select"
+                onchange="this.form.submit()">
             <option value="">All Categories</option>
+
             @foreach (var category in categories)
             {
-                <option value="@category" selected="@(selectedCategory == category)">
+                <option value="@category"
+                        selected="@(selectedCategory == category)">
                     @category
                 </option>
             }
         </select>
 
-        <select name="sort" class="form-control marketplace-select">
-            <option value="newest" selected="@(selectedSort == "newest" || string.IsNullOrEmpty(selectedSort))">Newest</option>
-            <option value="price_low" selected="@(selectedSort == "price_low")">Price: Low to High</option>
-            <option value="price_high" selected="@(selectedSort == "price_high")">Price: High to Low</option>
+        <select name="sort"
+                class="form-control shoppee-select"
+                onchange="this.form.submit()">
+            <option value="newest"
+                    selected="@(selectedSort == "newest" || string.IsNullOrEmpty(selectedSort))">
+                Newest
+            </option>
+
+            <option value="price_low"
+                    selected="@(selectedSort == "price_low")">
+                Price: Low to High
+            </option>
+
+            <option value="price_high"
+                    selected="@(selectedSort == "price_high")">
+                Price: High to Low
+            </option>
         </select>
 
-        <button type="submit" class="btn btn-primary marketplace-search-btn">Search</button>
-
-        <a asp-controller="Shopper" asp-action="BrowseProducts" class="btn btn-outline-secondary marketplace-reset-btn">
-            Reset
-        </a>
-
-        <a asp-controller="Shopper" asp-action="MyCart" class="marketplace-icon-btn" title="Cart">
-            🛒
-            <span id="cartBadge" class="marketplace-badge">0</span>
-        </a>
-
-        <div class="dropdown">
-            <button class="marketplace-icon-btn"
-                    type="button"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false"
-                    title="Notifications">
-                🔔
-                <span class="marketplace-badge">3</span>
-            </button>
-
-            <ul class="dropdown-menu dropdown-menu-end notification-dropdown">
-                <li class="dropdown-header">Notifications</li>
-                <li><a class="dropdown-item" href="#">Order is being prepared</a></li>
-                <li><a class="dropdown-item" href="#">Cart item reminder</a></li>
-                <li><a class="dropdown-item" href="#">Seller application update</a></li>
-                <li><hr class="dropdown-divider" /></li>
-                <li><a class="dropdown-item text-center" href="#">View All</a></li>
-            </ul>
-        </div>
     </form>
 }
 
@@ -105,11 +172,15 @@
 
                 <div class="shopper-product-card">
                     <div class="shopper-product-image-wrap">
-                        <img src="@Url.Content(firstImage)" class="shopper-product-img" alt="@product.Name" />
+                        <img src="@Url.Content(firstImage)"
+                             class="shopper-product-img"
+                             alt="@product.Name" />
                     </div>
 
                     <div class="shopper-product-body">
-                        <span class="category-badge">@product.Category</span>
+                        <span class="category-badge">
+                            @product.Category
+                        </span>
 
                         <h4>@product.Name</h4>
 
@@ -206,6 +277,7 @@
                         }
 
                         button.innerText = "Added";
+
                         setTimeout(() => {
                             button.disabled = false;
                             button.innerText = "Add to Cart";

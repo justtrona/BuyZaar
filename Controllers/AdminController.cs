@@ -65,10 +65,13 @@ namespace BuyZaar.Controllers
             oi.Order != null &&
             oi.Product != null &&
             oi.Product.Seller != null &&
-            oi.Order.Status == "Delivered" &&
             oi.Order.DeliveredAt != null &&
             oi.Order.DeliveredAt.Value.Month == currentMonth &&
-            oi.Order.DeliveredAt.Value.Year == currentYear)
+            oi.Order.DeliveredAt.Value.Year == currentYear &&
+            (
+                oi.Order.Status == "Delivered" ||
+                oi.Order.DeliveryStatus == "Delivered"
+            ))
         .GroupBy(oi => new
         {
             oi.Product.SellerId,
@@ -87,9 +90,37 @@ namespace BuyZaar.Controllers
         .Take(10)
         .ToListAsync();
 
+    ViewBag.TopProductsMonthly = await _context.OrderItems
+        .Include(oi => oi.Order)
+        .Include(oi => oi.Product)
+        .Where(oi =>
+            oi.Order != null &&
+            oi.Product != null &&
+            oi.Order.DeliveredAt != null &&
+            oi.Order.DeliveredAt.Value.Month == currentMonth &&
+            oi.Order.DeliveredAt.Value.Year == currentYear &&
+            (
+                oi.Order.Status == "Delivered" ||
+                oi.Order.DeliveryStatus == "Delivered"
+            ))
+        .GroupBy(oi => new
+        {
+            oi.ProductId,
+            ProductName = oi.Product.Name
+        })
+        .Select(g => new
+        {
+            ProductName = g.Key.ProductName,
+            TotalItems = g.Sum(oi => oi.Quantity),
+            TotalSales = g.Sum(oi => oi.Price * oi.Quantity)
+        })
+        .OrderByDescending(x => x.TotalItems)
+        .ThenByDescending(x => x.TotalSales)
+        .Take(5)
+        .ToListAsync();
+
     return View();
-}   
-        public async Task<IActionResult> Users(string? search, string? role, string? status, int page = 1)
+}        public async Task<IActionResult> Users(string? search, string? role, string? status, int page = 1)
         {
             const int pageSize = 15;
 

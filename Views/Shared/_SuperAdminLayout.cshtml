@@ -7,6 +7,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8" />
+
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0" />
 
@@ -23,9 +24,29 @@
 </head>
 
 <body>
+    <div class="mobile-overlay" id="mobileOverlay"></div>
+
     <div class="dashboard-layout">
 
-        <aside class="dashboard-sidebar">
+        <aside class="dashboard-sidebar" id="dashboardSidebar">
+
+            <div class="sidebar-mobile-header">
+                <div class="sidebar-mobile-brand">
+                    <img src="~/images/icon_logo.png" alt="BuyZaar Logo" />
+
+                    <div>
+                        <strong>BuyZaar</strong>
+                        <span>SuperAdmin Panel</span>
+                    </div>
+                </div>
+
+                <button type="button"
+                        class="sidebar-close-btn"
+                        id="sidebarCloseBtn">
+                    ✕
+                </button>
+            </div>
+
             <div class="sidebar-main">
 
                 <div class="sidebar-logo">
@@ -143,9 +164,7 @@
                 <div class="sidebar-user">
 
                     <div class="sidebar-avatar">
-                        @((User.Identity?.Name ?? "S")
-                            .Substring(0, 1)
-                            .ToUpper())
+                        @((User.Identity?.Name ?? "S").Substring(0, 1).ToUpper())
                     </div>
 
                     <div class="sidebar-user-info">
@@ -178,9 +197,18 @@
         <main class="dashboard-main">
 
             <div class="dashboard-topbar">
-                <div>
-                    <h4>@ViewData["Title"]</h4>
-                    <p>Manage BuyZaar system operations</p>
+
+                <div class="dashboard-topbar-left">
+                    <button type="button"
+                            class="mobile-menu-btn"
+                            id="mobileMenuBtn">
+                        ☰
+                    </button>
+
+                    <div class="dashboard-topbar-title">
+                        <h4>@ViewData["Title"]</h4>
+                        <p>Manage BuyZaar system operations</p>
+                    </div>
                 </div>
 
                 <div class="dashboard-topbar-actions">
@@ -189,6 +217,7 @@
                         <span class="notification-badge">3</span>
                     </button>
                 </div>
+
             </div>
 
             <div class="dashboard-content">
@@ -199,6 +228,37 @@
     </div>
 
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        const sidebar = document.getElementById("dashboardSidebar");
+        const menuBtn = document.getElementById("mobileMenuBtn");
+        const closeBtn = document.getElementById("sidebarCloseBtn");
+        const overlay = document.getElementById("mobileOverlay");
+
+        function openSidebar() {
+            sidebar?.classList.add("show");
+            overlay?.classList.add("show");
+            document.body.classList.add("sidebar-open");
+        }
+
+        function closeSidebar() {
+            sidebar?.classList.remove("show");
+            overlay?.classList.remove("show");
+            document.body.classList.remove("sidebar-open");
+        }
+
+        menuBtn?.addEventListener("click", openSidebar);
+        closeBtn?.addEventListener("click", closeSidebar);
+        overlay?.addEventListener("click", closeSidebar);
+
+        document.querySelectorAll(".sidebar-link").forEach(link => {
+            link.addEventListener("click", () => {
+                if (window.innerWidth <= 768) {
+                    closeSidebar();
+                }
+            });
+        });
+    </script>
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>

@@ -9,20 +9,47 @@
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0" />
 
     <title>@ViewData["Title"] - BuyZaar</title>
 
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/styles.css" asp-append-version="true" />
+    <link rel="stylesheet"
+          href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+    <link rel="stylesheet"
+          href="~/css/styles.css"
+          asp-append-version="true" />
 
     @await RenderSectionAsync("Styles", required: false)
 </head>
 
 <body>
+    <div class="mobile-overlay" id="mobileOverlay"></div>
+
     <div class="dashboard-layout">
 
-        <aside class="dashboard-sidebar">
+        <aside class="dashboard-sidebar" id="dashboardSidebar">
+
+            <div class="sidebar-mobile-header">
+                <div class="sidebar-mobile-brand">
+                    <img src="~/images/icon_logo.png" alt="BuyZaar Logo" />
+
+                    <div>
+                        <strong>BuyZaar</strong>
+                        <span>@activeRole Panel</span>
+                    </div>
+                </div>
+
+                <button type="button"
+                        class="sidebar-close-btn"
+                        id="sidebarCloseBtn"
+                        onclick="closeDashboardSidebar()">
+                    ✕
+                </button>
+            </div>
+
             <div class="sidebar-main">
 
                 <div class="sidebar-logo">
@@ -35,93 +62,61 @@
 
                     @if (activeRole == "Seller")
                     {
-                        <a asp-controller="Seller"
-                           asp-action="Index"
-                           class="sidebar-link">
+                        <a asp-controller="Seller" asp-action="Index" class="sidebar-link">
                             Dashboard
                         </a>
 
-                        <div class="sidebar-group-title">
-                            Product Management
-                        </div>
+                        <div class="sidebar-group-title">Product Management</div>
 
-                        <a asp-controller="Seller"
-                           asp-action="Products"
-                           class="sidebar-link">
+                        <a asp-controller="Seller" asp-action="Products" class="sidebar-link">
                             Manage Products
                         </a>
 
-                        <a asp-controller="Seller"
-                           asp-action="CreateProduct"
-                           class="sidebar-link">
+                        <a asp-controller="Seller" asp-action="CreateProduct" class="sidebar-link">
                             Add Product
                         </a>
 
-                        <div class="sidebar-group-title">
-                            Order Management
-                        </div>
+                        <div class="sidebar-group-title">Order Management</div>
 
-                        <a asp-controller="Seller"
-                           asp-action="Orders"
-                           class="sidebar-link">
+                        <a asp-controller="Seller" asp-action="Orders" class="sidebar-link">
                             Orders
                         </a>
 
-                        <div class="sidebar-group-title">
-                            Business
-                        </div>
+                        <div class="sidebar-group-title">Business</div>
 
-                        <a asp-controller="Seller"
-                           asp-action="SalesRecords"
-                           class="sidebar-link">
+                        <a asp-controller="Seller" asp-action="SalesRecords" class="sidebar-link">
                             Sales Records
                         </a>
 
-                        <a asp-controller="Seller"
-                           asp-action="ShopProfile"
-                           class="sidebar-link">
+                        <a asp-controller="Seller" asp-action="ShopProfile" class="sidebar-link">
                             Shop Profile
                         </a>
                     }
                     else if (activeRole == "Shopper")
                     {
-                        <a asp-controller="Shopper"
-                           asp-action="BrowseProducts"
-                           class="sidebar-link">
+                        <a asp-controller="Shopper" asp-action="BrowseProducts" class="sidebar-link">
                             Home
                         </a>
 
-                        <div class="sidebar-group-title">
-                            Shopping
-                        </div>
+                        <div class="sidebar-group-title">Shopping</div>
 
-                        <a asp-controller="Shopper"
-                           asp-action="MyCart"
-                           class="sidebar-link">
+                        <a asp-controller="Shopper" asp-action="MyCart" class="sidebar-link">
                             My Cart
                         </a>
 
-                        <a asp-controller="Shopper"
-                           asp-action="MyOrders"
-                           class="sidebar-link">
+                        <a asp-controller="Shopper" asp-action="MyOrders" class="sidebar-link">
                             My Orders
                         </a>
 
-                        <div class="sidebar-group-title">
-                            Account
-                        </div>
+                        <div class="sidebar-group-title">Account</div>
 
-                        <a asp-controller="Shopper"
-                           asp-action="Index"
-                           class="sidebar-link">
+                        <a asp-controller="Shopper" asp-action="Index" class="sidebar-link">
                             Profile
                         </a>
 
                         @if (!isSeller)
                         {
-                            <a asp-controller="Shopper"
-                               asp-action="ApplySeller"
-                               class="sidebar-link">
+                            <a asp-controller="Shopper" asp-action="ApplySeller" class="sidebar-link">
                                 Apply as Seller
                             </a>
                         }
@@ -135,9 +130,7 @@
                 <div class="sidebar-user">
 
                     <div class="sidebar-avatar">
-                        @((User.Identity?.Name ?? "U")
-                            .Substring(0, 1)
-                            .ToUpper())
+                        @((User.Identity?.Name ?? "U").Substring(0, 1).ToUpper())
                     </div>
 
                     <div class="sidebar-user-info">
@@ -219,18 +212,29 @@
 
             <div class="dashboard-topbar">
 
-                <div class="dashboard-topbar-content">
-                    @if (IsSectionDefined("TopbarContent"))
-                    {
-                        @RenderSection("TopbarContent", required: false)
-                    }
-                    else
-                    {
-                        <div>
-                            <h4>@ViewData["Title"]</h4>
-                            <p>Manage your BuyZaar @activeRole workspace</p>
-                        </div>
-                    }
+                <div class="dashboard-topbar-left">
+
+                    <button type="button"
+                            class="mobile-menu-btn"
+                            id="mobileMenuBtn"
+                            onclick="openDashboardSidebar()">
+                        ☰
+                    </button>
+
+                    <div class="dashboard-topbar-content">
+                        @if (IsSectionDefined("TopbarContent"))
+                        {
+                            @RenderSection("TopbarContent", required: false)
+                        }
+                        else
+                        {
+                            <div class="dashboard-topbar-title">
+                                <h4>@ViewData["Title"]</h4>
+                                <p>Manage your BuyZaar @activeRole workspace</p>
+                            </div>
+                        }
+                    </div>
+
                 </div>
 
                 <div class="dashboard-topbar-actions">
@@ -248,44 +252,18 @@
 
                             @if (activeRole == "Seller")
                             {
-                                <li>
-                                    <a class="dropdown-item" href="#">
-                                        New order received
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" href="#">
-                                        Low stock alert
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" href="#">
-                                        Product listing updated
-                                    </a>
-                                </li>
+                                <li><a class="dropdown-item" href="#">New order received</a></li>
+                                <li><a class="dropdown-item" href="#">Low stock alert</a></li>
+                                <li><a class="dropdown-item" href="#">Product listing updated</a></li>
                             }
                             else if (activeRole == "Shopper")
                             {
-                                <li>
-                                    <a class="dropdown-item" href="#">
-                                        Order is being prepared
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" href="#">
-                                        Cart item reminder
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" href="#">
-                                        Seller application update
-                                    </a>
-                                </li>
+                                <li><a class="dropdown-item" href="#">Order is being prepared</a></li>
+                                <li><a class="dropdown-item" href="#">Cart item reminder</a></li>
+                                <li><a class="dropdown-item" href="#">Seller application update</a></li>
                             }
 
-                            <li>
-                                <hr class="dropdown-divider" />
-                            </li>
+                            <li><hr class="dropdown-divider" /></li>
 
                             <li>
                                 <a class="dropdown-item text-center" href="#">
@@ -307,6 +285,54 @@
     </div>
 
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        function openDashboardSidebar() {
+            var sidebar = document.getElementById("dashboardSidebar");
+            var overlay = document.getElementById("mobileOverlay");
+
+            if (sidebar) {
+                sidebar.classList.add("show");
+            }
+
+            if (overlay) {
+                overlay.classList.add("show");
+            }
+
+            document.body.classList.add("sidebar-open");
+        }
+
+        function closeDashboardSidebar() {
+            var sidebar = document.getElementById("dashboardSidebar");
+            var overlay = document.getElementById("mobileOverlay");
+
+            if (sidebar) {
+                sidebar.classList.remove("show");
+            }
+
+            if (overlay) {
+                overlay.classList.remove("show");
+            }
+
+            document.body.classList.remove("sidebar-open");
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            var overlay = document.getElementById("mobileOverlay");
+
+            if (overlay) {
+                overlay.addEventListener("click", closeDashboardSidebar);
+            }
+
+            document.querySelectorAll(".sidebar-link").forEach(function (link) {
+                link.addEventListener("click", function () {
+                    if (window.innerWidth <= 768) {
+                        closeDashboardSidebar();
+                    }
+                });
+            });
+        });
+    </script>
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>

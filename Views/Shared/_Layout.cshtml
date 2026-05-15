@@ -2,41 +2,62 @@
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0" />
+
     <title>@ViewData["Title"] - BuyZaar</title>
 
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/styles.css" />
+    <link rel="stylesheet" href="~/css/styles.css" asp-append-version="true" />
+
+    @await RenderSectionAsync("Styles", required: false)
 </head>
 
 <body>
     <div class="app-layout">
 
-        <div class="topbar">
-            <a href="/" class="sidebar-brand d-flex align-items-center">
-                <img src="~/images/text_logo.png" alt="BuyZaar Logo" class="logo" />
+        <header class="public-topbar">
+
+            <a href="/" class="public-brand">
+                <img src="~/images/text_logo.png"
+                     alt="BuyZaar Logo"
+                     class="public-logo" />
             </a>
 
-            <div class="d-flex gap-4">
-                <a class="sidebar-link" href="#">Home</a>
-                <a class="sidebar-link" href="#">Privacy</a>
-            </div>
+            <button type="button"
+                    class="public-menu-btn"
+                    id="publicMenuBtn">
+                ☰
+            </button>
+<nav class="public-nav" id="publicNav">
+    <a href="/">Home</a>
+    <a href="/#categories">Categories</a>
+    <a href="/#deals">Deals</a>
+    <a href="/#about">About</a>
+    <a href="/#contact">Contact</a>
 
-            <div class="d-flex gap-2" style="z-index: 9999;">
-                <div class="auth-buttons">
-                    <a class="btn btn-outline-primary" href="/Account/Login">Login</a>
-                    <a class="btn btn-primary" href="/Account/Register">Register</a>
-                </div>
-            </div>
-        </div>
+    <div class="public-auth">
+        <a class="btn btn-outline-primary" href="/Account/Login">
+            Login
+        </a>
+
+        <a class="btn btn-primary" href="/Account/Register">
+            Register
+        </a>
+    </div>
+</nav>
+
+        </header>
 
         <main class="page-content">
             @RenderBody()
         </main>
 
-        <footer class="footer-custom text-center py-4">
+        <footer class="footer-custom text-center py-4" id="contact">
             <div class="container">
                 <p>&copy; 2026 - BuyZaar</p>
+
                 <div class="social-links">
                     <a href="#">Facebook</a> |
                     <a href="#">Twitter</a> |
@@ -44,10 +65,17 @@
                 </div>
             </div>
         </footer>
+
     </div>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        document.getElementById("publicMenuBtn")?.addEventListener("click", function () {
+            document.getElementById("publicNav")?.classList.toggle("show");
+        });
+    </script>
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>

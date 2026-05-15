@@ -3,92 +3,286 @@
     ViewData["Title"] = "BuyZaar";
 }
 
-<section class="hero-section text-center py-5">
+<link rel="stylesheet" href="~/css/homepage.css" asp-append-version="true" />
+
+<section class="home-hero">
+    <div class="decor-circle decor-left"></div>
+    <div class="decor-circle decor-right"></div>
+    <div class="decor-dots dots-left"></div>
+    <div class="decor-dots dots-right"></div>
+
     <div class="container">
-        <h1 class="display-4">Discover Deals, Explore Styles – Only at BuyZaar</h1>
-        <p>Guaranteed to boost your mood, shop the latest trends now!</p>
-        <a href="#categories" class="btn btn-primary btn-lg">Shop Now</a>
-    </div>
-</section>
+        <div class="home-hero-grid">
 
-<section id="categories" class="categories-section py-5">
-    <div class="container">
-        <h2 class="text-center mb-4">Shop by Categories</h2>
+            <div class="home-hero-content">
+                <span class="home-pill">🏷️ Buy smarter. Shop easier.</span>
 
-        <div class="row g-4">
-            <div class="col-md-4">
-                <div class="category-card text-center">
-                    <div class="category-card-images">
-                        <img src="~/images/woman-clothes.jpg" alt="Women Clothes" class="img-fluid" />
-                        <img src="~/images/women-handbag.jpg" alt="Women Handbag" class="img-fluid" />
-                        <img src="~/images/women-sandals.jpg" alt="Women Sandals" class="img-fluid" />
+                <h1>
+                    Discover great deals from trusted
+                    <span>local sellers.</span>
+                </h1>
+
+                <p>
+                    Shop fashion, gadgets, essentials, and more in one simple
+                    marketplace built for everyday buyers.
+                </p>
+
+                <div class="home-hero-actions">
+                    <a href="/Account/Register" class="home-primary-btn">🛍️ Start Shopping</a>
+                    <a href="#deals" class="home-secondary-btn">⛶ Explore Deals</a>
+                </div>
+
+                <div class="home-trust-row">
+                    <div class="home-trust-item">
+                        <div class="trust-icon">🛡️</div>
+                        <div>
+                            <strong>Trusted Sellers</strong>
+                            <span>Verified & reliable</span>
+                        </div>
                     </div>
 
-                    <h3>Women</h3>
-                    <a href="#" class="btn btn-primary">Shop Women</a>
+                    <div class="home-trust-item">
+                        <div class="trust-icon">🏷️</div>
+                        <div>
+                            <strong>Best Prices</strong>
+                            <span>Deals you'll love</span>
+                        </div>
+                    </div>
+
+                    <div class="home-trust-item">
+                        <div class="trust-icon">📦</div>
+                        <div>
+                            <strong>Wide Selection</strong>
+                            <span>Everything in one place</span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div class="col-md-4">
-                <div class="category-card text-center">
-                    <div class="category-card-images">
-                        <img src="~/images/men-clothes.jpg" alt="Men Clothes" class="img-fluid" />
-                        <img src="~/images/men-watch.jpg" alt="Men Watch" class="img-fluid" />
-                        <img src="~/images/men-shoes.jpg" alt="Men Shoes" class="img-fluid" />
-                    </div>
+            <div class="home-hero-visual">
+                <div class="hero-product-card main">
+                    <img src="~/images/woman-clothes.jpg" alt="Fashion product" />
 
-                    <h3>Men</h3>
-                    <a href="#" class="btn btn-primary">Shop Men</a>
+                    <div class="hero-main-info">
+                        <div>
+                            <span>Trending Now</span>
+                            <strong>Fashion Finds</strong>
+                        </div>
+
+                        <a href="/Account/Register">➜</a>
+                    </div>
+                </div>
+
+                <div class="hero-product-card small top">
+                    <img src="~/images/men-watch.jpg" alt="Watch" />
+                    <strong>Accessories</strong>
+                    <span>Stylish & trendy</span>
+                </div>
+
+                <div class="hero-product-card small bottom">
+                    <img src="~/images/laptop-electronics.jpg" alt="Laptop" />
+                    <strong>Electronics</strong>
+                    <span>Smart gadgets</span>
                 </div>
             </div>
 
-            <div class="col-md-4">
-                <div class="category-card text-center">
-                    <div class="category-card-images">
-                        <img src="~/images/laptop-electronics.jpg" alt="Laptop Electronics" class="img-fluid" />
-                        <img src="~/images/headphones-electronics.jpg" alt="Headphones Electronics" class="img-fluid" />
-                        <img src="~/images/iphone-electronics.jpg" alt="Smartphone Electronics" class="img-fluid" />
-                    </div>
-
-                    <h3>Electronics</h3>
-                    <a href="#" class="btn btn-primary">Shop Electronics</a>
-                </div>
-            </div>
         </div>
     </div>
 </section>
 
-<section class="featured-products py-5">
-    <div class="container text-center">
-        <h2 class="mb-4">Featured Products</h2>
+<section id="categories" class="home-section">
+    <div class="decor-circle section-left"></div>
+    <div class="decor-dots section-dots-left"></div>
 
-        <div class="row g-4">
-            <div class="col-md-4">
-                <div class="product-card">
-                    <img src="~/images/product1.jpg" alt="Product 1" class="img-fluid" />
-                    <h4>Product Name</h4>
-                    <p>₱99.99</p>
-                    <a href="#" class="btn btn-primary">Add to Cart</a>
+    <div class="container">
+        <div class="section-heading">
+            <span>Categories</span>
+            <h2>Shop by category</h2>
+            <p>Find products faster by browsing the collections you love.</p>
+        </div>
+
+        <div class="home-category-grid">
+
+            <a href="/Account/Login" class="home-category-card">
+                <div class="category-image-wrap">
+                    <img src="~/images/woman-clothes.jpg" alt="Women fashion" />
+                </div>
+
+                <h3>Women</h3>
+                <p>Clothing, bags, sandals, and everyday style.</p>
+                <span>Shop now →</span>
+            </a>
+
+            <a href="/Account/Login" class="home-category-card">
+                <div class="category-image-wrap">
+                    <img src="~/images/men-clothes.jpg" alt="Men fashion" />
+                </div>
+
+                <h3>Men</h3>
+                <p>Outfits, watches, shoes, and essentials.</p>
+                <span>Shop now →</span>
+            </a>
+
+            <a href="/Account/Login" class="home-category-card">
+                <div class="category-image-wrap">
+                    <img src="~/images/laptop-electronics.jpg" alt="Electronics" />
+                </div>
+
+                <h3>Electronics</h3>
+                <p>Gadgets, phones, laptops, and accessories.</p>
+                <span>Shop now →</span>
+            </a>
+
+        </div>
+    </div>
+</section>
+
+<section class="home-section home-featured-section">
+    <div class="decor-circle featured-left"></div>
+    <div class="decor-dots featured-right-dots"></div>
+
+    <div class="container">
+        <div class="featured-layout">
+
+            <div class="section-heading featured-heading">
+                <span>Featured</span>
+                <h2>Popular picks</h2>
+                <p>A quick look at products shoppers may love.</p>
+            </div>
+
+            <div class="home-product-grid">
+
+                <div class="home-product-card">
+                    <img src="~/images/product1.jpg" alt="Featured product" />
+
+                    <div class="home-product-body">
+                        <span>Featured Item</span>
+                        <h4>Everyday Essential</h4>
+                        <strong>₱99.99</strong>
+                        <a href="/Account/Login">View Product →</a>
+                    </div>
+                </div>
+
+                <div class="home-product-card">
+                    <img src="~/images/product2.jpg" alt="Featured product" />
+
+                    <div class="home-product-body">
+                        <span>Best Deal</span>
+                        <h4>Marketplace Favorite</h4>
+                        <strong>₱99.99</strong>
+                        <a href="/Account/Login">View Product →</a>
+                    </div>
+                </div>
+
+                <div class="home-product-card">
+                    <img src="~/images/product3.jpg" alt="Featured product" />
+
+                    <div class="home-product-body">
+                        <span>New Arrival</span>
+                        <h4>Fresh Find</h4>
+                        <strong>₱99.99</strong>
+                        <a href="/Account/Login">View Product →</a>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<section id="deals" class="home-section home-deals-section">
+    <div class="container">
+        <div class="home-deals-card">
+
+            <div class="home-deals-content">
+                <span>Limited Deals</span>
+                <h2>Save more on everyday finds.</h2>
+                <p>
+                    Discover affordable products, seasonal offers, and marketplace favorites
+                    from trusted BuyZaar sellers.
+                </p>
+
+                <a href="/Account/Register">Explore Deals →</a>
+            </div>
+
+            <div class="home-deals-grid">
+                <div>
+                    <div class="deal-icon">🏷️</div>
+                    <strong>30%</strong>
+                    <span>Fashion Deals</span>
+                </div>
+
+                <div>
+                    <div class="deal-icon">💳</div>
+                    <strong>₱99+</strong>
+                    <span>Budget Finds</span>
+                </div>
+
+                <div>
+                    <div class="deal-icon">⭐</div>
+                    <strong>New</strong>
+                    <span>Daily Picks</span>
                 </div>
             </div>
 
-            <div class="col-md-4">
-                <div class="product-card">
-                    <img src="~/images/product2.jpg" alt="Product 2" class="img-fluid" />
-                    <h4>Product Name</h4>
-                    <p>₱99.99</p>
-                    <a href="#" class="btn btn-primary">Add to Cart</a>
+        </div>
+    </div>
+</section>
+
+<section id="about" class="home-section home-about-section">
+    <div class="decor-circle about-right"></div>
+    <div class="decor-dots about-left-dots"></div>
+
+    <div class="container">
+        <div class="home-about-grid">
+
+            <div class="home-about-content">
+                <span>About BuyZaar</span>
+
+                <h2>A local marketplace made for easier shopping.</h2>
+
+                <p>
+                    BuyZaar connects shoppers with local sellers in one simple platform.
+                    Browse products, compare deals, and support small businesses while
+                    enjoying a smoother online shopping experience.
+                </p>
+            </div>
+
+            <div class="home-about-logo-card">
+                <img src="~/images/text_logo.png" alt="BuyZaar Logo" />
+            </div>
+
+            <div class="home-about-points">
+                <div>
+                    <span>🛡️</span>
+                    <strong>Trusted local sellers</strong>
+                </div>
+
+                <div>
+                    <span>🔍</span>
+                    <strong>Easy product discovery</strong>
+                </div>
+
+                <div>
+                    <span>🛍️</span>
+                    <strong>Simple shopper experience</strong>
                 </div>
             </div>
 
-            <div class="col-md-4">
-                <div class="product-card">
-                    <img src="~/images/product3.jpg" alt="Product 3" class="img-fluid" />
-                    <h4>Product Name</h4>
-                    <p>₱99.99</p>
-                    <a href="#" class="btn btn-primary">Add to Cart</a>
-                </div>
+        </div>
+    </div>
+</section>
+
+<section class="home-cta">
+    <div class="container">
+        <div class="home-cta-card">
+            <div>
+                <h2>Ready to explore BuyZaar?</h2>
+                <p>Create an account and start browsing products from local sellers today.</p>
             </div>
+
+            <a href="/Account/Register">Join BuyZaar →</a>
         </div>
     </div>
 </section>

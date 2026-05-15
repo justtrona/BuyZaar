@@ -3,6 +3,8 @@
     ViewData["Title"] = "Admin Dashboard";
 
     var topSellers = ViewBag.TopSellersMonthly as IEnumerable<dynamic>;
+    var topProducts = ViewBag.TopProductsMonthly as IEnumerable<dynamic>;
+
     decimal maxSales = 0;
     decimal totalMonthlySales = 0;
     int totalMonthlyItems = 0;
@@ -15,13 +17,21 @@
         totalMonthlyItems = topSellers.Sum(s => (int)s.TotalItems);
         topSellerName = topSellers.First().SellerName;
     }
+
+    int maxProductItems = 0;
+
+    if (topProducts != null && topProducts.Any())
+    {
+        maxProductItems = topProducts.Max(p => (int)p.TotalItems);
+    }
 }
 
 <div class="admin-dashboard">
+
     <div class="dashboard-header">
         <div>
             <h1>Admin Dashboard</h1>
-            <p>Welcome back, Admin. Here’s what’s happening in BuyZaar today.</p>
+            <p>Welcome back, Admin. Monitor marketplace activity, users, sellers, riders, orders, and monthly sales.</p>
         </div>
 
         <a asp-controller="Admin"
@@ -94,9 +104,7 @@
                         decimal percentage = maxSales > 0 ? (totalSales / maxSales) * 100 : 0;
 
                         <div class="top-seller-row">
-                            <div class="seller-rank">
-                                #@rank
-                            </div>
+                            <div class="seller-rank">#@rank</div>
 
                             <div class="seller-chart-info">
                                 <div class="seller-chart-header">
@@ -110,9 +118,7 @@
                                     </div>
                                 </div>
 
-                                <small>
-                                    @seller.TotalItems item(s) sold this month
-                                </small>
+                                <small>@seller.TotalItems item(s) sold this month</small>
                             </div>
                         </div>
 
@@ -131,7 +137,7 @@
         <div class="dashboard-panel sales-analytics-panel">
             <div class="panel-header">
                 <h3>Sales Analytics</h3>
-                <p>Monthly sales performance summary.</p>
+                <p>Monthly delivered sales performance.</p>
             </div>
 
             <div class="sales-kpi-main">
@@ -156,8 +162,106 @@
                 </div>
 
                 <div>
-                    <span>Best Sale</span>
+                    <span>Best Seller Sales</span>
                     <strong>₱@maxSales.ToString("N2")</strong>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="seller-analytics-grid">
+
+        <div class="dashboard-panel top-sellers-panel">
+            <div class="panel-header top-sellers-header">
+                <div>
+                    <h3>Top 5 Best-Seller Products</h3>
+                    <p>Most sold products from delivered orders this month.</p>
+                </div>
+
+                <a asp-controller="Admin"
+                   asp-action="Products"
+                   class="top-sellers-link">
+                    View Products
+                </a>
+            </div>
+
+            @if (topProducts != null && topProducts.Any())
+            {
+                <div class="top-sellers-list">
+                    @{
+                        var productRank = 1;
+                    }
+
+                    @foreach (var product in topProducts)
+                    {
+                        int totalItems = product.TotalItems;
+                        decimal totalSales = product.TotalSales;
+                        decimal percentage = maxProductItems > 0
+                            ? ((decimal)totalItems / maxProductItems) * 100
+                            : 0;
+
+                        <div class="top-seller-row">
+                            <div class="seller-rank">#@productRank</div>
+
+                            <div class="seller-chart-info">
+                                <div class="seller-chart-header">
+                                    <strong>@product.ProductName</strong>
+                                    <span>@totalItems sold</span>
+                                </div>
+
+                                <div class="seller-bar-track">
+                                    <div class="seller-bar-fill"
+                                         style="width: @percentage%;">
+                                    </div>
+                                </div>
+
+                                <small>₱@totalSales.ToString("N2") total sales</small>
+                            </div>
+                        </div>
+
+                        productRank++;
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="empty-top-sellers">
+                    No best-selling products recorded this month.
+                </div>
+            }
+        </div>
+
+        <div class="dashboard-panel side-panel">
+            <div class="panel-header">
+                <h3>System Overview</h3>
+                <p>Important admin monitoring summary.</p>
+            </div>
+
+            <div class="overview-list">
+                <div>
+                    <span>Total Orders</span>
+                    <strong>@ViewBag.TotalOrders</strong>
+                </div>
+
+                <div>
+                    <span>Pending Cancellations</span>
+                    <strong>@ViewBag.PendingCancellationRequests</strong>
+                </div>
+
+                <div>
+                    <span>Return Pending</span>
+                    <strong>@ViewBag.ReturnPendingOrders</strong>
+                </div>
+
+                <div>
+                    <span>Successful Returns</span>
+                    <strong>@ViewBag.SuccessfulReturns</strong>
+                </div>
+
+                <div>
+                    <span>Failed Deliveries</span>
+                    <strong>@ViewBag.FailedDeliveries</strong>
                 </div>
             </div>
         </div>
@@ -221,39 +325,6 @@
                 </a>
             </div>
         </div>
-
-        <div class="dashboard-panel side-panel">
-            <div class="panel-header">
-                <h3>System Overview</h3>
-                <p>Important admin monitoring summary.</p>
-            </div>
-
-            <div class="overview-list">
-                <div>
-                    <span>Total Orders</span>
-                    <strong>@ViewBag.TotalOrders</strong>
-                </div>
-
-                <div>
-                    <span>Pending Cancellations</span>
-                    <strong>@ViewBag.PendingCancellationRequests</strong>
-                </div>
-
-                <div>
-                    <span>Return Pending</span>
-                    <strong>@ViewBag.ReturnPendingOrders</strong>
-                </div>
-
-                <div>
-                    <span>Successful Returns</span>
-                    <strong>@ViewBag.SuccessfulReturns</strong>
-                </div>
-
-                <div>
-                    <span>Failed Deliveries</span>
-                    <strong>@ViewBag.FailedDeliveries</strong>
-                </div>
-            </div>
-        </div>
     </div>
+
 </div>
