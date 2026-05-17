@@ -1,9 +1,11 @@
-﻿using BuyZaar.Data;
+﻿using System.Text;
+using BuyZaar.Data;
 using BuyZaar.Models;
 using BuyZaar.Services;
 using BuyZaar.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 
 namespace BuyZaar.Controllers
@@ -114,22 +116,26 @@ namespace BuyZaar.Controllers
 
                 var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
 
+                var encodedToken = WebEncoders.Base64UrlEncode(
+                    Encoding.UTF8.GetBytes(token)
+                );
+
                 var confirmationLink = Url.Action(
                     "ConfirmEmail",
                     "Account",
                     new
                     {
                         userId = user.Id,
-                        token
+                        token = encodedToken
                     },
                     protocol: Request.Scheme
                 );
 
                 _emailService.SendEmail(
                     user.Email!,
-                    "Verify your Buyzaar account",
+                    "Verify your BuyZaar account",
                     $@"
-                        <h2>Welcome to Buyzaar!</h2>
+                        <h2>Welcome to BuyZaar!</h2>
                         <p>Thank you for registering.</p>
                         <p>Please verify your email by clicking the link below:</p>
                         <p><a href='{confirmationLink}'>Verify My Account</a></p>
@@ -166,7 +172,19 @@ namespace BuyZaar.Controllers
             if (user == null)
                 return Content("User not found.");
 
-            var result = await _userManager.ConfirmEmailAsync(user, token);
+            string decodedToken;
+
+            try
+            {
+                var tokenBytes = WebEncoders.Base64UrlDecode(token);
+                decodedToken = Encoding.UTF8.GetString(tokenBytes);
+            }
+            catch
+            {
+                return Content("Invalid email confirmation token.");
+            }
+
+            var result = await _userManager.ConfirmEmailAsync(user, decodedToken);
 
             if (result.Succeeded)
             {
@@ -321,6 +339,128 @@ namespace BuyZaar.Controllers
             }
 
             ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+            return View(model);
+        }
+
+        [HttpGet]
+        public IActionResult ForgotPassword()
+        {
+            return View(new ForgotPasswordViewModel());
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
+
+            var user = await _userManager.FindByEmailAsync(model.Email);
+
+            if (user == null || !await _userManager.IsEmailConfirmedAsync(user))
+            {
+                TempData["ForgotPasswordMessage"] =
+                    "If the email exists and is verified, a password reset link has been sent.";
+
+                return RedirectToAction(nameof(ForgotPassword));
+            }
+
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+            var encodedToken = WebEncoders.Base64UrlEncode(
+                Encoding.UTF8.GetBytes(token)
+            );
+
+            var resetLink = Url.Action(
+                "ResetPassword",
+                "Account",
+                new
+                {
+                    email = user.Email,
+                    token = encodedToken
+                },
+                protocol: Request.Scheme
+            );
+
+            _emailService.SendEmail(
+                user.Email!,
+                "Reset your BuyZaar password",
+                $@"
+                    <h2>Password Reset Request</h2>
+                    <p>Hello {user.FullName},</p>
+                    <p>You requested to reset your BuyZaar password.</p>
+                    <p>Click the link below to create a new password:</p>
+                    <p><a href='{resetLink}'>Reset My Password</a></p>
+                    <p>If you did not request this, you can safely ignore this email.</p>
+                "
+            );
+
+            TempData["ForgotPasswordMessage"] =
+                "If the email exists and is verified, a password reset link has been sent.";
+
+            return RedirectToAction(nameof(ForgotPassword));
+        }
+
+        [HttpGet]
+        public IActionResult ResetPassword(string email, string token)
+        {
+            if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(token))
+                return RedirectToAction(nameof(Login));
+
+            var model = new ResetPasswordViewModel
+            {
+                Email = email,
+                Token = token
+            };
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
+
+            var user = await _userManager.FindByEmailAsync(model.Email);
+
+            if (user == null)
+            {
+                TempData["LoginMessage"] = "Password reset successful. You can now log in.";
+                return RedirectToAction(nameof(Login));
+            }
+
+            string decodedToken;
+
+            try
+            {
+                var tokenBytes = WebEncoders.Base64UrlDecode(model.Token);
+                decodedToken = Encoding.UTF8.GetString(tokenBytes);
+            }
+            catch
+            {
+                ModelState.AddModelError(string.Empty, "Invalid password reset token.");
+                return View(model);
+            }
+
+            var result = await _userManager.ResetPasswordAsync(
+                user,
+                decodedToken,
+                model.Password
+            );
+
+            if (result.Succeeded)
+            {
+                TempData["LoginMessage"] = "Password reset successful. You can now log in.";
+                return RedirectToAction(nameof(Login));
+            }
+
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError(string.Empty, error.Description);
+            }
+
             return View(model);
         }
 
