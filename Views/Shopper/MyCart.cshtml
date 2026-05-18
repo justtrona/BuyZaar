@@ -32,110 +32,137 @@
 
             <div class="product-form-card">
 
-                <table class="table custom-table align-middle">
-                    <thead>
-                        <tr>
-                            <th>
-                                <input type="checkbox" id="selectAllCart" />
-                            </th>
-                            <th>Product</th>
-                            <th>Variant</th>
-                            <th>Size</th>
-                            <th>Price</th>
-                            <th>Qty</th>
-                            <th>Total</th>
-                            <th></th>
-                        </tr>
-                    </thead>
+                <div class="cart-table-wrapper">
 
-                    <tbody>
-                        @foreach (var item in Model)
-                        {
-                            var img = item.Product?.Images?.FirstOrDefault()?.ImagePath ?? "/images/no-image.png";
-                            var price = item.Product?.Price ?? 0;
-                            var itemTotal = price * item.Quantity;
+                    <table class="table custom-table align-middle cart-table">
 
+                        <thead>
                             <tr>
-                                <td>
-                                    <input type="checkbox"
-                                           name="selectedCartItemIds"
-                                           value="@item.Id"
-                                           class="cart-checkbox"
-                                           data-subtotal="@itemTotal" />
-                                </td>
-
-                                <td>
-                                    <div class="product-table-info">
-                                        <img src="@Url.Content(img)"
-                                             class="product-table-img"
-                                             alt="@item.Product?.Name" />
-
-                                        <div>
-                                            <small class="text-muted">
-                                                @(item.Product?.Seller?.FullName ?? item.Product?.Seller?.UserName ?? "Unknown Seller")
-                                            </small><br />
-
-                                            <strong>@item.Product?.Name</strong><br />
-
-                                            <small class="text-muted">@item.Product?.Category</small>
-                                        </div>
-                                    </div>
-                                </td>
-
-                                <td>
-                                    @(string.IsNullOrWhiteSpace(item.SelectedVariant) ? "-" : item.SelectedVariant)
-                                </td>
-
-                                <td>
-                                    @(string.IsNullOrWhiteSpace(item.SelectedSize) ? "-" : item.SelectedSize)
-                                </td>
-
-                                <td>
-                                    ₱@price.ToString("N2")
-                                </td>
-
-                                <td>
-                                    <div class="qty-control">
-                                        <button type="button"
-                                                onclick="updateCartQty(@item.Id, @(item.Quantity - 1))">
-                                            −
-                                        </button>
-
-                                        <input type="number"
-                                               value="@item.Quantity"
-                                               min="1"
-                                               readonly />
-
-                                        <button type="button"
-                                                onclick="updateCartQty(@item.Id, @(item.Quantity + 1))">
-                                            +
-                                        </button>
-                                    </div>
-                                </td>
-
-                                <td>
-                                    ₱@itemTotal.ToString("N2")
-                                </td>
-
-                                <td>
-                                    <button type="button"
-                                            class="btn btn-sm btn-danger"
-                                            onclick="removeCartItem(@item.Id)">
-                                        ✕
-                                    </button>
-                                </td>
+                                <th>
+                                    <input type="checkbox" id="selectAllCart" />
+                                </th>
+                                <th>Product</th>
+                                <th>Variant</th>
+                                <th>Size</th>
+                                <th>Price</th>
+                                <th>Qty</th>
+                                <th>Total</th>
+                                <th></th>
                             </tr>
-                        }
-                    </tbody>
-                </table>
+                        </thead>
+
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                var img = item.Product?.Images?.FirstOrDefault()?.ImagePath ?? "/images/no-image.png";
+                                var price = item.Product?.Price ?? 0;
+                                var itemTotal = price * item.Quantity;
+
+                                <tr>
+
+                                    <td data-label="Select">
+                                        <input type="checkbox"
+                                               name="selectedCartItemIds"
+                                               value="@item.Id"
+                                               class="cart-checkbox"
+                                               data-subtotal="@itemTotal" />
+                                    </td>
+
+                                    <td data-label="Product">
+                                        <div class="product-table-info">
+
+                                            <img src="@Url.Content(img)"
+                                                 class="product-table-img"
+                                                 alt="@item.Product?.Name" />
+
+                                            <div>
+                                                <small class="text-muted">
+                                                    @(item.Product?.Seller?.FullName ??
+                                                        item.Product?.Seller?.UserName ??
+                                                        "Unknown Seller")
+                                                </small>
+
+                                                <br />
+
+                                                <strong>@item.Product?.Name</strong>
+
+                                                <br />
+
+                                                <small class="text-muted">
+                                                    @item.Product?.Category
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </td>
+
+                                    <td data-label="Variant">
+                                        @(string.IsNullOrWhiteSpace(item.SelectedVariant)
+                                            ? "-"
+                                            : item.SelectedVariant)
+                                    </td>
+
+                                    <td data-label="Size">
+                                        @(string.IsNullOrWhiteSpace(item.SelectedSize)
+                                            ? "-"
+                                            : item.SelectedSize)
+                                    </td>
+
+                                    <td data-label="Price">
+                                        ₱@price.ToString("N2")
+                                    </td>
+
+                                    <td data-label="Qty">
+                                        <div class="qty-control">
+
+                                            <button type="button"
+                                                    onclick="updateCartQty(@item.Id, @(item.Quantity - 1))">
+                                                −
+                                            </button>
+
+                                            <input type="number"
+                                                   value="@item.Quantity"
+                                                   min="1"
+                                                   readonly />
+
+                                            <button type="button"
+                                                    onclick="updateCartQty(@item.Id, @(item.Quantity + 1))">
+                                                +
+                                            </button>
+
+                                        </div>
+                                    </td>
+
+                                    <td data-label="Total">
+                                        ₱@itemTotal.ToString("N2")
+                                    </td>
+
+                                    <td data-label="Remove">
+    <button type="button"
+            class="cart-remove-btn"
+            onclick="removeCartItem(@item.Id)">
+        ✕
+    </button>
+</td>
+
+                                </tr>
+                            }
+                        </tbody>
+
+                    </table>
+
+                </div>
 
                 <div style="margin-top:20px; text-align:right;">
-                    <h4>Selected Total: <span id="selectedTotalText">₱0.00</span></h4>
+                    <h4>
+                        Selected Total:
+                        <span id="selectedTotalText">₱0.00</span>
+                    </h4>
 
                     <button type="submit" class="btn btn-success mt-2">
                         Proceed to Checkout
                     </button>
                 </div>
+
             </div>
         </form>
 
@@ -146,8 +173,13 @@
                   asp-action="RemoveFromCart"
                   method="post"
                   style="display:none;">
+
                 @Html.AntiForgeryToken()
-                <input type="hidden" name="cartItemId" value="@item.Id" />
+
+                <input type="hidden"
+                       name="cartItemId"
+                       value="@item.Id" />
+
             </form>
         }
     }
@@ -169,25 +201,35 @@
             });
 
             if (selectedTotalText) {
-                selectedTotalText.textContent = "₱" + total.toLocaleString(undefined, {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
-                });
+                selectedTotalText.textContent =
+                    "₱" +
+                    total.toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    });
             }
         }
 
         selectAll?.addEventListener("change", function () {
-            checkboxes.forEach(cb => cb.checked = selectAll.checked);
+
+            checkboxes.forEach(cb => {
+                cb.checked = selectAll.checked;
+            });
+
             updateSelectedTotal();
         });
 
         checkboxes.forEach(cb => {
+
             cb.addEventListener("change", function () {
+
                 if (!cb.checked && selectAll) {
                     selectAll.checked = false;
                 }
 
-                const allChecked = Array.from(checkboxes).every(x => x.checked);
+                const allChecked =
+                    Array.from(checkboxes).every(x => x.checked);
+
                 if (selectAll) {
                     selectAll.checked = allChecked;
                 }
@@ -197,12 +239,16 @@
         });
 
         function removeCartItem(id) {
+
             if (confirm("Remove this item from your cart?")) {
-                document.getElementById("removeForm-" + id).submit();
+                document
+                    .getElementById("removeForm-" + id)
+                    .submit();
             }
         }
 
         function updateCartQty(id, quantity) {
+
             if (quantity < 1) {
                 return;
             }
@@ -211,7 +257,10 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    'RequestVerificationToken':
+                        document.querySelector(
+                            'input[name="__RequestVerificationToken"]'
+                        ).value
                 },
                 body: JSON.stringify({
                     id: id,
@@ -220,9 +269,11 @@
             })
             .then(response => response.json())
             .then(data => {
+
                 if (data.success) {
                     location.reload();
-                } else {
+                }
+                else {
                     alert(data.message || 'Unable to update cart.');
                 }
             })

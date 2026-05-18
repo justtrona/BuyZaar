@@ -18,6 +18,10 @@
         .dashboard-topbar-actions {
             display: none !important;
         }
+
+        .shopper-product-card {
+            cursor: pointer;
+        }
     </style>
 }
 
@@ -38,8 +42,7 @@
             <input type="hidden" name="category" value="@selectedCategory" />
             <input type="hidden" name="sort" value="@selectedSort" />
 
-            <button type="submit"
-                    class="shoppee-search-btn">
+            <button type="submit" class="shoppee-search-btn">
                 🔍
             </button>
         </form>
@@ -62,34 +65,11 @@
 
             <ul class="dropdown-menu dropdown-menu-end notification-dropdown">
                 <li class="dropdown-header">Notifications</li>
-
-                <li>
-                    <a class="dropdown-item" href="#">
-                        Order is being prepared
-                    </a>
-                </li>
-
-                <li>
-                    <a class="dropdown-item" href="#">
-                        Cart item reminder
-                    </a>
-                </li>
-
-                <li>
-                    <a class="dropdown-item" href="#">
-                        Seller application update
-                    </a>
-                </li>
-
-                <li>
-                    <hr class="dropdown-divider" />
-                </li>
-
-                <li>
-                    <a class="dropdown-item text-center" href="#">
-                        View All
-                    </a>
-                </li>
+                <li><a class="dropdown-item" href="#">Order is being prepared</a></li>
+                <li><a class="dropdown-item" href="#">Cart item reminder</a></li>
+                <li><a class="dropdown-item" href="#">Seller application update</a></li>
+                <li><hr class="dropdown-divider" /></li>
+                <li><a class="dropdown-item text-center" href="#">View All</a></li>
             </ul>
         </div>
 
@@ -109,8 +89,7 @@
 
             @foreach (var category in categories)
             {
-                <option value="@category"
-                        selected="@(selectedCategory == category)">
+                <option value="@category" selected="@(selectedCategory == category)">
                     @category
                 </option>
             }
@@ -124,13 +103,11 @@
                 Newest
             </option>
 
-            <option value="price_low"
-                    selected="@(selectedSort == "price_low")">
+            <option value="price_low" selected="@(selectedSort == "price_low")">
                 Price: Low to High
             </option>
 
-            <option value="price_high"
-                    selected="@(selectedSort == "price_high")">
+            <option value="price_high" selected="@(selectedSort == "price_high")">
                 Price: High to Low
             </option>
         </select>
@@ -169,8 +146,11 @@
                 var hasColors = !string.IsNullOrWhiteSpace(product.AvailableVariants);
                 var hasSizes = !string.IsNullOrWhiteSpace(product.AvailableSizes);
                 var needsOptions = hasColors || hasSizes;
+                var detailsUrl = Url.Action("ViewDetails", "Shopper", new { id = product.Id });
 
-                <div class="shopper-product-card">
+                <div class="shopper-product-card"
+                     onclick="goToProductDetails('@detailsUrl')">
+
                     <div class="shopper-product-image-wrap">
                         <img src="@Url.Content(firstImage)"
                              class="shopper-product-img"
@@ -209,7 +189,7 @@
                             <span>@product.Stock in stock</span>
                         </div>
 
-                        <div class="shopper-product-actions">
+                        <div class="shopper-product-actions" onclick="event.stopPropagation();">
                             <a asp-controller="Shopper"
                                asp-action="ViewDetails"
                                asp-route-id="@product.Id"
@@ -252,9 +232,16 @@
 
 @section Scripts {
     <script>
+        function goToProductDetails(url) {
+            if (url) {
+                window.location.href = url;
+            }
+        }
+
         document.querySelectorAll(".add-cart-form").forEach(form => {
             form.addEventListener("submit", function (e) {
                 e.preventDefault();
+                e.stopPropagation();
 
                 const button = form.querySelector("button");
                 const formData = new FormData(form);

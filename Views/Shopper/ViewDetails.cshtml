@@ -53,7 +53,6 @@
         <div class="product-details">
 
             <div class="product-category">@Model.Category</div>
-
             <div class="product-title">@Model.Name</div>
 
             <div class="product-rating">
@@ -237,6 +236,18 @@
     </div>
 </div>
 
+<div id="selectionModal" class="selection-modal">
+    <div class="selection-modal-box">
+        <div class="selection-modal-icon">!</div>
+        <h3>Selection Required</h3>
+        <p id="selectionModalMessage">Please select an option before continuing.</p>
+
+        <button type="button" onclick="closeSelectionModal()">
+            OK
+        </button>
+    </div>
+</div>
+
 @section Scripts {
     <script>
         function increaseQty(max) {
@@ -278,17 +289,29 @@
             return value;
         }
 
+        function showSelectionModal(message) {
+            const modal = document.getElementById("selectionModal");
+            const messageBox = document.getElementById("selectionModalMessage");
+
+            messageBox.textContent = message;
+            modal.classList.add("show");
+        }
+
+        function closeSelectionModal() {
+            document.getElementById("selectionModal").classList.remove("show");
+        }
+
         function validateSelections() {
             const hasVariants = document.querySelectorAll('input[type="radio"][name="selectedVariant"]').length > 0;
             const hasSizes = document.querySelectorAll('input[type="radio"][name="selectedSize"]').length > 0;
 
             if (hasVariants && !getSelectedVariant()) {
-                alert("Please select a color or variant.");
+                showSelectionModal("Please select a color or variant.");
                 return false;
             }
 
             if (hasSizes && !getSelectedSize()) {
-                alert("Please select a size.");
+                showSelectionModal("Please select a size.");
                 return false;
             }
 
@@ -318,5 +341,17 @@
 
             return true;
         }
+
+        document.addEventListener("keydown", function (e) {
+            if (e.key === "Escape") {
+                closeSelectionModal();
+            }
+        });
+
+        document.getElementById("selectionModal").addEventListener("click", function (e) {
+            if (e.target === this) {
+                closeSelectionModal();
+            }
+        });
     </script>
-} 
+}

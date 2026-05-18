@@ -418,3 +418,86 @@
 .product-actions > .btn {
     flex: 1;
 }
+
+/* ================= SELECTION MODAL ================= */
+
+.selection-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.55);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 99999;
+    padding: 20px;
+}
+
+.selection-modal.show {
+    display: flex;
+}
+
+.selection-modal-box {
+    width: min(420px, 100%);
+    background: #ffffff;
+    border-radius: 24px;
+    padding: 32px;
+    text-align: center;
+    box-shadow: 0 24px 70px rgba(15, 23, 42, 0.28);
+    animation: modalPop 0.22s ease;
+}
+
+.selection-modal-icon {
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    background: #eff6ff;
+    color: #2563eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 18px;
+    font-size: 30px;
+    font-weight: 950;
+}
+
+.selection-modal-box h3 {
+    color: #0f172a;
+    font-size: 24px;
+    font-weight: 950;
+    margin-bottom: 10px;
+}
+
+.selection-modal-box p {
+    color: #64748b;
+    font-size: 15px;
+    line-height: 1.6;
+    margin-bottom: 24px;
+}
+
+.selection-modal-box button {
+    border: none;
+    background: #2563eb;
+    color: #ffffff;
+    padding: 13px 34px;
+    border-radius: 14px;
+    font-weight: 900;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.selection-modal-box button:hover {
+    background: #1d4ed8;
+    transform: translateY(-1px);
+}
+
+@keyframes modalPop {
+    from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.96);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
