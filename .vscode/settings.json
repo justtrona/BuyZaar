@@ -1,5 +1,9 @@
 {
     "appService.preDeployTask": "publish-release",
     "appService.deploySubpath": "bin\\Release\\net10.0\\publish",
-    "appService.defaultWebAppToDeploy": "/subscriptions/16374f1e-b350-48db-ba3f-2d171c2d1a61/resourceGroups/BuyZaar_group-80ee/providers/Microsoft.Web/sites/BuyZaar"
+    "appService.defaultWebAppToDeploy": "/subscriptions/16374f1e-b350-48db-ba3f-2d171c2d1a61/resourceGroups/BuyZaar_group-80ee/providers/Microsoft.Web/sites/BuyZaar",
+
+
+
 }
+

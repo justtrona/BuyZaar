@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Net.Mail;
+using System.Text;
 
 namespace BuyZaar.Services
 {
@@ -16,14 +17,12 @@ namespace BuyZaar.Services
         {
             var settings = _config.GetSection("EmailSettings");
 
-            // ✅ Read from appsettings (safe values)
             var host = settings["Host"];
             var port = int.Parse(settings["Port"]!);
             var username = settings["Username"];
             var fromEmail = settings["FromEmail"];
             var fromName = settings["FromName"];
 
-            // ✅ Read SECRET from environment variable (.env)
             var password = Environment.GetEnvironmentVariable("SMTP_PASS");
 
             var smtpClient = new SmtpClient(host)
@@ -38,7 +37,9 @@ namespace BuyZaar.Services
                 From = new MailAddress(fromEmail!, fromName),
                 Subject = subject,
                 Body = body,
-                IsBodyHtml = true
+                IsBodyHtml = true,
+                BodyEncoding = Encoding.UTF8,
+                SubjectEncoding = Encoding.UTF8
             };
 
             message.To.Add(toEmail);

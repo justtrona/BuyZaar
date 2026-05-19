@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Net;
+using System.Text;
 using BuyZaar.Data;
 using BuyZaar.Models;
 using BuyZaar.Services;
@@ -16,17 +17,20 @@ namespace BuyZaar.Controllers
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly EmailService _emailService;
         private readonly AppDbContext _context;
+        private readonly IConfiguration _config;
 
         public AccountController(
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
             EmailService emailService,
-            AppDbContext context)
+            AppDbContext context,
+            IConfiguration config)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _emailService = emailService;
             _context = context;
+            _config = config;
         }
 
         private async Task<SystemSetting> GetSystemSettingsAsync()
@@ -120,27 +124,31 @@ namespace BuyZaar.Controllers
                     Encoding.UTF8.GetBytes(token)
                 );
 
-                var confirmationLink = Url.Action(
-                    "ConfirmEmail",
-                    "Account",
-                    new
+                var confirmationPath = Url.Action(
+                    action: "ConfirmEmail",
+                    controller: "Account",
+                    values: new
                     {
                         userId = user.Id,
                         token = encodedToken
-                    },
-                    protocol: Request.Scheme
+                    }
+                );
+
+                var confirmationLink = BuildFullUrl(confirmationPath);
+
+                var emailBody = BuildEmailButtonTemplate(
+                    title: "Welcome to BuyZaar!",
+                    greeting: $"Hello {user.FullName},",
+                    message: "Thank you for registering. Please verify your email using the link below.",
+                    buttonText: "Verify My Account",
+                    link: confirmationLink,
+                    footer: "If you did not create this account, you may safely ignore this email."
                 );
 
                 _emailService.SendEmail(
                     user.Email!,
                     "Verify your BuyZaar account",
-                    $@"
-                        <h2>Welcome to BuyZaar!</h2>
-                        <p>Thank you for registering.</p>
-                        <p>Please verify your email by clicking the link below:</p>
-                        <p><a href='{confirmationLink}'>Verify My Account</a></p>
-                        <p>If you did not create this account, you may ignore this email.</p>
-                    "
+                    emailBody
                 );
 
                 return RedirectToAction("VerifyEmailNotice", new { email = user.Email });
@@ -371,28 +379,31 @@ namespace BuyZaar.Controllers
                 Encoding.UTF8.GetBytes(token)
             );
 
-            var resetLink = Url.Action(
-                "ResetPassword",
-                "Account",
-                new
+            var resetPath = Url.Action(
+                action: "ResetPassword",
+                controller: "Account",
+                values: new
                 {
                     email = user.Email,
                     token = encodedToken
-                },
-                protocol: Request.Scheme
+                }
+            );
+
+            var resetLink = BuildFullUrl(resetPath);
+
+            var resetEmailBody = BuildEmailButtonTemplate(
+                title: "Password Reset Request",
+                greeting: $"Hello {user.FullName},",
+                message: "You requested to reset your BuyZaar password. Use the link below to create a new password.",
+                buttonText: "Reset My Password",
+                link: resetLink,
+                footer: "If you did not request this, you can safely ignore this email."
             );
 
             _emailService.SendEmail(
                 user.Email!,
                 "Reset your BuyZaar password",
-                $@"
-                    <h2>Password Reset Request</h2>
-                    <p>Hello {user.FullName},</p>
-                    <p>You requested to reset your BuyZaar password.</p>
-                    <p>Click the link below to create a new password:</p>
-                    <p><a href='{resetLink}'>Reset My Password</a></p>
-                    <p>If you did not request this, you can safely ignore this email.</p>
-                "
+                resetEmailBody
             );
 
             TempData["ForgotPasswordMessage"] =
@@ -470,6 +481,100 @@ namespace BuyZaar.Controllers
         {
             await _signInManager.SignOutAsync();
             return RedirectToAction("Login", "Account");
+        }
+
+        private string BuildFullUrl(string? path)
+        {
+            var baseUrl = _config["AppSettings:BaseUrl"];
+
+            if (string.IsNullOrWhiteSpace(baseUrl))
+            {
+                baseUrl = $"https://{Request.Host.Value}";
+            }
+
+            baseUrl = baseUrl.TrimEnd('/');
+
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                return baseUrl;
+            }
+
+            return $"{baseUrl}{path}";
+        }
+
+        private string BuildEmailButtonTemplate(
+            string title,
+            string greeting,
+            string message,
+            string buttonText,
+            string link,
+            string footer)
+        {
+            var safeTitle = WebUtility.HtmlEncode(title);
+            var safeGreeting = WebUtility.HtmlEncode(greeting);
+            var safeMessage = WebUtility.HtmlEncode(message);
+            var safeButtonText = WebUtility.HtmlEncode(buttonText);
+            var safeLink = WebUtility.HtmlEncode(link);
+            var safeFooter = WebUtility.HtmlEncode(footer);
+
+            return $@"
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset=""UTF-8"">
+    <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
+    <title>{safeTitle}</title>
+</head>
+<body style=""margin:0; padding:0; background-color:#ffffff; font-family:Arial, Helvetica, sans-serif;"">
+
+    <div style=""max-width:600px; margin:0 auto; padding:24px;"">
+
+        <h2 style=""color:#111827; font-size:24px; line-height:1.3; margin-bottom:16px;"">
+            {safeTitle}
+        </h2>
+
+        <p style=""color:#374151; font-size:16px; line-height:1.6;"">
+            {safeGreeting}
+        </p>
+
+        <p style=""color:#374151; font-size:16px; line-height:1.6;"">
+            {safeMessage}
+        </p>
+
+        <p style=""margin:28px 0;"">
+            <a href=""{safeLink}""
+               target=""_blank""
+               style=""color:#ffffff;
+                      background-color:#2563eb;
+                      padding:14px 22px;
+                      text-decoration:none;
+                      border-radius:6px;
+                      display:inline-block;
+                      font-weight:bold;"">
+                {safeButtonText}
+            </a>
+        </p>
+
+        <p style=""color:#374151; font-size:15px; line-height:1.6;"">
+            Or open this verification link:
+        </p>
+
+        <p style=""font-size:15px; line-height:1.6; word-break:break-all;"">
+            <a href=""{safeLink}""
+               target=""_blank""
+               style=""color:#2563eb; text-decoration:underline;"">
+                {safeLink}
+            </a>
+        </p>
+
+        <p style=""color:#6b7280; font-size:14px; line-height:1.6; margin-top:24px;"">
+            {safeFooter}
+        </p>
+
+    </div>
+
+</body>
+</html>";
         }
 
         private bool IsUserDeactivated(ApplicationUser user)

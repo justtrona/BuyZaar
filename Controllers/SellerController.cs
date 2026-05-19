@@ -25,38 +25,125 @@ namespace BuyZaar.Controllers
             _environment = environment;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int? month, int? year)
         {
             ViewBag.ActiveRole = "Seller";
 
             var user = await _userManager.GetUserAsync(User);
+
             if (user == null)
                 return RedirectToAction("Login", "Account");
 
+            var sellerId = user.Id;
+
+            var selectedMonth = month ?? DateTime.Now.Month;
+            var selectedYear = year ?? DateTime.Now.Year;
+
+            ViewBag.SelectedMonth = selectedMonth;
+            ViewBag.SelectedYear = selectedYear;
+
             ViewBag.ProductCount = await _context.Products
-                .CountAsync(p => p.SellerId == user.Id);
+                .CountAsync(p => p.SellerId == sellerId);
 
             ViewBag.PendingOrders = await _context.Orders
                 .Where(o => o.OrderItems.Any(oi =>
                     oi.Product != null &&
-                    oi.Product.SellerId == user.Id &&
-                    (o.Status == "To Ship" ||
-                     o.Status == "Preparing Order" ||
-                     o.Status == "Ready for Pickup")))
+                    oi.Product.SellerId == sellerId &&
+                    (
+                        o.Status == "To Ship" ||
+                        o.Status == "Preparing Order" ||
+                        o.Status == "Ready for Pickup"
+                    )))
                 .CountAsync();
 
             ViewBag.LowStock = await _context.Products
-                .CountAsync(p => p.SellerId == user.Id && p.Stock <= 5);
+                .CountAsync(p => p.SellerId == sellerId && p.Stock <= 5);
 
-            ViewBag.MonthlySales = await _context.Orders
+            var sellerOrderQuery = _context.Orders
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Product)
+                .Where(o => o.OrderItems.Any(oi =>
+                    oi.Product != null &&
+                    oi.Product.SellerId == sellerId));
+
+            var sellerOrderIds = await sellerOrderQuery
+                .Select(o => o.Id)
+                .ToListAsync();
+
+            var monthlyOrderIds = await sellerOrderQuery
                 .Where(o =>
-                    o.OrderItems.Any(oi => oi.Product != null && oi.Product.SellerId == user.Id) &&
-                    o.CreatedAt.Month == DateTime.Now.Month &&
-                    o.CreatedAt.Year == DateTime.Now.Year &&
-                    o.Status == "Completed")
-                .SumAsync(o => (decimal?)o.OrderItems
-                    .Where(oi => oi.Product != null && oi.Product.SellerId == user.Id)
-                    .Sum(oi => oi.Subtotal)) ?? 0;
+                    o.CreatedAt.Month == selectedMonth &&
+                    o.CreatedAt.Year == selectedYear)
+                .Select(o => o.Id)
+                .ToListAsync();
+
+            var releasedSales = await _context.SellerPayouts
+                .Where(p =>
+                    p.SellerId == sellerId &&
+                    p.Status == "Released" &&
+                    sellerOrderIds.Contains(p.OrderId))
+                .SumAsync(p => (decimal?)p.SellerEarnings) ?? 0m;
+
+            var pendingSettlement = await _context.SellerPayouts
+                .Where(p =>
+                    p.SellerId == sellerId &&
+                    p.Status == "Pending" &&
+                    sellerOrderIds.Contains(p.OrderId))
+                .SumAsync(p => (decimal?)p.SellerEarnings) ?? 0m;
+
+            var monthlySales = await _context.SellerPayouts
+                .Where(p =>
+                    p.SellerId == sellerId &&
+                    monthlyOrderIds.Contains(p.OrderId))
+                .SumAsync(p => (decimal?)p.SellerEarnings) ?? 0m;
+
+            ViewBag.ReleasedSales = releasedSales;
+            ViewBag.PendingSettlement = pendingSettlement;
+            ViewBag.MonthlySales = monthlySales;
+
+            var daysInMonth = DateTime.DaysInMonth(selectedYear, selectedMonth);
+
+            var salesChartLabels = Enumerable
+                .Range(1, daysInMonth)
+                .Select(day => day.ToString())
+                .ToArray();
+
+            var salesByDay = await _context.SellerPayouts
+                .Where(p =>
+                    p.SellerId == sellerId &&
+                    monthlyOrderIds.Contains(p.OrderId))
+                .GroupBy(p => p.CreatedAt.Day)
+                .Select(g => new
+                {
+                    Day = g.Key,
+                    Total = g.Sum(p => p.SellerEarnings)
+                })
+                .ToListAsync();
+
+            var salesChartData = Enumerable
+                .Range(1, daysInMonth)
+                .Select(day => salesByDay.FirstOrDefault(x => x.Day == day)?.Total ?? 0m)
+                .ToList();
+
+            ViewBag.SalesChartLabels = salesChartLabels;
+            ViewBag.SalesChartData = salesChartData;
+
+            var orderStatusRaw = await sellerOrderQuery
+                .GroupBy(o => o.Status)
+                .Select(g => new
+                {
+                    Status = g.Key,
+                    Count = g.Count()
+                })
+                .ToListAsync();
+
+            ViewBag.OrderStatusLabels = orderStatusRaw
+                .Select(x => string.IsNullOrWhiteSpace(x.Status) ? "Unknown" : x.Status)
+                .ToArray();
+
+            ViewBag.OrderStatusData = orderStatusRaw
+                .Select(x => x.Count)
+                .ToArray();
 
             return View();
         }
@@ -498,113 +585,114 @@ namespace BuyZaar.Controllers
             TempData["SuccessMessage"] = "Product deleted successfully.";
             return RedirectToAction("Products");
         }
-public async Task<IActionResult> SalesRecords(
-    string? status,
-    string? search,
-    DateTime? fromDate,
-    DateTime? toDate)
-{
-    ViewBag.ActiveRole = "Seller";
 
-    var user = await _userManager.GetUserAsync(User);
-
-    if (user == null)
-        return RedirectToAction("Login", "Account");
-
-    var sellerId = user.Id;
-
-    var query = _context.Orders
-        .Include(o => o.OrderItems)
-            .ThenInclude(oi => oi.Product)
-                .ThenInclude(p => p!.Images)
-        .Where(o => o.OrderItems.Any(oi =>
-            oi.Product != null &&
-            oi.Product.SellerId == sellerId))
-        .AsQueryable();
-
-    if (!string.IsNullOrWhiteSpace(status))
-    {
-        if (status == "Delivered")
+        public async Task<IActionResult> SalesRecords(
+            string? status,
+            string? search,
+            DateTime? fromDate,
+            DateTime? toDate)
         {
-            query = query.Where(o =>
-                o.Status == "Delivered" ||
-                o.DeliveryStatus == "Delivered");
+            ViewBag.ActiveRole = "Seller";
+
+            var user = await _userManager.GetUserAsync(User);
+
+            if (user == null)
+                return RedirectToAction("Login", "Account");
+
+            var sellerId = user.Id;
+
+            var query = _context.Orders
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Product)
+                        .ThenInclude(p => p!.Images)
+                .Where(o => o.OrderItems.Any(oi =>
+                    oi.Product != null &&
+                    oi.Product.SellerId == sellerId))
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                if (status == "Delivered")
+                {
+                    query = query.Where(o =>
+                        o.Status == "Delivered" ||
+                        o.DeliveryStatus == "Delivered");
+                }
+                else if (status == "Completed")
+                {
+                    query = query.Where(o =>
+                        o.Status == "Completed" ||
+                        o.Status == "Delivered" ||
+                        o.DeliveryStatus == "Delivered");
+                }
+                else
+                {
+                    query = query.Where(o => o.Status == status);
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                search = search.Trim();
+
+                query = query.Where(o =>
+                    o.Id.ToString().Contains(search) ||
+                    o.ReceiverName.Contains(search) ||
+                    o.ContactNumber.Contains(search));
+            }
+
+            if (fromDate.HasValue)
+                query = query.Where(o => o.CreatedAt.Date >= fromDate.Value.Date);
+
+            if (toDate.HasValue)
+                query = query.Where(o => o.CreatedAt.Date <= toDate.Value.Date);
+
+            var orders = await query
+                .OrderByDescending(o => o.CreatedAt)
+                .ToListAsync();
+
+            var orderIds = orders.Select(o => o.Id).ToList();
+
+            ViewBag.TotalSales = await _context.SellerPayouts
+                .Where(p =>
+                    p.SellerId == sellerId &&
+                    p.Status == "Released" &&
+                    orderIds.Contains(p.OrderId))
+                .SumAsync(p => (decimal?)p.SellerEarnings) ?? 0m;
+
+            ViewBag.PendingSales = await _context.SellerPayouts
+                .Where(p =>
+                    p.SellerId == sellerId &&
+                    p.Status == "Pending" &&
+                    orderIds.Contains(p.OrderId))
+                .SumAsync(p => (decimal?)p.SellerEarnings) ?? 0m;
+
+            ViewBag.TotalOrders = orders.Count;
+
+            ViewBag.TotalItemsSold = orders
+                .Where(o =>
+                    o.Status == "Delivered" ||
+                    o.Status == "Completed" ||
+                    o.DeliveryStatus == "Delivered")
+                .Sum(o => o.OrderItems
+                    .Where(oi =>
+                        oi.Product != null &&
+                        oi.Product.SellerId == sellerId)
+                    .Sum(oi => oi.Quantity));
+
+            ViewBag.SettlementLookup = await _context.SellerPayouts
+                .Where(p =>
+                    p.SellerId == sellerId &&
+                    orderIds.Contains(p.OrderId))
+                .ToDictionaryAsync(p => p.OrderId, p => p);
+
+            ViewBag.Status = status;
+            ViewBag.Search = search;
+            ViewBag.FromDate = fromDate?.ToString("yyyy-MM-dd");
+            ViewBag.ToDate = toDate?.ToString("yyyy-MM-dd");
+
+            return View(orders);
         }
-        else if (status == "Completed")
-        {
-            query = query.Where(o =>
-                o.Status == "Completed" ||
-                o.Status == "Delivered" ||
-                o.DeliveryStatus == "Delivered");
-        }
-        else
-        {
-            query = query.Where(o => o.Status == status);
-        }
-    }
-
-    if (!string.IsNullOrWhiteSpace(search))
-    {
-        search = search.Trim();
-
-        query = query.Where(o =>
-            o.Id.ToString().Contains(search) ||
-            o.ReceiverName.Contains(search) ||
-            o.ContactNumber.Contains(search));
-    }
-
-    if (fromDate.HasValue)
-        query = query.Where(o => o.CreatedAt.Date >= fromDate.Value.Date);
-
-    if (toDate.HasValue)
-        query = query.Where(o => o.CreatedAt.Date <= toDate.Value.Date);
-
-    var orders = await query
-        .OrderByDescending(o => o.CreatedAt)
-        .ToListAsync();
-
-    var orderIds = orders.Select(o => o.Id).ToList();
-
-    ViewBag.TotalSales = await _context.SellerPayouts
-        .Where(p =>
-            p.SellerId == sellerId &&
-            p.Status == "Released" &&
-            orderIds.Contains(p.OrderId))
-        .SumAsync(p => (decimal?)p.SellerEarnings) ?? 0m;
-
-    ViewBag.PendingSales = await _context.SellerPayouts
-        .Where(p =>
-            p.SellerId == sellerId &&
-            p.Status == "Pending" &&
-            orderIds.Contains(p.OrderId))
-        .SumAsync(p => (decimal?)p.SellerEarnings) ?? 0m;
-
-    ViewBag.TotalOrders = orders.Count;
-
-    ViewBag.TotalItemsSold = orders
-        .Where(o =>
-            o.Status == "Delivered" ||
-            o.Status == "Completed" ||
-            o.DeliveryStatus == "Delivered")
-        .Sum(o => o.OrderItems
-            .Where(oi =>
-                oi.Product != null &&
-                oi.Product.SellerId == sellerId)
-            .Sum(oi => oi.Quantity));
-
-    ViewBag.SettlementLookup = await _context.SellerPayouts
-        .Where(p =>
-            p.SellerId == sellerId &&
-            orderIds.Contains(p.OrderId))
-        .ToDictionaryAsync(p => p.OrderId, p => p);
-
-    ViewBag.Status = status;
-    ViewBag.Search = search;
-    ViewBag.FromDate = fromDate?.ToString("yyyy-MM-dd");
-    ViewBag.ToDate = toDate?.ToString("yyyy-MM-dd");
-
-    return View(orders);
-}
 
         [HttpPost]
         [ValidateAntiForgeryToken]
