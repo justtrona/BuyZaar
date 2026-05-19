@@ -70,6 +70,8 @@ namespace BuyZaar.Controllers
             return View(user);
         }
 
+
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UpdateProfile(string fullName, string phoneNumber)
@@ -92,62 +94,62 @@ namespace BuyZaar.Controllers
             return RedirectToAction("Index");
         }
 
-        public async Task<IActionResult> BrowseProducts(string? search, string? category, string? sort)
-        {
-            ViewBag.ActiveRole = "Shopper";
+      public async Task<IActionResult> BrowseProducts(string? search, string? category, string? sort)
+{
+    ViewBag.ActiveRole = "Shopper";
 
-            var query = _context.Products
-                .Include(p => p.Images)
-                .Include(p => p.Seller)
-                .Where(p => p.Stock > 0)
-                .AsQueryable();
+    var query = _context.Products
+        .Include(p => p.Images)
+        .Include(p => p.Seller)
+        .Where(p => p.Stock > 0 && !p.IsHiddenByAdmin) // Only show visible products
+        .AsQueryable();
 
-            if (!string.IsNullOrWhiteSpace(search))
-            {
-                query = query.Where(p =>
-                    p.Name.Contains(search) ||
-                    p.Description.Contains(search) ||
-                    p.Category.Contains(search));
-            }
+    if (!string.IsNullOrWhiteSpace(search))
+    {
+        query = query.Where(p =>
+            p.Name.Contains(search) ||
+            p.Description.Contains(search) ||
+            p.Category.Contains(search));
+    }
 
-            if (!string.IsNullOrWhiteSpace(category))
-                query = query.Where(p => p.Category == category);
+    if (!string.IsNullOrWhiteSpace(category))
+        query = query.Where(p => p.Category == category);
 
-            query = sort switch
-            {
-                "price_low" => query.OrderBy(p => p.Price),
-                "price_high" => query.OrderByDescending(p => p.Price),
-                _ => query.OrderByDescending(p => p.CreatedAt)
-            };
+    query = sort switch
+    {
+        "price_low" => query.OrderBy(p => p.Price),
+        "price_high" => query.OrderByDescending(p => p.Price),
+        _ => query.OrderByDescending(p => p.CreatedAt)
+    };
 
-            ViewBag.Search = search;
-            ViewBag.Category = category;
-            ViewBag.Sort = sort;
+    ViewBag.Search = search;
+    ViewBag.Category = category;
+    ViewBag.Sort = sort;
 
-            ViewBag.Categories = await _context.Products
-                .Where(p => p.Stock > 0)
-                .Select(p => p.Category)
-                .Distinct()
-                .OrderBy(c => c)
-                .ToListAsync();
+    ViewBag.Categories = await _context.Products
+        .Where(p => p.Stock > 0 && !p.IsHiddenByAdmin)
+        .Select(p => p.Category)
+        .Distinct()
+        .OrderBy(c => c)
+        .ToListAsync();
 
-            return View(await query.ToListAsync());
-        }
+    return View(await query.ToListAsync());
+}
 
-        public async Task<IActionResult> ViewDetails(int id)
-        {
-            ViewBag.ActiveRole = "Shopper";
+      public async Task<IActionResult> ViewDetails(int id)
+{
+    ViewBag.ActiveRole = "Shopper";
 
-            var product = await _context.Products
-                .Include(p => p.Images)
-                .Include(p => p.Seller)
-                .FirstOrDefaultAsync(p => p.Id == id && p.Stock > 0);
+    var product = await _context.Products
+        .Include(p => p.Images)
+        .Include(p => p.Seller)
+        .FirstOrDefaultAsync(p => p.Id == id && p.Stock > 0 && !p.IsHiddenByAdmin);
 
-            if (product == null)
-                return NotFound();
+    if (product == null)
+        return NotFound();
 
-            return View(product);
-        }
+    return View(product);
+}
 
         [HttpPost]
         [ValidateAntiForgeryToken]

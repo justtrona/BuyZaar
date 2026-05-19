@@ -781,59 +781,57 @@ public async Task<IActionResult> MarkReturnedToSeller(int orderId)
             return View(products);
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> HideProduct(int productId, string? reason)
-        {
-            var product = await _context.Products.FindAsync(productId);
+       [HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> HideProduct(int productId, string? reason)
+{
+    var product = await _context.Products.FindAsync(productId);
+    if (product == null)
+        return NotFound();
 
-            if (product == null)
-                return NotFound();
+    product.IsHiddenByAdmin = true;
+    product.AdminHiddenReason = string.IsNullOrWhiteSpace(reason)
+        ? "Product hidden by admin."
+        : reason.Trim();
+    product.HiddenAt = DateTime.Now;
 
-            product.IsHiddenByAdmin = true;
-            product.AdminHiddenReason = string.IsNullOrWhiteSpace(reason)
-                ? "Product hidden by admin."
-                : reason.Trim();
-            product.HiddenAt = DateTime.Now;
+    await _context.SaveChangesAsync();
 
-            await _context.SaveChangesAsync();
+    await LogAdminAction(
+        "Hide Product",
+        "Product",
+        product.Id.ToString(),
+        $"Admin hid product: {product.Name}"
+    );
 
-            await LogAdminAction(
-                "Hide Product",
-                "Product",
-                product.Id.ToString(),
-                $"Admin hid product: {product.Name}"
-            );
+    TempData["Message"] = "Product hidden successfully.";
+    return RedirectToAction(nameof(Products));
+}
 
-            TempData["Message"] = "Product hidden successfully.";
-            return RedirectToAction(nameof(Products));
-        }
+[HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> ShowProduct(int productId)
+{
+    var product = await _context.Products.FindAsync(productId);
+    if (product == null)
+        return NotFound();
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ShowProduct(int productId)
-        {
-            var product = await _context.Products.FindAsync(productId);
+    product.IsHiddenByAdmin = false;
+    product.AdminHiddenReason = null;
+    product.HiddenAt = null;
 
-            if (product == null)
-                return NotFound();
+    await _context.SaveChangesAsync();
 
-            product.IsHiddenByAdmin = false;
-            product.AdminHiddenReason = null;
-            product.HiddenAt = null;
+    await LogAdminAction(
+        "Show Product",
+        "Product",
+        product.Id.ToString(),
+        $"Admin restored product visibility: {product.Name}"
+    );
 
-            await _context.SaveChangesAsync();
-
-            await LogAdminAction(
-                "Show Product",
-                "Product",
-                product.Id.ToString(),
-                $"Admin restored product visibility: {product.Name}"
-            );
-
-            TempData["Message"] = "Product is now visible again.";
-            return RedirectToAction(nameof(Products));
-        }
+    TempData["Message"] = "Product is now visible again.";
+    return RedirectToAction(nameof(Products));
+}
 
       public async Task<IActionResult> AuditLogs(
     string? search,

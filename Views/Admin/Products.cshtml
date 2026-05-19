@@ -3,64 +3,42 @@
 @{
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
     ViewData["Title"] = "Manage Products";
-
     var search = ViewBag.Search as string;
-    var selectedStatus = ViewBag.Status as string;
+    var selectedStatus = ViewBag.Visibility as string;
     var selectedStockStatus = ViewBag.StockStatus as string;
-
     int currentPage = ViewBag.CurrentPage ?? 1;
     int totalPages = ViewBag.TotalPages ?? 1;
     int totalProducts = ViewBag.TotalProducts ?? Model.Count;
-
-    if (totalPages < 1)
-    {
-        totalPages = 1;
-    }
 }
 
 @section Styles {
-    <link rel="stylesheet"
-          href="~/css/admin-products.css"
-          asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/admin-products.css" asp-append-version="true" />
 }
 
 <div class="admin-page-header">
-    <div>
-        <h1>Manage Products</h1>
-        <p>Review seller products, monitor stock, and hide inappropriate listings.</p>
-    </div>
+    <h1>Manage Products</h1>
+    <p>Review seller products, monitor stock, and view listings.</p>
 </div>
 
 @if (TempData["Message"] != null)
 {
-    <div class="alert alert-success">
-        @TempData["Message"]
-    </div>
+    <div class="alert alert-success">@TempData["Message"]</div>
 }
 
 <div class="products-filter-card">
-    <form asp-controller="Admin"
-          asp-action="Products"
-          method="get"
-          class="products-filter-form">
-
+    <form asp-controller="Admin" asp-action="Products" method="get" class="products-filter-form">
         <div class="filter-group search-group">
             <label>Search</label>
-            <input type="text"
-                   name="search"
-                   value="@search"
-                   placeholder="Search product, seller, or description..." />
+            <input type="text" name="search" value="@search" placeholder="Search product, seller, or description..." />
         </div>
-
         <div class="filter-group">
             <label>Visibility</label>
-            <select name="status">
+            <select name="visibility">
                 <option value="">All Products</option>
                 <option value="Visible" selected="@(selectedStatus == "Visible")">Visible</option>
                 <option value="Hidden" selected="@(selectedStatus == "Hidden")">Hidden</option>
             </select>
         </div>
-
         <div class="filter-group">
             <label>Stock</label>
             <select name="stockStatus">
@@ -70,32 +48,17 @@
                 <option value="OutOfStock" selected="@(selectedStockStatus == "OutOfStock")">Out of Stock</option>
             </select>
         </div>
-
         <div class="filter-actions">
-            <button type="submit" class="filter-btn">
-                Filter
-            </button>
-
-            <a asp-controller="Admin"
-               asp-action="Products"
-               class="reset-btn">
-                Reset
-            </a>
+            <button type="submit" class="filter-btn">Filter</button>
+            <a asp-controller="Admin" asp-action="Products" class="reset-btn">Reset</a>
         </div>
     </form>
 </div>
 
 <div class="admin-table-card">
-
     <div class="table-summary">
-        <div>
-            <h3>Product Listings</h3>
-            <p>@totalProducts product(s) found</p>
-        </div>
-
-        <div class="table-page-summary">
-            Page @currentPage of @totalPages
-        </div>
+        <h3>Product Listings</h3>
+        <p>@totalProducts product(s) found | Page @currentPage of @totalPages</p>
     </div>
 
     <div class="table-responsive">
@@ -111,33 +74,20 @@
                     <th>Action</th>
                 </tr>
             </thead>
-
             <tbody>
                 @if (Model.Any())
                 {
                     foreach (var product in Model)
                     {
-                        var stockClass = product.Stock <= 0
-                            ? "out"
-                            : product.Stock <= 10
-                                ? "low"
-                                : "good";
-
-                        var stockText = product.Stock <= 0
-                            ? "Out of Stock"
-                            : product.Stock <= 10
-                                ? "Low Stock"
-                                : "In Stock";
-
-                        var firstImage = product.Images != null
-                            ? product.Images.FirstOrDefault()
-                            : null;
+                        var stockClass = product.Stock <= 0 ? "out" : product.Stock <= 10 ? "low" : "good";
+                        var stockText = product.Stock <= 0 ? "Out of Stock" : product.Stock <= 10 ? "Low Stock" : "In Stock";
+                        var firstImage = product.Images?.FirstOrDefault();
 
                         <tr>
                             <td>
                                 <div class="product-cell">
                                     <div class="product-image">
-                                        @if (firstImage != null && !string.IsNullOrWhiteSpace(firstImage.ImagePath))
+                                        @if (!string.IsNullOrWhiteSpace(firstImage?.ImagePath))
                                         {
                                             <img src="@firstImage.ImagePath" alt="@product.Name" />
                                         }
@@ -146,107 +96,34 @@
                                             <span>🛍️</span>
                                         }
                                     </div>
-
                                     <div>
                                         <strong>@product.Name</strong>
-                                        <span>
-                                            @(string.IsNullOrWhiteSpace(product.Description)
-                                                ? "No description"
-                                                : product.Description)
-                                        </span>
+                                        <span>@(string.IsNullOrWhiteSpace(product.Description) ? "No description" : product.Description)</span>
                                     </div>
                                 </div>
                             </td>
-
                             <td>
-                                <div class="seller-cell">
-                                    <strong>
-                                        @(product.Seller != null && !string.IsNullOrWhiteSpace(product.Seller.FullName)
-                                            ? product.Seller.FullName
-                                            : "Unknown Seller")
-                                    </strong>
-
-                                    <span>
-                                        @(product.Seller != null && !string.IsNullOrWhiteSpace(product.Seller.Email)
-                                            ? product.Seller.Email
-                                            : "No email")
-                                    </span>
-                                </div>
+                                <strong>@(product.Seller?.FullName ?? "Unknown Seller")</strong>
+                                <span>@(product.Seller?.Email ?? "No email")</span>
                             </td>
-
+                            <td><strong>₱@product.Price.ToString("N2")</strong></td>
+                            <td><span class="stock-badge @stockClass">@stockText (@product.Stock)</span></td>
+                            <td><span class="visibility-badge @(product.IsHiddenByAdmin ? "hidden" : "visible")">@((product.IsHiddenByAdmin) ? "Hidden" : "Visible")</span></td>
+                            <td>@product.CreatedAt.ToString("yyyy-MM-dd")</td>
                             <td>
-                                <strong>₱@product.Price.ToString("N2")</strong>
-                            </td>
-
-                            <td>
-                                <span class="stock-badge @stockClass">
-                                    @stockText (@product.Stock)
-                                </span>
-                            </td>
-
-                            <td>
-                                @if (product.IsHiddenByAdmin)
-                                {
-                                    <span class="visibility-badge hidden">
-                                        Hidden
-                                    </span>
-                                }
-                                else
-                                {
-                                    <span class="visibility-badge visible">
-                                        Visible
-                                    </span>
-                                }
-                            </td>
-
-                            <td>
-                                @product.CreatedAt.ToString("yyyy-MM-dd")
-                            </td>
-
-                            <td>
-                                @if (product.IsHiddenByAdmin)
-                                {
-                                    <form asp-controller="Admin"
-                                          asp-action="ShowProduct"
-                                          method="post"
-                                          class="d-inline">
-
-                                        @Html.AntiForgeryToken()
-
-                                        <input type="hidden"
-                                               name="productId"
-                                               value="@product.Id" />
-
-                                        <button type="submit"
-                                                class="action-btn show-btn">
-                                            Show
-                                        </button>
-                                    </form>
-                                }
-                                else
-                                {
-                                    <form asp-controller="Admin"
-                                          asp-action="HideProduct"
-                                          method="post"
-                                          class="hide-product-form"
-                                          onsubmit="return confirm('Hide this product from shoppers?');">
-
-                                        @Html.AntiForgeryToken()
-
-                                        <input type="hidden"
-                                               name="productId"
-                                               value="@product.Id" />
-
-                                        <input type="hidden"
-                                               name="reason"
-                                               value="Hidden by admin due to product moderation." />
-
-                                        <button type="submit"
-                                                class="action-btn hide-btn">
-                                            Hide
-                                        </button>
-                                    </form>
-                                }
+                                <!-- View Button -->
+                                <button type="button" class="btn btn-primary view-btn" data-bs-toggle="modal" data-bs-target="#productModal"
+                                        data-product-id="@product.Id"
+                                        data-product-name="@product.Name"
+                                        data-product-description="@product.Description"
+                                        data-product-price="@product.Price"
+                                        data-product-stock="@product.Stock"
+                                        data-product-visibility="@(product.IsHiddenByAdmin ? "Hidden" : "Visible")"
+                                        data-product-seller="@product.Seller?.FullName"
+                                        data-product-email="@product.Seller?.Email"
+                                        data-product-created="@product.CreatedAt.ToString("yyyy-MM-dd")">
+                                    View
+                                </button>
                             </td>
                         </tr>
                     }
@@ -254,10 +131,7 @@
                 else
                 {
                     <tr>
-                        <td colspan="7"
-                            class="text-center text-muted py-5">
-                            No products found.
-                        </td>
+                        <td colspan="7" class="text-center text-muted py-5">No products found.</td>
                     </tr>
                 }
             </tbody>
@@ -265,38 +139,68 @@
     </div>
 
     <div class="pagination-wrapper">
-        <a class="page-btn @(currentPage == 1 ? "disabled" : "")"
-           asp-controller="Admin"
-           asp-action="Products"
-           asp-route-search="@search"
-           asp-route-status="@selectedStatus"
-           asp-route-stockStatus="@selectedStockStatus"
-           asp-route-page="@(currentPage - 1)">
-            Previous
-        </a>
-
+        <a class="page-btn @(currentPage == 1 ? "disabled" : "")" asp-controller="Admin" asp-action="Products" asp-route-search="@search" asp-route-visibility="@selectedStatus" asp-route-stockStatus="@selectedStockStatus" asp-route-page="@(currentPage - 1)">Previous</a>
         @for (int i = 1; i <= totalPages; i++)
         {
-            <a class="page-number @(i == currentPage ? "active" : "")"
-               asp-controller="Admin"
-               asp-action="Products"
-               asp-route-search="@search"
-               asp-route-status="@selectedStatus"
-               asp-route-stockStatus="@selectedStockStatus"
-               asp-route-page="@i">
-                @i
-            </a>
+            <a class="page-number @(i == currentPage ? "active" : "")" asp-controller="Admin" asp-action="Products" asp-route-search="@search" asp-route-visibility="@selectedStatus" asp-route-stockStatus="@selectedStockStatus" asp-route-page="@i">@i</a>
         }
-
-        <a class="page-btn @(currentPage >= totalPages ? "disabled" : "")"
-           asp-controller="Admin"
-           asp-action="Products"
-           asp-route-search="@search"
-           asp-route-status="@selectedStatus"
-           asp-route-stockStatus="@selectedStockStatus"
-           asp-route-page="@(currentPage + 1)">
-            Next
-        </a>
+        <a class="page-btn @(currentPage >= totalPages ? "disabled" : "")" asp-controller="Admin" asp-action="Products" asp-route-search="@search" asp-route-visibility="@selectedStatus" asp-route-stockStatus="@selectedStockStatus" asp-route-page="@(currentPage + 1)">Next</a>
     </div>
-
 </div>
+
+<!-- Modal -->
+<div class="modal fade" id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="productModalLabel">Product Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <dl class="row">
+                    <dt class="col-sm-3">Product Name</dt>
+                    <dd class="col-sm-9" id="modalProductName"></dd>
+
+                    <dt class="col-sm-3">Description</dt>
+                    <dd class="col-sm-9" id="modalProductDescription"></dd>
+
+                    <dt class="col-sm-3">Price</dt>
+                    <dd class="col-sm-9" id="modalProductPrice"></dd>
+
+                    <dt class="col-sm-3">Stock</dt>
+                    <dd class="col-sm-9" id="modalProductStock"></dd>
+
+                    <dt class="col-sm-3">Visibility</dt>
+                    <dd class="col-sm-9" id="modalProductVisibility"></dd>
+
+                    <dt class="col-sm-3">Seller</dt>
+                    <dd class="col-sm-9" id="modalProductSeller"></dd>
+
+                    <dt class="col-sm-3">Seller Email</dt>
+                    <dd class="col-sm-9" id="modalProductEmail"></dd>
+
+                    <dt class="col-sm-3">Created At</dt>
+                    <dd class="col-sm-9" id="modalProductCreated"></dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var productModal = document.getElementById('productModal')
+        productModal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget
+
+            document.getElementById('modalProductName').textContent = button.getAttribute('data-product-name');
+            document.getElementById('modalProductDescription').textContent = button.getAttribute('data-product-description');
+            document.getElementById('modalProductPrice').textContent = "₱" + parseFloat(button.getAttribute('data-product-price')).toFixed(2);
+            document.getElementById('modalProductStock').textContent = button.getAttribute('data-product-stock');
+            document.getElementById('modalProductVisibility').textContent = button.getAttribute('data-product-visibility');
+            document.getElementById('modalProductSeller').textContent = button.getAttribute('data-product-seller');
+            document.getElementById('modalProductEmail').textContent = button.getAttribute('data-product-email');
+            document.getElementById('modalProductCreated').textContent = button.getAttribute('data-product-created');
+        });
+    </script>
+}
